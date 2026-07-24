@@ -2,7 +2,16 @@
 
 ## Cursor Cloud specific instructions
 
-- This repository is currently a placeholder named "JS LEARNING". As of this writing it contains only `README.md` with no application code, no `package.json`, no dependency manifests, no services, and no build/lint/test tooling.
-- The VM already provides Node.js v22 and npm 10 (via nvm), plus Python 3.12. There is nothing to install until project code is added.
-- No update script is configured because there are no dependencies to refresh. Once a `package.json` (or other manifest) is added, set up a minimal update script (e.g. `npm install`, guarded so it is a no-op when the manifest is absent) and document how to lint/test/build/run here.
-- To sanity-check the runtime with no project code present: `node -e "console.log(process.version)"`.
+- **Project**: Pakistan Income Tax Calculator — vanilla HTML/CSS/JS app with FBR tax slab data.
+- **Runtime**: Node.js v22 and npm 10 (via nvm). No install step required unless adding new dependencies.
+- **Update script**: `npm install` is a no-op (no runtime dependencies). Run it only after adding packages to `package.json`.
+- **Lint**: `npm run lint` — syntax-checks all JS files with `node --check`.
+- **Test**: `npm test` — runs unit tests via Node's built-in test runner.
+- **Run**: `npm start` — serves the app on port 3000 via `npx serve`.
+- **Structure**:
+  - `index.html` — main UI
+  - `css/styles.css` — styling
+  - `js/tax-slabs.js` — FBR slab data (new + old 5 years)
+  - `js/tax-calculator.js` — calculation engine
+  - `js/app.js` — UI logic
+  - `tests/tax-calculator.test.js` — unit tests
