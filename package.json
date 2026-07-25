@@ -4,9 +4,9 @@
   "description": "Pakistan FBR income tax calculator — new tax regime and 5-year historical slabs",
   "type": "module",
   "scripts": {
-    "test": "node --test tests/tax-calculator.test.js",
+    "test": "node --test tests/",
     "start": "npx --yes serve -l 3000 .",
-    "lint": "node --check js/tax-slabs.js && node --check js/tax-calculator.js && node --check js/app.js"
+    "lint": "node --check js/tax-slabs.js && node --check js/tax-calculator.js && node --check js/app.js && node --check js/deductions.js && node --check js/number-format.js && node --check js/share-export.js"
   },
   "keywords": ["pakistan", "tax", "fbr", "calculator"],
   "license": "MIT"
