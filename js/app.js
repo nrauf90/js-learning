@@ -1,5 +1,37 @@
 import { TAX_YEARS, getYearsByRegime } from './tax-slabs.js';
 import { calculateTax, compareYears, formatPKR, formatPercent } from './tax-calculator.js';
+import { readStateFromURL, updateURL, copyShareLink, initPrintExport } from './share-export.js';
+
+const THEME_KEY = 'tax-calculator-theme';
+const root = document.documentElement;
+const themeToggle = document.getElementById('theme-toggle');
+
+function applyTheme(theme) {
+  root.setAttribute('data-theme', theme);
+  themeToggle.setAttribute('aria-pressed', String(theme === 'light'));
+  themeToggle.setAttribute(
+    'aria-label',
+    theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'
+  );
+}
+
+function initTheme() {
+  const stored = localStorage.getItem(THEME_KEY);
+  if (stored === 'light' || stored === 'dark') {
+    applyTheme(stored);
+    return;
+  }
+  const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+  applyTheme(prefersLight ? 'light' : 'dark');
+}
+
+themeToggle.addEventListener('click', () => {
+  const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  applyTheme(next);
+  localStorage.setItem(THEME_KEY, next);
+});
+
+initTheme();
 
 const incomeInput = document.getElementById('income');
 const incomeTypeRadios = document.querySelectorAll('input[name="income-type"]');
@@ -8,6 +40,10 @@ const yearSelect = document.getElementById('year-select');
 const resultsPanel = document.getElementById('results');
 const comparisonPanel = document.getElementById('comparison');
 const slabTable = document.getElementById('slab-table');
+const printSummary = document.getElementById('print-summary');
+const shareLinkBtn = document.getElementById('share-link-btn');
+const printBtn = document.getElementById('print-btn');
+const shareFeedback = document.getElementById('share-feedback');
 
 let activeRegime = 'new';
 
@@ -17,11 +53,15 @@ function getAnnualIncome() {
   return isMonthly ? raw * 12 : raw;
 }
 
-function populateYearSelect() {
+function populateYearSelect(preferredYearId) {
   const years = getYearsByRegime(activeRegime);
   yearSelect.innerHTML = years
     .map((y) => `<option value="${y.id}">${y.label} (${y.period})</option>`)
     .join('');
+
+  if (preferredYearId && years.some((y) => y.id === preferredYearId)) {
+    yearSelect.value = preferredYearId;
+  }
 }
 
 function renderSlabTable(taxYear) {
@@ -105,6 +145,23 @@ function renderResults(result) {
   }
 }
 
+function renderPrintSummary(income, incomeType, taxYear, result) {
+  const regimeLabel = taxYear.regime === 'new' ? 'New Tax Regime' : 'Old Tax Regime';
+  const generatedOn = new Date().toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
+  printSummary.innerHTML = `
+    <div><strong>Pakistan Income Tax Calculator</strong> — generated ${generatedOn}</div>
+    <div>Income entered: <strong>${formatPKR(incomeType === 'monthly' ? income / 12 : income)}</strong>
+      (${incomeType === 'monthly' ? 'Monthly' : 'Annual'}) — Annualized: <strong>${formatPKR(income)}</strong></div>
+    <div>Regime: <strong>${regimeLabel}</strong> — Fiscal Year: <strong>${taxYear.label} (${taxYear.period})</strong></div>
+    <div>Annual tax: <strong>${formatPKR(result.totalTax)}</strong> — Effective rate: <strong>${formatPercent(result.effectiveRate)}</strong></div>
+  `;
+}
+
 function renderComparison(income) {
   const newResults = compareYears(income, getYearsByRegime('new'));
   const oldResults = compareYears(income, getYearsByRegime('old'));
@@ -179,9 +236,19 @@ function update() {
   if (!taxYear) return;
 
   const result = calculateTax(income, taxYear);
+  const incomeType = document.querySelector('input[name="income-type"]:checked').value;
+
   renderResults(result);
   renderSlabTable(taxYear);
   renderComparison(income);
+  renderPrintSummary(income, incomeType, taxYear, result);
+
+  updateURL({
+    income: incomeInput.value,
+    incomeType,
+    regime: activeRegime,
+    year: yearId,
+  });
 }
 
 regimeTabs.forEach((tab) => {
@@ -198,6 +265,39 @@ incomeInput.addEventListener('input', update);
 incomeTypeRadios.forEach((r) => r.addEventListener('change', update));
 yearSelect.addEventListener('change', update);
 
-populateYearSelect();
-incomeInput.value = '1200000';
+shareLinkBtn.addEventListener('click', () => {
+  copyShareLink((success) => {
+    shareFeedback.textContent = success ? 'Link copied!' : 'Copy failed — copy the URL manually';
+    shareFeedback.classList.add('visible');
+    clearTimeout(shareFeedback._hideTimer);
+    shareFeedback._hideTimer = setTimeout(() => {
+      shareFeedback.classList.remove('visible');
+    }, 2200);
+  });
+});
+
+initPrintExport(printBtn);
+
+function initFromURLOrDefaults() {
+  const restored = readStateFromURL();
+
+  if (restored && restored.regime === 'old') {
+    activeRegime = 'old';
+    regimeTabs.forEach((t) => t.classList.toggle('active', t.dataset.regime === 'old'));
+  }
+
+  if (restored && restored.incomeType === 'monthly') {
+    document.querySelector('input[name="income-type"][value="monthly"]').checked = true;
+  }
+
+  populateYearSelect(restored ? restored.year : undefined);
+
+  if (restored && restored.income && !Number.isNaN(parseFloat(restored.income))) {
+    incomeInput.value = restored.income;
+  } else {
+    incomeInput.value = '1200000';
+  }
+}
+
+initFromURLOrDefaults();
 update();

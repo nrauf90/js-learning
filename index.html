@@ -20,6 +20,15 @@
             <p class="tagline">FBR income tax slabs — new regime &amp; 5-year history</p>
           </div>
         </div>
+        <button id="theme-toggle" class="theme-toggle no-print" type="button" aria-label="Switch to light theme" aria-pressed="false">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+          </svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
       </div>
     </header>
 
@@ -36,7 +45,8 @@
               step="1000"
               placeholder="Enter amount"
             />
-            <div class="income-type-toggle">
+            <div class="income-type-toggle" role="group" aria-label="Income period">
+              <span class="toggle-slider" aria-hidden="true"></span>
               <label class="toggle-option">
                 <input type="radio" name="income-type" value="annual" checked />
                 <span>Annual</span>
@@ -66,7 +76,28 @@
             <label class="input-label" for="year-select">Fiscal Year</label>
             <select id="year-select" class="year-select"></select>
           </div>
+
+          <div class="action-toolbar no-print">
+            <button id="share-link-btn" class="action-btn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07l-1.5 1.5"></path>
+                <path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07l1.5-1.5"></path>
+              </svg>
+              Copy Link
+            </button>
+            <button id="print-btn" class="action-btn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 9V2h12v7"></path>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <path d="M6 14h12v8H6z"></path>
+              </svg>
+              Print / Save PDF
+            </button>
+            <span id="share-feedback" class="share-feedback" aria-live="polite"></span>
+          </div>
         </div>
+
+        <div id="print-summary" class="print-summary"></div>
 
         <div id="results" class="results-section"></div>
       </section>
