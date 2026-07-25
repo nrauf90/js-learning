@@ -2,8 +2,9 @@
  * Shareable permalink + print/PDF export helpers.
  *
  * Permalinks encode the current calculator state (income, income type,
- * regime, fiscal year) into the URL's query string so a result can be
- * bookmarked or sent to someone else and reopen in the same state.
+ * regime, fiscal year, number format, deductions) into the URL's query
+ * string so a result can be bookmarked or sent to someone else and
+ * reopen in the same state.
  *
  * PDF export is handled via the browser's native print dialog ("Save as
  * PDF" is a built-in destination in every modern browser/OS), driven by
@@ -16,10 +17,12 @@ const PARAM_KEYS = {
     type: 'type',
     regime: 'regime',
     year: 'year',
+    format: 'format',
+    deductions: 'ded',
   };
   
   /**
-   * @param {{ income: string|number, incomeType: string, regime: string, year: string }} state
+   * @param {{ income: string|number, incomeType: string, regime: string, year: string, format?: string, deductions?: string }} state
    * @returns {URLSearchParams}
    */
   function encodeStateToParams(state) {
@@ -30,6 +33,8 @@ const PARAM_KEYS = {
     if (state.incomeType) params.set(PARAM_KEYS.type, state.incomeType);
     if (state.regime) params.set(PARAM_KEYS.regime, state.regime);
     if (state.year) params.set(PARAM_KEYS.year, state.year);
+    if (state.format) params.set(PARAM_KEYS.format, state.format);
+    if (state.deductions) params.set(PARAM_KEYS.deductions, state.deductions);
     return params;
   }
   
@@ -39,9 +44,7 @@ const PARAM_KEYS = {
    */
   export function readStateFromURL() {
     const params = new URLSearchParams(window.location.search);
-    const hasAny = [PARAM_KEYS.income, PARAM_KEYS.type, PARAM_KEYS.regime, PARAM_KEYS.year].some(
-      (key) => params.has(key)
-    );
+    const hasAny = Object.values(PARAM_KEYS).some((key) => params.has(key));
     if (!hasAny) return null;
   
     return {
@@ -49,6 +52,8 @@ const PARAM_KEYS = {
       incomeType: params.get(PARAM_KEYS.type),
       regime: params.get(PARAM_KEYS.regime),
       year: params.get(PARAM_KEYS.year),
+      format: params.get(PARAM_KEYS.format),
+      deductions: params.get(PARAM_KEYS.deductions),
     };
   }
   
