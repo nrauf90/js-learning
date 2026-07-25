@@ -1,6 +1,37 @@
 import { TAX_YEARS, getYearsByRegime } from './tax-slabs.js';
 import { calculateTax, compareYears, formatPKR, formatPercent } from './tax-calculator.js';
 
+const THEME_KEY = 'tax-calculator-theme';
+const root = document.documentElement;
+const themeToggle = document.getElementById('theme-toggle');
+
+function applyTheme(theme) {
+  root.setAttribute('data-theme', theme);
+  themeToggle.setAttribute('aria-pressed', String(theme === 'light'));
+  themeToggle.setAttribute(
+    'aria-label',
+    theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'
+  );
+}
+
+function initTheme() {
+  const stored = localStorage.getItem(THEME_KEY);
+  if (stored === 'light' || stored === 'dark') {
+    applyTheme(stored);
+    return;
+  }
+  const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+  applyTheme(prefersLight ? 'light' : 'dark');
+}
+
+themeToggle.addEventListener('click', () => {
+  const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  applyTheme(next);
+  localStorage.setItem(THEME_KEY, next);
+});
+
+initTheme();
+
 const incomeInput = document.getElementById('income');
 const incomeTypeRadios = document.querySelectorAll('input[name="income-type"]');
 const regimeTabs = document.querySelectorAll('.regime-tab');
