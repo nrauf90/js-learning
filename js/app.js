@@ -1,6 +1,8 @@
 import { TAX_YEARS, getYearsByRegime } from './tax-slabs.js';
-import { calculateTax, compareYears, formatPKR, formatPercent } from './tax-calculator.js';
+import { calculateTax, compareYears, formatPercent } from './tax-calculator.js';
 import { readStateFromURL, updateURL, copyShareLink, initPrintExport } from './share-export.js';
+import { formatPKR as formatWithStyle, NUMBER_FORMATS, getStoredFormat, storeFormat } from './number-format.js';
+import { createDeductionsManager } from './deductions.js';
 
 const THEME_KEY = 'tax-calculator-theme';
 const root = document.documentElement;
@@ -44,8 +46,30 @@ const printSummary = document.getElementById('print-summary');
 const shareLinkBtn = document.getElementById('share-link-btn');
 const printBtn = document.getElementById('print-btn');
 const shareFeedback = document.getElementById('share-feedback');
+const numberFormatRadios = document.querySelectorAll('input[name="number-format"]');
+const deductionsListEl = document.getElementById('deductions-list');
+const deductionsTotalEl = document.getElementById('deductions-total');
+const addDeductionBtn = document.getElementById('add-deduction-btn');
 
 let activeRegime = 'new';
+let currentNumberFormat = getStoredFormat();
+
+/** Formats a PKR amount using the currently selected number-format style. */
+function fmt(amount) {
+  return formatWithStyle(amount, currentNumberFormat);
+}
+
+const deductionsManager = createDeductionsManager(deductionsListEl, () => update());
+
+addDeductionBtn.addEventListener('click', () => deductionsManager.addRow());
+
+numberFormatRadios.forEach((radio) => {
+  radio.addEventListener('change', () => {
+    currentNumberFormat = radio.value;
+    storeFormat(currentNumberFormat);
+    update();
+  });
+});
 
 function getAnnualIncome() {
   const raw = parseFloat(incomeInput.value) || 0;
@@ -78,21 +102,21 @@ function renderSlabTable(taxYear) {
         .map((s) => {
           const range =
             s.max === null
-              ? `Above ${formatPKR(s.min - 1)}`
-              : `${formatPKR(s.min)} – ${formatPKR(s.max)}`;
+              ? `Above ${fmt(s.min - 1)}`
+              : `${fmt(s.min)} – ${fmt(s.max)}`;
           const formula =
             s.rate === 0
               ? 'Exempt'
               : s.fixed === 0
-                ? `${(s.rate * 100).toFixed(1)}% of excess over ${formatPKR(s.threshold)}`
-                : `${formatPKR(s.fixed)} + ${(s.rate * 100).toFixed(1)}% of excess over ${formatPKR(s.threshold)}`;
+                ? `${(s.rate * 100).toFixed(1)}% of excess over ${fmt(s.threshold)}`
+                : `${fmt(s.fixed)} + ${(s.rate * 100).toFixed(1)}% of excess over ${fmt(s.threshold)}`;
           return `<tr><td>${range}</td><td>${s.label}</td><td>${formula}</td></tr>`;
         })
         .join('')}
     </tbody>
     ${
       taxYear.surcharge
-        ? `<tfoot><tr><td colspan="3" class="surcharge-note">Section 4AB surcharge: ${(taxYear.surcharge.rate * 100).toFixed(0)}% on tax payable when income exceeds ${formatPKR(taxYear.surcharge.threshold)}</td></tr></tfoot>`
+        ? `<tfoot><tr><td colspan="3" class="surcharge-note">Section 4AB surcharge: ${(taxYear.surcharge.rate * 100).toFixed(0)}% on tax payable when income exceeds ${fmt(taxYear.surcharge.threshold)}</td></tr></tfoot>`
         : ''
     }
   `;
@@ -110,19 +134,19 @@ function renderResults(result) {
     <div class="result-grid">
       <div class="result-card highlight">
         <span class="result-label">Annual Tax</span>
-        <span class="result-value">${formatPKR(result.totalTax)}</span>
+        <span class="result-value">${fmt(result.totalTax)}</span>
       </div>
       <div class="result-card">
         <span class="result-label">Monthly Tax</span>
-        <span class="result-value">${formatPKR(result.monthlyTax)}</span>
+        <span class="result-value">${fmt(result.monthlyTax)}</span>
       </div>
       <div class="result-card">
         <span class="result-label">Take-Home (Annual)</span>
-        <span class="result-value positive">${formatPKR(result.takeHome)}</span>
+        <span class="result-value positive">${fmt(result.takeHome)}</span>
       </div>
       <div class="result-card">
         <span class="result-label">Take-Home (Monthly)</span>
-        <span class="result-value positive">${formatPKR(result.monthlyTakeHome)}</span>
+        <span class="result-value positive">${fmt(result.monthlyTakeHome)}</span>
       </div>
       <div class="result-card">
         <span class="result-label">Effective Tax Rate</span>
@@ -132,14 +156,27 @@ function renderResults(result) {
         <span class="result-label">Applicable Slab</span>
         <span class="result-value slab-rate">${result.slab.label}</span>
       </div>
+      ${
+        result.deductions > 0
+          ? `
+      <div class="result-card">
+        <span class="result-label">Deductions Applied</span>
+        <span class="result-value">${fmt(result.deductions)}</span>
+      </div>
+      <div class="result-card">
+        <span class="result-label">Taxable Income</span>
+        <span class="result-value">${fmt(result.taxableIncome)}</span>
+      </div>`
+          : ''
+      }
     </div>
   `;
 
   if (result.surcharge > 0) {
     resultsPanel.innerHTML += `
       <div class="surcharge-breakdown">
-        <span>Base tax: ${formatPKR(result.baseTax)}</span>
-        <span>Section 4AB surcharge: ${formatPKR(result.surcharge)}</span>
+        <span>Base tax: ${fmt(result.baseTax)}</span>
+        <span>Section 4AB surcharge: ${fmt(result.surcharge)}</span>
       </div>
     `;
   }
@@ -155,16 +192,21 @@ function renderPrintSummary(income, incomeType, taxYear, result) {
 
   printSummary.innerHTML = `
     <div><strong>Pakistan Income Tax Calculator</strong> — generated ${generatedOn}</div>
-    <div>Income entered: <strong>${formatPKR(incomeType === 'monthly' ? income / 12 : income)}</strong>
-      (${incomeType === 'monthly' ? 'Monthly' : 'Annual'}) — Annualized: <strong>${formatPKR(income)}</strong></div>
+    <div>Income entered: <strong>${fmt(incomeType === 'monthly' ? income / 12 : income)}</strong>
+      (${incomeType === 'monthly' ? 'Monthly' : 'Annual'}) — Annualized: <strong>${fmt(income)}</strong></div>
     <div>Regime: <strong>${regimeLabel}</strong> — Fiscal Year: <strong>${taxYear.label} (${taxYear.period})</strong></div>
-    <div>Annual tax: <strong>${formatPKR(result.totalTax)}</strong> — Effective rate: <strong>${formatPercent(result.effectiveRate)}</strong></div>
+    ${
+      result.deductions > 0
+        ? `<div>Deductions applied: <strong>${fmt(result.deductions)}</strong> — Taxable income: <strong>${fmt(result.taxableIncome)}</strong></div>`
+        : ''
+    }
+    <div>Annual tax: <strong>${fmt(result.totalTax)}</strong> — Effective rate: <strong>${formatPercent(result.effectiveRate)}</strong></div>
   `;
 }
 
-function renderComparison(income) {
-  const newResults = compareYears(income, getYearsByRegime('new'));
-  const oldResults = compareYears(income, getYearsByRegime('old'));
+function renderComparison(income, deductions) {
+  const newResults = compareYears(income, getYearsByRegime('new'), deductions);
+  const oldResults = compareYears(income, getYearsByRegime('old'), deductions);
 
   const allResults = [...newResults, ...oldResults];
   const minTax = Math.min(...allResults.map((r) => r.totalTax));
@@ -195,9 +237,9 @@ function renderComparison(income) {
                 <tr class="${rowClass}">
                   <td><strong>${r.label}</strong></td>
                   <td><span class="badge badge-${r.regime}">${r.regime === 'new' ? 'New' : 'Old'}</span></td>
-                  <td>${formatPKR(r.totalTax)}</td>
-                  <td>${formatPKR(r.monthlyTax)}</td>
-                  <td>${formatPKR(r.takeHome)}</td>
+                  <td>${fmt(r.totalTax)}</td>
+                  <td>${fmt(r.monthlyTax)}</td>
+                  <td>${fmt(r.takeHome)}</td>
                   <td>${formatPercent(r.effectiveRate)}</td>
                 </tr>`;
             })
@@ -215,12 +257,12 @@ function renderComparison(income) {
     diffPanel.className = 'diff-panel';
     if (diff > 0) {
       diffPanel.innerHTML = `
-        <strong>New tax saves ${formatPKR(diff)}/year</strong> compared to ${latestOld.label}
-        (${formatPKR(diff / 12)}/month less tax)
+        <strong>New tax saves ${fmt(diff)}/year</strong> compared to ${latestOld.label}
+        (${fmt(diff / 12)}/month less tax)
       `;
     } else if (diff < 0) {
       diffPanel.innerHTML = `
-        <strong>New tax costs ${formatPKR(Math.abs(diff))}/year more</strong> compared to ${latestOld.label}
+        <strong>New tax costs ${fmt(Math.abs(diff))}/year more</strong> compared to ${latestOld.label}
       `;
     } else {
       diffPanel.innerHTML = `<strong>Same tax</strong> under new and old regime for this income.`;
@@ -235,12 +277,15 @@ function update() {
   const taxYear = TAX_YEARS.find((y) => y.id === yearId);
   if (!taxYear) return;
 
-  const result = calculateTax(income, taxYear);
+  const deductions = deductionsManager.getTotal();
+  const result = calculateTax(income, taxYear, deductions);
   const incomeType = document.querySelector('input[name="income-type"]:checked').value;
+
+  deductionsTotalEl.textContent = fmt(deductions);
 
   renderResults(result);
   renderSlabTable(taxYear);
-  renderComparison(income);
+  renderComparison(income, deductions);
   renderPrintSummary(income, incomeType, taxYear, result);
 
   updateURL({
@@ -248,6 +293,8 @@ function update() {
     incomeType,
     regime: activeRegime,
     year: yearId,
+    format: currentNumberFormat,
+    deductions: deductionsManager.serialize(),
   });
 }
 
@@ -288,6 +335,17 @@ function initFromURLOrDefaults() {
 
   if (restored && restored.incomeType === 'monthly') {
     document.querySelector('input[name="income-type"][value="monthly"]').checked = true;
+  }
+
+  if (restored && (restored.format === NUMBER_FORMATS.LAKH_CRORE || restored.format === NUMBER_FORMATS.INTERNATIONAL)) {
+    currentNumberFormat = restored.format;
+    document.querySelector(`input[name="number-format"][value="${currentNumberFormat}"]`).checked = true;
+  } else {
+    document.querySelector(`input[name="number-format"][value="${currentNumberFormat}"]`).checked = true;
+  }
+
+  if (restored && restored.deductions) {
+    deductionsManager.loadFromSerialized(restored.deductions);
   }
 
   populateYearSelect(restored ? restored.year : undefined);

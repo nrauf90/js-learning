@@ -488,6 +488,201 @@ body {
   padding-top: 0.75rem !important;
 }
 
+/* Number format toggle (reuses the pill-toggle pattern) */
+.format-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.format-toggle {
+  position: relative;
+  display: flex;
+  width: 240px;
+  min-width: 240px;
+  background: var(--surface-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.format-toggle .toggle-slider {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  background: var(--accent);
+  border-radius: calc(var(--radius) - 4px);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 0;
+}
+
+.format-toggle:has(input[value='lakh_crore']:checked) .toggle-slider {
+  transform: translateX(100%);
+}
+
+.format-toggle .toggle-option {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  cursor: pointer;
+  text-align: center;
+}
+
+.format-toggle .toggle-option input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.format-toggle .toggle-option span {
+  display: block;
+  padding: 0.6rem 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.format-toggle .toggle-option input:checked + span {
+  color: var(--accent-contrast);
+  font-weight: 600;
+}
+
+.format-toggle .toggle-option input:focus-visible + span {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Deductions & exemptions */
+.deductions-section {
+  margin-bottom: 1.5rem;
+  padding: 1.1rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.deductions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.add-deduction-btn {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: var(--radius);
+  padding: 0.4rem 0.85rem;
+  font-family: var(--font);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.add-deduction-btn:hover {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.add-deduction-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.deductions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.deductions-empty {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+.deduction-row {
+  display: grid;
+  grid-template-columns: 1fr 140px auto;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.deduction-type,
+.deduction-amount {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  padding: 0.55rem 0.7rem;
+}
+
+.deduction-amount {
+  font-family: var(--mono);
+}
+
+.deduction-type:focus,
+.deduction-amount:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.deduction-remove {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.deduction-remove:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.deductions-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.deductions-note {
+  margin-top: 0.6rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+@media (max-width: 600px) {
+  .deduction-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Action toolbar (share + print) */
 .action-toolbar {
   display: flex;
@@ -603,7 +798,9 @@ body {
   .regime-tabs,
   .year-select,
   .input-label,
-  .income-input {
+  .income-input,
+  .format-toggle-row,
+  .deductions-section {
     display: none !important;
   }
 

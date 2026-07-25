@@ -77,6 +77,36 @@
             <select id="year-select" class="year-select"></select>
           </div>
 
+          <div class="format-toggle-row">
+            <span class="input-label" style="margin-bottom: 0;">Number Format</span>
+            <div class="format-toggle" role="group" aria-label="Number format">
+              <span class="toggle-slider" aria-hidden="true"></span>
+              <label class="toggle-option">
+                <input type="radio" name="number-format" value="international" checked />
+                <span>1,200,000</span>
+              </label>
+              <label class="toggle-option">
+                <input type="radio" name="number-format" value="lakh_crore" />
+                <span>12,00,000</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="deductions-section">
+            <div class="deductions-header">
+              <span class="input-label" style="margin-bottom: 0;">Deductions &amp; Exemptions (optional)</span>
+              <button type="button" id="add-deduction-btn" class="add-deduction-btn">+ Add Deduction</button>
+            </div>
+            <div id="deductions-list" class="deductions-list"></div>
+            <div class="deductions-total-row">
+              <span>Total Deductions</span>
+              <span id="deductions-total">Rs 0</span>
+            </div>
+            <p class="deductions-note">
+              Deductions reduce the income your tax is calculated on — they don't come out of your take-home pay.
+            </p>
+          </div>
+
           <div class="action-toolbar no-print">
             <button id="share-link-btn" class="action-btn" type="button">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
