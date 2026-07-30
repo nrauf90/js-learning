@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard | Cashflow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+</head>
+<body class="app-body">
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Sidebar"></aside>
+    <div class="app-overlay" id="app-overlay" aria-hidden="true"></div>
+
+    <div class="app-content">
+      <header class="app-topbar no-print">
+        <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Menu" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div class="topbar-heading">
+          <h1>Dashboard</h1>
+          <p class="tagline">Your weekly cash-flow summary</p>
+        </div>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+      </header>
+
+      <main class="main app-main">
+        <div id="dashboard-alert" class="auth-alert" hidden role="alert"></div>
+
+        <section class="calculator-card">
+          <div class="dashboard-header">
+            <div>
+              <h2 class="dashboard-title">Last 7 days</h2>
+              <p class="dashboard-range" id="week-range">—</p>
+            </div>
+            <a class="dashboard-link" href="cashflow.html">Add entries →</a>
+          </div>
+
+          <div class="dashboard-summary stat-grid">
+            <div class="dashboard-stat">
+              <span class="dashboard-stat-label">Total income</span>
+              <span class="dashboard-stat-value income" id="week-income">—</span>
+            </div>
+            <div class="dashboard-stat">
+              <span class="dashboard-stat-label">Total expenses</span>
+              <span class="dashboard-stat-value expense" id="week-expense">—</span>
+            </div>
+            <div class="dashboard-stat dashboard-stat-highlight">
+              <span class="dashboard-stat-label">Remaining balance</span>
+              <span class="dashboard-stat-value" id="week-net">—</span>
+            </div>
+            <div class="dashboard-stat">
+              <span class="dashboard-stat-label">Entries logged</span>
+              <span class="dashboard-stat-value" id="week-count">—</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="chart-grid">
+          <section class="calculator-card chart-card">
+            <h2 class="dashboard-title">Cash flow trend</h2>
+            <p class="chart-subtitle">Income vs expenses per day</p>
+            <div class="chart-wrap">
+              <canvas id="trend-chart" aria-label="Income and expense trend line chart"></canvas>
+            </div>
+          </section>
+
+          <section class="calculator-card chart-card">
+            <h2 class="dashboard-title">Daily net</h2>
+            <p class="chart-subtitle">What was left over each day</p>
+            <div class="chart-wrap">
+              <canvas id="net-chart" aria-label="Daily net balance bar chart"></canvas>
+            </div>
+          </section>
+        </div>
+
+        <section class="calculator-card">
+          <h2 class="dashboard-title">Daily breakdown</h2>
+          <ul class="dashboard-days" id="week-days"></ul>
+          <p class="dashboard-empty" id="week-empty" hidden>No entries in the last 7 days. <a href="cashflow.html">Add your first entry</a>.</p>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script type="module" src="js/dashboard.js"></script>
+</body>
+</html>

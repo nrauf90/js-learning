@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reports | Cashflow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+</head>
+<body class="app-body">
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Sidebar"></aside>
+    <div class="app-overlay" id="app-overlay" aria-hidden="true"></div>
+
+    <div class="app-content">
+      <header class="app-topbar no-print">
+        <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Menu" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div class="topbar-heading">
+          <h1>Reports</h1>
+          <p class="tagline">Income sources &amp; expense breakdowns</p>
+        </div>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+      </header>
+
+      <main class="main app-main">
+      <div id="reports-alert" class="auth-alert" hidden role="alert"></div>
+
+      <section class="calculator-card">
+        <div class="reports-toolbar">
+          <div class="reports-mode" role="group" aria-label="Report period">
+            <button type="button" class="reports-mode-btn active" data-mode="weekly">Weekly</button>
+            <button type="button" class="reports-mode-btn" data-mode="monthly">Monthly</button>
+            <button type="button" class="reports-mode-btn" data-mode="yearly">Yearly</button>
+          </div>
+
+          <div class="reports-picker" id="picker-weekly">
+            <label class="input-label" for="week-start">Week containing</label>
+            <input class="auth-input cashflow-date" type="date" id="week-start" />
+          </div>
+
+          <div class="reports-picker" id="picker-monthly" hidden>
+            <label class="input-label" for="report-month">Month</label>
+            <input class="auth-input cashflow-date" type="month" id="report-month" />
+          </div>
+
+          <div class="reports-picker" id="picker-yearly" hidden>
+            <label class="input-label" for="report-year">Year</label>
+            <input class="auth-input cashflow-date" type="number" id="report-year" min="2000" max="2100" step="1" />
+          </div>
+
+          <div class="reports-actions">
+            <button type="button" class="btn btn-primary btn-pdf" id="download-pdf">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 21h16"/></svg>
+              Download PDF
+            </button>
+          </div>
+        </div>
+
+        <p class="reports-period" id="report-period">—</p>
+
+        <div class="dashboard-summary">
+          <div class="dashboard-stat">
+            <span class="dashboard-stat-label">Total income</span>
+            <span class="dashboard-stat-value income" id="report-income">—</span>
+          </div>
+          <div class="dashboard-stat">
+            <span class="dashboard-stat-label">Total expenses</span>
+            <span class="dashboard-stat-value expense" id="report-expense">—</span>
+          </div>
+          <div class="dashboard-stat dashboard-stat-highlight">
+            <span class="dashboard-stat-label">Net balance</span>
+            <span class="dashboard-stat-value" id="report-net">—</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="reports-breakdown-grid">
+        <section class="calculator-card reports-chart-card">
+          <h2 class="dashboard-title">Income by source</h2>
+          <div class="reports-chart-wrap">
+            <canvas id="income-chart" aria-label="Income breakdown chart"></canvas>
+          </div>
+          <p class="dashboard-empty" id="income-empty" hidden>No income in this period.</p>
+          <ul class="reports-category-list" id="income-list"></ul>
+        </section>
+
+        <section class="calculator-card reports-chart-card">
+          <h2 class="dashboard-title">Expenses by category</h2>
+          <div class="reports-chart-wrap">
+            <canvas id="expense-chart" aria-label="Expense breakdown chart"></canvas>
+          </div>
+          <p class="dashboard-empty" id="expense-empty" hidden>No expenses in this period.</p>
+          <ul class="reports-category-list" id="expense-list"></ul>
+        </section>
+      </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+  <script type="module" src="js/reports.js"></script>
+</body>
+</html>

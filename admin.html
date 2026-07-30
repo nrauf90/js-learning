@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard | Cashflow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+</head>
+<body class="app-body">
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Sidebar"></aside>
+    <div class="app-overlay" id="app-overlay" aria-hidden="true"></div>
+
+    <div class="app-content">
+      <header class="app-topbar no-print">
+        <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Menu" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div class="topbar-heading">
+          <h1>Admin Dashboard</h1>
+          <p class="tagline">System overview and management</p>
+        </div>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+      </header>
+
+      <main class="main app-main">
+        <div id="admin-alert" class="auth-alert" hidden role="alert"></div>
+
+        <!-- Stats Grid -->
+        <section class="admin-stat-cards">
+          <div class="admin-stat-card">
+            <div class="admin-stat-icon admin-stat-icon-primary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87m-4-12a4 4 0 0 1 0 7.75"></path></svg>
+            </div>
+            <div class="admin-stat-content">
+              <span class="admin-stat-label">Total Users</span>
+              <span class="admin-stat-value" id="stat-users">—</span>
+            </div>
+          </div>
+
+          <div class="admin-stat-card">
+            <div class="admin-stat-icon admin-stat-icon-success">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg>
+            </div>
+            <div class="admin-stat-content">
+              <span class="admin-stat-label">Active Subscriptions</span>
+              <span class="admin-stat-value" id="stat-subscriptions">—</span>
+            </div>
+          </div>
+
+          <div class="admin-stat-card">
+            <div class="admin-stat-icon admin-stat-icon-warning">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            </div>
+            <div class="admin-stat-content">
+              <span class="admin-stat-label">Monthly Revenue</span>
+              <span class="admin-stat-value" id="stat-revenue">—</span>
+            </div>
+          </div>
+
+          <div class="admin-stat-card">
+            <div class="admin-stat-icon admin-stat-icon-info">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3l4 4-4 4"></path><path d="M21 7H8"></path><path d="M7 21l-4-4 4-4"></path><path d="M3 17h13"></path></svg>
+            </div>
+            <div class="admin-stat-content">
+              <span class="admin-stat-label">Total Entries</span>
+              <span class="admin-stat-value" id="stat-entries">—</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Quick Links -->
+        <section class="calculator-card">
+          <h2 class="dashboard-title">Quick Actions</h2>
+          <div class="admin-quick-links">
+            <a href="admin-users.html" class="admin-quick-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87m-4-12a4 4 0 0 1 0 7.75"></path></svg>
+              <span>Manage Users</span>
+            </a>
+            <a href="admin-subscriptions.html" class="admin-quick-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M2 10h20"></path></svg>
+              <span>Subscriptions</span>
+            </a>
+            <a href="admin-entries.html" class="admin-quick-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3l4 4-4 4"></path><path d="M21 7H8"></path><path d="M7 21l-4-4 4-4"></path><path d="M3 17h13"></path></svg>
+              <span>Cash Entries</span>
+            </a>
+            <a href="admin-payments.html" class="admin-quick-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+              <span>Payments</span>
+            </a>
+            <a href="admin-categories.html" class="admin-quick-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+              <span>Categories</span>
+            </a>
+          </div>
+        </section>
+
+        <!-- Recent Users -->
+        <section class="calculator-card">
+          <h2 class="dashboard-title">Recent Users</h2>
+          <div class="admin-table-container">
+            <table class="admin-table" id="recent-users-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Joined</th>
+                  <th>Admin</th>
+                </tr>
+              </thead>
+              <tbody id="recent-users-body">
+                <tr>
+                  <td colspan="4" class="admin-table-empty">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Recent Payments -->
+        <section class="calculator-card">
+          <h2 class="dashboard-title">Recent Payments</h2>
+          <div class="admin-table-container">
+            <table class="admin-table" id="recent-payments-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Amount</th>
+                  <th>Gateway</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="recent-payments-body">
+                <tr>
+                  <td colspan="5" class="admin-table-empty">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>

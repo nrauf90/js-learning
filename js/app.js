@@ -3,6 +3,7 @@ import { calculateTax, compareYears, formatPercent } from './tax-calculator.js';
 import { readStateFromURL, updateURL, copyShareLink, initPrintExport } from './share-export.js';
 import { formatPKR as formatWithStyle, NUMBER_FORMATS, getStoredFormat, storeFormat } from './number-format.js';
 import { createDeductionsManager } from './deductions.js';
+import { initNav } from './nav.js';
 
 const THEME_KEY = 'tax-calculator-theme';
 const root = document.documentElement;
@@ -359,3 +360,4 @@ function initFromURLOrDefaults() {
 
 initFromURLOrDefaults();
 update();
+initNav({ current: 'calculator' });

@@ -2,3 +2,21 @@ node_modules
 package-lock.json
 distc
 pnpm-lock.yaml
+
+# Laravel backend
+backend/vendor/
+backend/.env
+backend/.env.backup
+backend/storage/*.key
+backend/public/storage
+backend/database/*.sqlite
+backend/database/*.sqlite-journal
+
+# Playwright / QA
+node_modules/
+test-results/
+playwright-report/
+blob-report/
+e2e/.auth/
+docs/issues/**/shot-*.png
+./.idea
