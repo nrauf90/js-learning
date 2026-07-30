@@ -10,7 +10,7 @@
     "qa:milestone": "node scripts/qa-milestone.mjs",
     "qa:m1": "node scripts/qa-milestone.mjs M1",
     "qa:m2": "node scripts/qa-milestone.mjs M2",
-    "lint": "node --check js/tax-slabs.js && node --check js/tax-calculator.js && node --check js/app.js && node --check js/deductions.js && node --check js/number-format.js && node --check js/share-export.js && node --check js/api.js && node --check js/auth.js && node --check js/cashflow.js && node --check js/nav.js && node --check js/landing.js && node --check js/legal.js && node --check js/dashboard.js && node --check js/reports.js && node --check js/billing.js && node --check js/shell.js && node --check js/profile.js && node --check js/motion.js",
+    "lint": "node --check js/tax-slabs.js && node --check js/tax-calculator.js && node --check js/app.js && node --check js/deductions.js && node --check js/number-format.js && node --check js/share-export.js && node --check js/api.js && node --check js/auth.js && node --check js/cashflow.js && node --check js/nav.js && node --check js/landing.js && node --check js/legal.js && node --check js/dashboard.js && node --check js/reports.js && node --check js/billing.js && node --check js/shell.js && node --check js/profile.js && node --check js/motion.js && node --check js/admin.js && node --check js/admin-users.js && node --check js/admin-entries.js && node --check js/admin-payments.js && node --check js/admin-subscriptions.js && node --check js/admin-categories.js",
     "qa:m3": "node scripts/qa-milestone.mjs M3",
     "qa:m4": "node scripts/qa-milestone.mjs M4",
     "qa:m5": "node scripts/qa-milestone.mjs M5",
@@ -18,7 +18,9 @@
     "qa:m7": "node scripts/qa-milestone.mjs M7",
     "qa:m8": "node scripts/qa-milestone.mjs M8",
     "qa:m9": "node scripts/qa-milestone.mjs M9",
-    "qa:m10": "node scripts/qa-milestone.mjs M10"
+    "qa:m10": "node scripts/qa-milestone.mjs M10",
+    "qa:m11": "node scripts/qa-milestone.mjs M11",
+    "test:admin": "node scripts/test-admin-setup.mjs"
   },
   "keywords": [
     "pakistan",

@@ -53,3 +53,15 @@ export async function expireTrial(request, token) {
   const res = await request.post(`${API}/api/qa/expire-trial`, { headers });
   expect(res.ok()).toBeTruthy();
 }
+
+export async function loginAdmin(request) {
+  const res = await request.post(`${API}/api/login`, {
+    data: {
+      email: 'admin@cashflow.local',
+      password: 'admin123',
+    },
+  });
+  expect(res.status()).toBe(200);
+  const data = await res.json();
+  return { email: data.user.email, token: data.token, user: data.user };
+}

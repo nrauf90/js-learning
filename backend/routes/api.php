@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BillingCallbackController;
 use App\Http\Controllers\Api\BillingController;
@@ -59,6 +60,29 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/billing/subscription', [BillingController::class, 'subscription']);
     Route::post('/billing/checkout', [BillingController::class, 'checkout']);
     Route::post('/billing/sandbox/complete/{payment}', [BillingController::class, 'sandboxComplete']);
+
+    // Admin routes
+    Route::middleware('admin')->prefix('admin')->group(function () {
+        Route::get('/dashboard', [AdminController::class, 'dashboard']);
+
+        Route::get('/users', [AdminController::class, 'users']);
+        Route::get('/users/{user}', [AdminController::class, 'userShow']);
+        Route::put('/users/{user}', [AdminController::class, 'userUpdate']);
+        Route::delete('/users/{user}', [AdminController::class, 'userDestroy']);
+
+        Route::get('/subscriptions', [AdminController::class, 'subscriptions']);
+        Route::put('/subscriptions/{subscription}', [AdminController::class, 'subscriptionUpdate']);
+
+        Route::get('/cash-entries', [AdminController::class, 'cashEntries']);
+        Route::delete('/cash-entries/{cashEntry}', [AdminController::class, 'cashEntryDestroy']);
+
+        Route::get('/payments', [AdminController::class, 'payments']);
+
+        Route::get('/categories', [AdminController::class, 'categories']);
+        Route::post('/categories', [AdminController::class, 'categoryStore']);
+        Route::put('/categories/{category}', [AdminController::class, 'categoryUpdate']);
+        Route::delete('/categories/{category}', [AdminController::class, 'categoryDestroy']);
+    });
 });
 
 if (app()->environment('local', 'testing')) {

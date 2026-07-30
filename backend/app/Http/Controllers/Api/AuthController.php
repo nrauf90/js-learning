@@ -108,7 +108,7 @@ class AuthController extends Controller
     }
 
     /**
-     * @return array{id: int, name: string, email: string, avatar: ?string, google_id: ?string}
+     * @return array{id: int, name: string, email: string, avatar: ?string, google_id: ?string, is_admin: bool}
      */
     private function userPayload(User $user): array
     {
@@ -118,6 +118,7 @@ class AuthController extends Controller
             'email' => $user->email,
             'avatar' => $user->avatar,
             'google_id' => $user->google_id,
+            'is_admin' => (bool) $user->is_admin,
         ];
     }
 }

@@ -48,3 +48,12 @@ Each bug MD includes: reproduce steps, expected vs actual, test file, links to m
 | [BUG-001](./M6/BUG-001-sandbox-checkout-activates-subscription-via-api.md) | M6 | closed | sandbox checkout activates subscription via API |
 | [BUG-002](./M6/BUG-002-logged-in-user-can-complete-sandbox-checkout-in-ui.md) | M6 | closed | logged-in user can complete sandbox checkout in UI |
 | [BUG-001](./M7/BUG-001-login-form-works-for-existing-user.md) | M7 | closed | login form works for existing user |
+| [BUG-001](./M11/BUG-001-is-admin-not-mass-assignable.md) | M11 | closed | `is_admin` was not mass-assignable (promote/demote silently no-op'd) |
+| [BUG-002](./M11/BUG-002-admin-panel-link-disappears.md) | M11 | closed | "Admin Panel" sidebar link disappeared after page load |
+| [BUG-003](./M11/BUG-003-cash-entries-admin-page-broken.md) | M11 | closed | admin Cash Entries page called the wrong endpoint/fields |
+| [BUG-004](./M11/BUG-004-payment-gateway-column-mismatch.md) | M11 | closed | payments admin views referenced a non-existent `gateway` column |
+| [BUG-005](./M11/BUG-005-m11-tests-never-ran.md) | M11 | closed | M11 e2e suite never actually ran under `qa:milestone` |
+| [BUG-006](./M11/BUG-006-admin-tables-xss-and-broken-onclick.md) | M11 | closed | admin tables vulnerable to stored XSS / broken by quotes in names |
+| [BUG-007](./M11/BUG-007-admin-modals-always-visible-and-uncloseable.md) | M11 | closed | admin edit/delete modals always visible and uncloseable (`[hidden]` CSS override) |
+| [BUG-007](./M11/BUG-007-logged-in-user-can-add-an-expense-in-the-ui.md) | M11 | open | logged-in user can add an expense in the UI |
+| [BUG-008](./M11/BUG-008-logged-in-user-can-add-an-income-entry-in-the-ui.md) | M11 | open | logged-in user can add an income entry in the UI |

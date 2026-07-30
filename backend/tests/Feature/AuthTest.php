@@ -63,6 +63,30 @@ class AuthTest extends TestCase
             ->assertJsonPath('user.email', 'ali@example.com');
     }
 
+    public function test_login_and_user_payload_include_is_admin_flag(): void
+    {
+        // Regression test: userPayload() previously omitted `is_admin`, so
+        // the sidebar's "Admin Panel" link disappeared moments after page
+        // load once js/shell.js refreshed the cached user from /api/user.
+        $admin = User::factory()->create([
+            'email' => 'admin2@example.com',
+            'password' => 'password123',
+            'is_admin' => true,
+        ]);
+
+        $login = $this->postJson('/api/login', [
+            'email' => 'admin2@example.com',
+            'password' => 'password123',
+        ]);
+
+        $login->assertOk()->assertJsonPath('user.is_admin', true);
+
+        $this->withToken($login->json('token'))
+            ->getJson('/api/user')
+            ->assertOk()
+            ->assertJsonPath('user.is_admin', true);
+    }
+
     public function test_login_rejects_invalid_credentials(): void
     {
         User::factory()->create([

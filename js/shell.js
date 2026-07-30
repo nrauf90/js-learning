@@ -17,6 +17,8 @@ const ICONS = {
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg>',
   profile:
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg>',
+  admin:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>',
   home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>',
   calculator:
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h.01M12 19h.01M16 19h.01"/></svg>',
@@ -30,6 +32,15 @@ const APP_LINKS = [
   { key: 'reports', href: 'reports.html', label: 'Reports' },
   { key: 'billing', href: 'billing.html', label: 'Billing' },
   { key: 'profile', href: 'profile.html', label: 'Profile' },
+];
+
+const ADMIN_SIDEBAR_LINKS = [
+  { key: 'admin', href: 'admin.html', label: 'Overview' },
+  { key: 'admin-users', href: 'admin-users.html', label: 'Users' },
+  { key: 'admin-subscriptions', href: 'admin-subscriptions.html', label: 'Subscriptions' },
+  { key: 'admin-entries', href: 'admin-entries.html', label: 'Cash Entries' },
+  { key: 'admin-payments', href: 'admin-payments.html', label: 'Payments' },
+  { key: 'admin-categories', href: 'admin-categories.html', label: 'Categories' },
 ];
 
 const SITE_LINKS = [
@@ -79,13 +90,44 @@ function closeSidebar() {
 }
 
 /**
- * @param {{ current?: 'dashboard' | 'cashflow' | 'reports' | 'billing' | 'profile' }} [options]
+ * @param {{ current?: 'dashboard' | 'cashflow' | 'reports' | 'billing' | 'profile' | 'admin' | 'admin-users' }} [options]
  */
 export function initShell(options = {}) {
   const sidebar = document.getElementById('app-sidebar');
   if (!sidebar) return;
 
   const current = options.current;
+  const user = storedUser();
+  const isAdmin = user?.is_admin || false;
+
+  // Admin links
+  const isAdminPage = current?.startsWith('admin');
+
+  let navContent = '';
+
+  if (isAdminPage && isAdmin) {
+    navContent = `
+      <p class="sidebar-section-label">Administration</p>
+      ${ADMIN_SIDEBAR_LINKS.map((item) => linkHTML(item, current)).join('')}
+      <p class="sidebar-section-label">App</p>
+      <a class="sidebar-link" href="dashboard.html">
+        <span class="sidebar-link-icon">${ICONS.dashboard}</span>
+        <span>Back to App</span>
+      </a>
+    `;
+  } else {
+    const ADMIN_LINK = { key: 'admin', href: 'admin.html', label: 'Admin Panel' };
+    const adminSection = isAdmin ? `
+      <p class="sidebar-section-label">Administration</p>
+      ${linkHTML(ADMIN_LINK, current)}
+    ` : '';
+
+    navContent = `
+      <p class="sidebar-section-label">Overview</p>
+      ${APP_LINKS.map((item) => linkHTML(item, current)).join('')}
+      ${adminSection}
+    `;
+  }
 
   sidebar.innerHTML = `
     <a class="sidebar-brand" href="dashboard.html">
@@ -94,8 +136,7 @@ export function initShell(options = {}) {
     </a>
 
     <nav class="sidebar-nav" aria-label="App">
-      <p class="sidebar-section-label">Overview</p>
-      ${APP_LINKS.map((item) => linkHTML(item, current)).join('')}
+      ${navContent}
       <p class="sidebar-section-label">Site</p>
       ${SITE_LINKS.map((item) => linkHTML(item, current)).join('')}
     </nav>
@@ -141,13 +182,17 @@ export function initShell(options = {}) {
   });
 
   // User card: show cached user immediately, refresh in background.
-  renderUserCard(storedUser());
+  renderUserCard(user);
   if (getAuthToken()) {
     apiGet('/api/user')
       .then((data) => {
         if (data?.user) {
           localStorage.setItem(USER_KEY, JSON.stringify(data.user));
           renderUserCard(data.user);
+          // Re-render sidebar if admin status changed
+          if (data.user.is_admin !== isAdmin) {
+            initShell(options);
+          }
         }
       })
       .catch(() => {});

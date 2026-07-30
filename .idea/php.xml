@@ -128,7 +128,7 @@
       <path value="$PROJECT_DIR$/backend/vendor/ramsey/collection" />
     </include_path>
   </component>
-  <component name="PhpProjectSharedConfiguration" php_language_level="8.5">
+  <component name="PhpProjectSharedConfiguration" php_language_level="8.2">
     <option name="suggestChangeDefaultLanguageLevel" value="false" />
   </component>
   <component name="PhpUnit">

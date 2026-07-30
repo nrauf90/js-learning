@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Management | Admin | Cashflow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+</head>
+<body class="app-body">
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Sidebar"></aside>
+    <div class="app-overlay" id="app-overlay" aria-hidden="true"></div>
+
+    <div class="app-content">
+      <header class="app-topbar no-print">
+        <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Menu" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div class="topbar-heading">
+          <h1>User Management</h1>
+          <p class="tagline">Manage user accounts and permissions</p>
+        </div>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+      </header>
+
+      <main class="main app-main">
+        <div id="admin-alert" class="auth-alert" hidden role="alert"></div>
+
+        <!-- Filters -->
+        <section class="calculator-card">
+          <div class="admin-filters">
+            <div class="admin-search">
+              <input type="search" id="search-input" placeholder="Search by name or email..." />
+            </div>
+            <label class="admin-checkbox">
+              <input type="checkbox" id="admin-only-filter" />
+              <span>Admin users only</span>
+            </label>
+          </div>
+        </section>
+
+        <!-- Users Table -->
+        <section class="calculator-card">
+          <h2 class="dashboard-title">All Users</h2>
+          <div class="admin-table-container">
+            <table class="admin-table" id="users-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Joined</th>
+                  <th>Entries</th>
+                  <th>Subscriptions</th>
+                  <th>Admin</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="users-body">
+                <tr>
+                  <td colspan="7" class="admin-table-empty">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="admin-pagination" id="pagination">
+            <!-- Pagination will be rendered here -->
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- User Edit Modal -->
+  <div class="admin-modal" id="user-modal" hidden>
+    <div class="admin-modal-overlay" id="modal-overlay"></div>
+    <div class="admin-modal-content">
+      <div class="admin-modal-header">
+        <h3 id="modal-title">Edit User</h3>
+        <button type="button" class="admin-modal-close" id="modal-close" aria-label="Close">×</button>
+      </div>
+      <form id="user-form" class="admin-modal-body">
+        <input type="hidden" id="user-id" />
+        <div class="form-field">
+          <label for="user-name">Name</label>
+          <input type="text" id="user-name" required />
+        </div>
+        <div class="form-field">
+          <label for="user-email">Email</label>
+          <input type="email" id="user-email" required />
+        </div>
+        <div class="form-field">
+          <label class="admin-checkbox">
+            <input type="checkbox" id="user-is-admin" />
+            <span>Admin privileges</span>
+          </label>
+        </div>
+      </form>
+      <div class="admin-modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="window.closeModal()">Cancel</button>
+        <button type="submit" form="user-form" class="btn btn-primary" id="modal-save">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="admin-modal" id="delete-modal" hidden>
+    <div class="admin-modal-overlay" onclick="window.closeDeleteModal()"></div>
+    <div class="admin-modal-content admin-modal-small">
+      <div class="admin-modal-header">
+        <h3>Delete User</h3>
+        <button type="button" class="admin-modal-close" onclick="window.closeDeleteModal()" aria-label="Close">×</button>
+      </div>
+      <div class="admin-modal-body">
+        <p>Are you sure you want to delete this user? This action cannot be undone. All associated data (entries, subscriptions, payments) will be permanently deleted.</p>
+        <p><strong id="delete-user-name"></strong></p>
+      </div>
+      <div class="admin-modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="window.closeDeleteModal()">Cancel</button>
+        <button type="button" class="btn btn-danger" id="delete-confirm">Delete User</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/admin-users.js"></script>
+</body>
+</html>
