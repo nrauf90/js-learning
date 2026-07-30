@@ -15,6 +15,6 @@ See [M7 tasks](../tasks/M7-tasks.md).
 
 ## Exit criteria
 
-- [ ] Unsubscribed user gets blocked from cash-flow/reports APIs
-- [ ] Subscribed user has full access until `ends_at`
-- [ ] Tax calculator unaffected
+- [x] Unsubscribed user gets blocked from cash-flow/reports APIs
+- [x] Subscribed user has full access until `ends_at`
+- [x] Tax calculator unaffected

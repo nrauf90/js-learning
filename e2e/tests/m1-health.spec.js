@@ -20,8 +20,15 @@ test.describe('M1 — Foundation', () => {
     expect(acao === 'http://localhost:3000' || acao === '*').toBeTruthy();
   });
 
-  test('tax calculator page loads', async ({ page }) => {
+  test('landing page loads with tax widget', async ({ page }) => {
     await page.goto('/index.html');
+    await expect(page.getByRole('heading', { name: /Track money daily/i })).toBeVisible();
+    await expect(page.locator('#hero-income')).toBeVisible();
+    await expect(page.locator('#hero-tax-total')).toBeVisible();
+  });
+
+  test('full tax calculator page loads', async ({ page }) => {
+    await page.goto('/calculator.html');
     await expect(page.getByRole('heading', { name: /Pakistan Tax Calculator/i })).toBeVisible();
     await expect(page.locator('#income')).toBeVisible();
   });

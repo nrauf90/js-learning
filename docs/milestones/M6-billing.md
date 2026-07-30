@@ -17,6 +17,6 @@ See [M6 tasks](../tasks/M6-tasks.md).
 
 ## Exit criteria
 
-- [ ] User can initiate checkout for monthly or yearly plan
-- [ ] Successful callback activates subscription with correct `ends_at`
-- [ ] Payment records stored with provider reference and payload
+- [x] User can initiate checkout for monthly or yearly plan
+- [x] Successful callback activates subscription with correct `ends_at`
+- [x] Payment records stored with provider reference and payload

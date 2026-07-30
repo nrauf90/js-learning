@@ -13,7 +13,7 @@ Daily **cash-flow / expense** app with a **free** Pakistan FBR tax calculator.
 | DB | MySQL (XAMPP defaults) | `cashflow_app` |
 | Billing (later) | JazzCash + EasyPaisa | PKR 500/mo, PKR 5400/yr (10% off) |
 
-Tax calculator stays **client-side and free** (no auth/subscription). Cash-flow + reports require subscription after M6/M7.
+Tax calculator stays **client-side and free** (no auth/subscription). Cash-flow + reports: **7-day free trial** after signup, then paid subscription (M6/M7/M9).
 
 ## Repo layout
 
@@ -32,7 +32,7 @@ js-learning/
 | [README.md](./README.md) | Milestone index |
 | [CONTEXT.md](./CONTEXT.md) | This handoff file |
 | [milestones/](./milestones/) | Goals + exit criteria per milestone |
-| [tasks/M1-tasks.md](./tasks/M1-tasks.md) … M8 | Checkboxes + completion logs |
+| [tasks/M1-tasks.md](./tasks/M1-tasks.md) … M9 | Checkboxes + completion logs |
 | [issues/](./issues/) | Offline QA bug reports (`BUG-xxx.md`) |
 | [../backend/README.md](../backend/README.md) | API setup |
 | [../e2e/README.md](../e2e/README.md) | Playwright QA harness |
@@ -40,11 +40,11 @@ js-learning/
 ## Current status
 
 - **Branch:** `feature-2`
-- **Milestone:** M2 — Authentication (**done**)
-- **Next task:** **M3-T1** — Migration: `expense_categories`
+- **Milestone:** M9 — 7-day free trial (**done**)
+- **Next task:** —
 - **Last updated:** 2026-07-30
-- **QA:** passed for M1–M2 (`npm run qa:milestone -- M2`, 2026-07-30)
-- **Notes:** Email/password auth + Sanctum tokens live. Google OAuth needs `GOOGLE_CLIENT_ID` / `SECRET` in `.env`. Pages: `login.html`, `signup.html`.
+- **QA:** passed for M1–M9 (`npm run qa:milestone -- M9`, 40 tests)
+- **Notes:** New users get 7 days full access; after trial, subscribe on Billing. Tax calculator always free.
 
 ## Architecture decisions (locked)
 
@@ -87,4 +87,6 @@ Follow `.cursor/rules/milestone-qa.mdc`: run `npm run qa:milestone -- Mx`, fix a
 
 ## Milestone order
 
-M1 Foundation → M2 Auth → M3 Cash flow → M4 Reports → M5 Tax nav → M6 Billing → M7 Gate → M8 Receipt stub
+M1 Foundation → M2 Auth → M3 Cash flow → M4 Reports → M5 Tax nav → M6 Billing → M7 Gate → M8 Receipt stub → M9 Free trial
+
+M4 complete. M5 complete. M6 complete. M7 complete. M8 complete. M9 complete.

@@ -3,154 +3,170 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pakistan Income Tax Calculator | FBR Slabs</title>
+  <title>Cashflow — Daily Expenses &amp; Free Pakistan Tax Calculator</title>
+  <meta name="description" content="Track daily income and expenses. Calculate Pakistan FBR income tax for free — no account required." />
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <div class="page">
-    <header class="header">
+  <div class="page page-landing">
+    <header class="header header-landing">
       <div class="header-inner">
-        <div class="logo">
+        <a class="logo logo-link" href="index.html">
           <span class="logo-flag">🇵🇰</span>
           <div>
-            <h1>Pakistan Tax Calculator</h1>
-            <p class="tagline">FBR income tax slabs — new regime &amp; 5-year history</p>
+            <h1>Cashflow</h1>
+            <p class="tagline">Expenses · Tax · Clarity</p>
           </div>
+        </a>
+        <div class="header-actions">
+          <nav class="site-nav" aria-label="Main"></nav>
+          <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          </button>
         </div>
-        <button id="theme-toggle" class="theme-toggle no-print" type="button" aria-label="Switch to light theme" aria-pressed="false">
-          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="4"></circle>
-            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
-          </svg>
-          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-          </svg>
-        </button>
       </div>
     </header>
 
-    <main class="main">
-      <section class="calculator-card">
-        <div class="input-section">
-          <label class="input-label" for="income">Your Income (PKR)</label>
-          <div class="income-row">
-            <input
-              type="number"
-              id="income"
-              class="income-input"
-              min="0"
-              step="1000"
-              placeholder="Enter amount"
-            />
-            <div class="income-type-toggle" role="group" aria-label="Income period">
-              <span class="toggle-slider" aria-hidden="true"></span>
-              <label class="toggle-option">
-                <input type="radio" name="income-type" value="annual" checked />
-                <span>Annual</span>
-              </label>
-              <label class="toggle-option">
-                <input type="radio" name="income-type" value="monthly" />
-                <span>Monthly</span>
-              </label>
-            </div>
-          </div>
-
-          <div class="regime-selector">
-            <span class="input-label">Tax Regime</span>
-            <div class="regime-tabs">
-              <button class="regime-tab active" data-regime="new" type="button">
-                <span class="tab-title">New Tax</span>
-                <span class="tab-desc">FY 2025-26 &amp; 2026-27</span>
-              </button>
-              <button class="regime-tab" data-regime="old" type="button">
-                <span class="tab-title">Old Tax</span>
-                <span class="tab-desc">FY 2020-21 to 2024-25</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="year-selector">
-            <label class="input-label" for="year-select">Fiscal Year</label>
-            <select id="year-select" class="year-select"></select>
-          </div>
-
-          <div class="format-toggle-row">
-            <span class="input-label" style="margin-bottom: 0;">Number Format</span>
-            <div class="format-toggle" role="group" aria-label="Number format">
-              <span class="toggle-slider" aria-hidden="true"></span>
-              <label class="toggle-option">
-                <input type="radio" name="number-format" value="international" checked />
-                <span>1,200,000</span>
-              </label>
-              <label class="toggle-option">
-                <input type="radio" name="number-format" value="lakh_crore" />
-                <span>12,00,000</span>
-              </label>
-            </div>
-          </div>
-
-          <div class="deductions-section">
-            <div class="deductions-header">
-              <span class="input-label" style="margin-bottom: 0;">Deductions &amp; Exemptions (optional)</span>
-              <button type="button" id="add-deduction-btn" class="add-deduction-btn">+ Add Deduction</button>
-            </div>
-            <div id="deductions-list" class="deductions-list"></div>
-            <div class="deductions-total-row">
-              <span>Total Deductions</span>
-              <span id="deductions-total">Rs 0</span>
-            </div>
-            <p class="deductions-note">
-              Deductions reduce the income your tax is calculated on — they don't come out of your take-home pay.
+    <main>
+      <section class="hero" id="top">
+        <div class="hero-bg" aria-hidden="true"></div>
+        <div class="hero-inner">
+          <div class="hero-copy">
+            <p class="hero-badge">Built for Pakistan 🇵🇰</p>
+            <h2 class="hero-title">Track money daily.<br />Know your tax instantly.</h2>
+            <p class="hero-lead">
+              Cashflow combines a simple expense tracker with a <strong>free</strong> FBR income tax calculator —
+              so you always know where your rupees go and what you owe.
             </p>
+            <div class="hero-cta">
+              <a class="btn btn-primary" href="signup.html">Start free</a>
+              <a class="btn btn-secondary" href="calculator.html">Full tax calculator</a>
+            </div>
+            <ul class="hero-stats">
+              <li><strong>Free</strong> tax tool</li>
+              <li><strong>7-day</strong> dashboard</li>
+              <li><strong>FBR</strong> slab data</li>
+            </ul>
           </div>
 
-          <div class="action-toolbar no-print">
-            <button id="share-link-btn" class="action-btn" type="button">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07l-1.5 1.5"></path>
-                <path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07l1.5-1.5"></path>
-              </svg>
-              Copy Link
-            </button>
-            <button id="print-btn" class="action-btn" type="button">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M6 9V2h12v7"></path>
-                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-                <path d="M6 14h12v8H6z"></path>
-              </svg>
-              Print / Save PDF
-            </button>
-            <span id="share-feedback" class="share-feedback" aria-live="polite"></span>
+          <aside class="hero-widget calculator-card" aria-label="Quick tax estimate">
+            <h3 class="hero-widget-title">Quick tax estimate</h3>
+            <p class="hero-widget-note">FY 2025–26 · New regime · Total tax only</p>
+
+            <label class="input-label" for="hero-income">Your income (PKR)</label>
+            <div class="income-row">
+              <input type="number" id="hero-income" class="income-input" min="0" step="1000" value="1200000" />
+              <div class="income-type-toggle" role="group" aria-label="Income period">
+                <span class="toggle-slider" aria-hidden="true"></span>
+                <label class="toggle-option">
+                  <input type="radio" name="hero-income-type" value="annual" checked />
+                  <span>Yearly</span>
+                </label>
+                <label class="toggle-option">
+                  <input type="radio" name="hero-income-type" value="monthly" />
+                  <span>Monthly</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="hero-tax-result" aria-live="polite">
+              <span class="hero-tax-label">Estimated annual tax</span>
+              <span class="hero-tax-value" id="hero-tax-total">Rs 0</span>
+            </div>
+
+            <a class="hero-widget-link" href="calculator.html">See slab breakdown &amp; history →</a>
+          </aside>
+        </div>
+      </section>
+
+      <section class="landing-section" id="about">
+        <div class="section-header">
+          <p class="section-eyebrow">About us</p>
+          <h2 class="section-title">Personal finance, made for everyday Pakistanis</h2>
+        </div>
+        <div class="about-grid">
+          <p>
+            Cashflow started from a simple idea: most of us juggle a salary, daily spending, and tax season —
+            but the tools are either too complex or locked behind subscriptions.
+          </p>
+          <p>
+            We built a lightweight app that lets you log income and expenses by category, see your weekly balance
+            on a dashboard, and estimate FBR salaried tax using published slab rates — <strong>without paying for the calculator</strong>.
+          </p>
+          <p>
+            Your data stays on your account. The tax tool runs entirely in your browser, so you can check your
+            liability anytime, even without signing in.
+          </p>
+        </div>
+      </section>
+
+      <section class="landing-section landing-section-alt" id="how-it-works">
+        <div class="section-header">
+          <p class="section-eyebrow">How it works</p>
+          <h2 class="section-title">Three steps to clarity</h2>
+        </div>
+        <ol class="steps-grid">
+          <li class="step-card">
+            <span class="step-num">1</span>
+            <h3>Estimate your tax</h3>
+            <p>Use the quick widget above or the full calculator with FY history, deductions, and printable reports.</p>
+          </li>
+          <li class="step-card">
+            <span class="step-num">2</span>
+            <h3>Track daily cash flow</h3>
+            <p>Sign up, add income and expenses by category, and see day totals on the Cash Flow page.</p>
+          </li>
+          <li class="step-card">
+            <span class="step-num">3</span>
+            <h3>Review your week</h3>
+            <p>Your dashboard summarises the last 7 days — income, expenses, and what’s left over.</p>
+          </li>
+        </ol>
+      </section>
+
+      <section class="landing-section" id="contact">
+        <div class="section-header">
+          <p class="section-eyebrow">Contact us</p>
+          <h2 class="section-title">Questions or feedback?</h2>
+          <p class="section-lead">We’d love to hear from you — whether it’s a bug, a feature idea, or a tax slab update.</p>
+        </div>
+        <div class="contact-grid">
+          <div class="contact-info">
+            <p><strong>Email</strong><br /><a href="mailto:support@cashflow.app">support@cashflow.app</a></p>
+            <p><strong>Response time</strong><br />Usually within 2 business days</p>
           </div>
-        </div>
+          <form class="contact-form" id="contact-form" action="mailto:support@cashflow.app" method="get">
+            <label class="input-label" for="contact-name">Name</label>
+            <input class="auth-input" type="text" id="contact-name" name="subject" placeholder="Your name" required />
 
-        <div id="print-summary" class="print-summary"></div>
+            <label class="input-label" for="contact-message">Message</label>
+            <textarea class="auth-input contact-textarea" id="contact-message" name="body" rows="4" placeholder="How can we help?" required></textarea>
 
-        <div id="results" class="results-section"></div>
-      </section>
-
-      <section class="comparison-card" id="comparison"></section>
-
-      <section class="slabs-card">
-        <h3>Tax Slab Reference</h3>
-        <div class="slab-table-wrap">
-          <table id="slab-table" class="slab-table"></table>
+            <button type="submit" class="btn btn-primary">Send message</button>
+            <p class="contact-form-note">Opens your email app with a pre-filled message.</p>
+          </form>
         </div>
       </section>
 
-      <footer class="disclaimer">
-        <p>
-          Estimates based on published FBR salaried individual tax slabs. Actual liability may differ
-          based on deductions, exemptions, and individual circumstances. Consult a tax advisor for
-          personalized advice.
+      <footer class="site-footer site-footer-landing">
+        <p class="site-footer-links">
+          <a href="privacy.html">Privacy Policy</a>
+          <span aria-hidden="true">·</span>
+          <a href="terms.html">Terms &amp; Conditions</a>
+          <span aria-hidden="true">·</span>
+          <a href="calculator.html">Tax Calculator</a>
+        </p>
+        <p class="disclaimer-text">
+          Tax estimates are for information only. Not affiliated with FBR. © 2026 Cashflow.
         </p>
       </footer>
     </main>
   </div>
 
-  <script type="module" src="js/app.js"></script>
+  <script type="module" src="js/landing.js"></script>
 </body>
 </html>

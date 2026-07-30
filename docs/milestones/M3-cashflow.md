@@ -1,7 +1,8 @@
 # M3 — Daily cash flow
 
 **Phase:** 1  
-**Goal:** Logged-in users track daily income and expenses by category.
+**Goal:** Logged-in users track daily income and expenses by category.  
+**Status:** Done — see [M3 tasks](../tasks/M3-tasks.md) completion log.
 
 ## Deliverables
 
@@ -15,6 +16,6 @@ See [M3 tasks](../tasks/M3-tasks.md).
 
 ## Exit criteria
 
-- [ ] User can add, edit, delete income/expense entries for any date
-- [ ] Category dropdown populated from API
-- [ ] Users only see their own entries
+- [x] User can add, edit, delete income/expense entries for any date
+- [x] Category dropdown populated from API
+- [x] Users only see their own entries

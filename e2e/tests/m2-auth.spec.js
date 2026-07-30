@@ -57,7 +57,7 @@ test.describe('M2 — Authentication', () => {
     await page.fill('#password_confirmation', 'password123');
     await page.click('#signup-submit');
 
-    await page.waitForURL(/index\.html|\/$/, { timeout: 15_000 });
+    await page.waitForURL(/\/dashboard(\.html)?(\?|$)/, { timeout: 15_000 });
     const token = await page.evaluate(() => localStorage.getItem('cashflow_auth_token'));
     expect(token).toBeTruthy();
   });
@@ -79,7 +79,7 @@ test.describe('M2 — Authentication', () => {
     await page.fill('#password', 'password123');
     await page.click('#login-submit');
 
-    await page.waitForURL(/index\.html|\/$/, { timeout: 15_000 });
+    await page.waitForURL(/\/dashboard(\.html)?(\?|$)/, { timeout: 15_000 });
     const token = await page.evaluate(() => localStorage.getItem('cashflow_auth_token'));
     expect(token).toBeTruthy();
   });

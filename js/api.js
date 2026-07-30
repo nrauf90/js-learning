@@ -60,6 +60,19 @@ export async function apiFetch(path, options = {}) {
         window.location.href = `login.html?next=${next}`;
       }
     }
+    if (response.status === 402 && typeof window !== 'undefined') {
+      const pagePath = window.location.pathname;
+      const onBillingPage = /billing\.html/i.test(pagePath);
+      const onDashboard = /dashboard\.html/i.test(pagePath);
+      const needsSubscription =
+        body &&
+        (body.code === 'subscription_required' ||
+          body.code === 'trial_expired' ||
+          body.message === 'Subscription required');
+      if (!onBillingPage && !onDashboard && needsSubscription) {
+        window.location.href = 'billing.html';
+      }
+    }
     const error = new Error((body && body.message) || `Request failed (${response.status})`);
     error.status = response.status;
     error.body = body;

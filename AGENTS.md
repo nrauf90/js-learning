@@ -13,7 +13,7 @@ Daily cash-flow expense tracker + **free** Pakistan FBR tax calculator.
 
 - **Frontend**: vanilla HTML/CSS/JS (repo root)
 - **Backend**: Laravel 12 JSON API in `backend/` (MySQL + Sanctum)
-- **Docs**: [`docs/README.md`](docs/README.md) milestones M1–M8
+- **Docs**: [`docs/README.md`](docs/README.md) milestones M1–M9
 
 ## Frontend (tax calculator)
 
@@ -24,7 +24,8 @@ Daily cash-flow expense tracker + **free** Pakistan FBR tax calculator.
 
 ### Structure
 
-- `index.html` — tax calculator UI
+- `index.html` — landing page (hero, about, contact, mini tax widget)
+- `calculator.html` — full FBR tax calculator UI
 - `css/styles.css` — styling
 - `js/tax-slabs.js` — FBR slab data
 - `js/tax-calculator.js` — calculation engine

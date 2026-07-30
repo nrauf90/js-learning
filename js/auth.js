@@ -1,4 +1,5 @@
 import { API_BASE_URL, apiPost, getAuthToken, setAuthToken } from './api.js';
+import { initNav } from './nav.js';
 
 const THEME_KEY = 'tax-calculator-theme';
 const USER_KEY = 'cashflow_auth_user';
@@ -59,7 +60,7 @@ function formatValidationErrors(body) {
 
 function redirectAfterAuth() {
   const params = new URLSearchParams(window.location.search);
-  const next = params.get('next') || 'index.html';
+  const next = params.get('next') || 'dashboard.html';
   window.location.href = next;
 }
 
@@ -169,14 +170,14 @@ export function getStoredUser() {
 }
 
 initTheme();
+initNav();
 wireGoogleButton();
 wireLoginForm();
 wireSignupForm();
 handleGoogleTokenFromUrl();
 
 if (getAuthToken() && !new URLSearchParams(window.location.search).has('token')) {
-  // Already logged in on auth pages → go home
   if (document.getElementById('login-form') || document.getElementById('signup-form')) {
-    // stay; user may want to switch accounts
+    redirectAfterAuth();
   }
 }

@@ -13,7 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Bearer-token API auth only (vanilla frontend on a separate origin).
+        $middleware->alias([
+            'subscribed' => \App\Http\Middleware\EnsureSubscribed::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(function (Request $request, \Throwable $e) {

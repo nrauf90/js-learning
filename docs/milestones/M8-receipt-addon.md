@@ -15,6 +15,6 @@ See [M8 tasks](../tasks/M8-tasks.md).
 
 ## Exit criteria
 
-- [ ] Addon can be flagged active in DB (manual/admin for now)
-- [ ] Upsell UI visible on cash-flow form
-- [ ] No OCR/enhance pipeline built yet
+- [x] Addon can be flagged active in DB (manual/admin for now)
+- [x] Upsell UI visible on cash-flow form
+- [x] No OCR/enhance pipeline built yet
