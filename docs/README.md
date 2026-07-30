@@ -23,6 +23,16 @@ Daily cash-flow expense tracker with a **free** Pakistan tax calculator.
 
 - **[`CONTEXT.md`](./CONTEXT.md)** — read first in any new session (status + next task)
 - **`.cursor/rules/task-completion.mdc`** — after each task: checkbox, modified files, QA notes
+- **`.cursor/rules/milestone-qa.mdc`** — after each milestone: `npm run qa:milestone -- Mx`
+- **[`issues/`](./issues/)** — offline Playwright bug reports
+
+## Offline QA
+
+```bash
+npm run qa:milestone -- M2   # regression M1+M2; bugs → docs/issues/
+```
+
+See [`e2e/README.md`](../e2e/README.md).
 
 ## Task index
 

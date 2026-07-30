@@ -7,8 +7,19 @@
     "test": "node --test tests/",
     "start": "npx --yes serve -l 3000 .",
     "dev:api": "php backend/artisan serve --port=8000",
+    "qa:milestone": "node scripts/qa-milestone.mjs",
+    "qa:m1": "node scripts/qa-milestone.mjs M1",
+    "qa:m2": "node scripts/qa-milestone.mjs M2",
     "lint": "node --check js/tax-slabs.js && node --check js/tax-calculator.js && node --check js/app.js && node --check js/deductions.js && node --check js/number-format.js && node --check js/share-export.js && node --check js/api.js && node --check js/auth.js"
   },
-  "keywords": ["pakistan", "tax", "fbr", "calculator"],
-  "license": "MIT"
+  "keywords": [
+    "pakistan",
+    "tax",
+    "fbr",
+    "calculator"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.62.0"
+  }
 }

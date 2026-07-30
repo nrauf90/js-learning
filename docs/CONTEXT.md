@@ -33,7 +33,9 @@ js-learning/
 | [CONTEXT.md](./CONTEXT.md) | This handoff file |
 | [milestones/](./milestones/) | Goals + exit criteria per milestone |
 | [tasks/M1-tasks.md](./tasks/M1-tasks.md) … M8 | Checkboxes + completion logs |
+| [issues/](./issues/) | Offline QA bug reports (`BUG-xxx.md`) |
 | [../backend/README.md](../backend/README.md) | API setup |
+| [../e2e/README.md](../e2e/README.md) | Playwright QA harness |
 
 ## Current status
 
@@ -41,6 +43,7 @@ js-learning/
 - **Milestone:** M2 — Authentication (**done**)
 - **Next task:** **M3-T1** — Migration: `expense_categories`
 - **Last updated:** 2026-07-30
+- **QA:** passed for M1–M2 (`npm run qa:milestone -- M2`, 2026-07-30)
 - **Notes:** Email/password auth + Sanctum tokens live. Google OAuth needs `GOOGLE_CLIENT_ID` / `SECRET` in `.env`. Pages: `login.html`, `signup.html`.
 
 ## Architecture decisions (locked)
@@ -67,6 +70,9 @@ cp .env.example .env   # then set MySQL
 php artisan key:generate
 php artisan migrate
 php artisan serve
+
+# Offline milestone QA (no AI tokens) — regression through Mx
+npm run qa:milestone -- M2
 ```
 
 XAMPP MySQL defaults: host `127.0.0.1`, port `3306`, user `root`, password empty. Create DB `cashflow_app`.
@@ -74,6 +80,10 @@ XAMPP MySQL defaults: host `127.0.0.1`, port `3306`, user `root`, password empty
 ## After each task
 
 Follow `.cursor/rules/task-completion.mdc`: mark checkbox, append completion log (modified files + QA notes), update this **Current status** section.
+
+## After each milestone
+
+Follow `.cursor/rules/milestone-qa.mdc`: run `npm run qa:milestone -- Mx`, fix anything under `docs/issues/Mx/`, mark QA passed here when green.
 
 ## Milestone order
 

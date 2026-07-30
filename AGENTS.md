@@ -5,6 +5,7 @@
 1. Read [`docs/CONTEXT.md`](docs/CONTEXT.md) — current status and next task.
 2. Open the matching `docs/tasks/M*-tasks.md` and do the next unchecked task.
 3. After each task, follow `.cursor/rules/task-completion.mdc` (completion log + update CONTEXT).
+4. After each **milestone**, run `npm run qa:milestone -- Mx` (offline, no AI tokens). Fix `docs/issues/`.
 
 ## Product
 

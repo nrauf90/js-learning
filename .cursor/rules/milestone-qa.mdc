@@ -1,0 +1,25 @@
+---
+description: After each milestone, run offline QA harness and file bugs under docs/issues
+alwaysApply: true
+---
+
+# Milestone offline QA
+
+After **all tasks** in a milestone are `[x]` (and before starting the next milestone):
+
+1. Run the token-free harness:
+   ```bash
+   npm run qa:milestone -- M2
+   ```
+   (Replace `M2` with the milestone just finished. This re-runs all earlier milestones too.)
+
+2. If the command exits non-zero:
+   - Open new files under `docs/issues/<Mx>/`
+   - Fix each bug (or create follow-up tasks)
+   - Re-run until green
+
+3. Update `docs/CONTEXT.md` **Current status** with `QA: passed for M1–Mx` when green.
+
+Do **not** skip QA after a milestone. Do **not** use cloud/AI agents for this gate — use the Playwright harness only.
+
+Google OAuth E2E is optional (needs credentials); email/password and API checks are required.
