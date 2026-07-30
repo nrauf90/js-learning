@@ -1,0 +1,39 @@
+---
+description: After finishing each milestone task, log modified files and QA notes in the task file
+alwaysApply: true
+---
+
+# Task completion logging
+
+When you finish a task from `docs/tasks/M*-tasks.md`:
+
+1. Mark the task checkbox `[x]`.
+2. Append a **Completion log** entry under that task file (create the section if missing).
+3. Update `docs/CONTEXT.md` → **Current status** (next task id + one-line note).
+4. Update `docs/README.md` milestone status if a milestone finishes or starts.
+
+## Completion log format (append under each finished task)
+
+```markdown
+### M1-T2 — done YYYY-MM-DD
+
+**Modified files**
+- `path/to/file` — why it changed
+
+**QA notes**
+1. Step to verify…
+2. Expected result…
+```
+
+Rules:
+- One log block per task id (`M1-T2`, `M2-T1`, …).
+- List every non-trivial file you created or edited (skip lockfile noise unless relevant).
+- QA notes must be concrete commands/URLs a human or next agent can run.
+- Do this **before** moving to the next task. Never skip the log.
+- If a task is only partially done, leave `[ ]` and add a short `### M1-Tx — blocked/partial` note instead.
+
+## Work order
+
+- Read `docs/CONTEXT.md` first on every new session.
+- Next unfinished checkbox in the current milestone’s `docs/tasks/M*-tasks.md` is the next task.
+- Finish milestones in order M1 → M8 unless the user redirects.

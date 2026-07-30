@@ -40,7 +40,25 @@ Key variables in `.env`:
 | `DB_DATABASE` | `cashflow_app` | Database name |
 | `FRONTEND_URL` | `http://localhost:3000` | SPA origin (OAuth redirects) |
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:3000` | Allowed CORS origins |
-| `SANCTUM_STATEFUL_DOMAINS` | `localhost:3000,127.0.0.1:3000` | Sanctum cookie auth |
+| `SANCTUM_STATEFUL_DOMAINS` | `localhost:3000,127.0.0.1:3000` | Optional (API uses bearer tokens) |
+| `GOOGLE_CLIENT_ID` | (from Google Cloud) | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | (from Google Cloud) | Google OAuth secret |
+| `GOOGLE_REDIRECT_URI` | `http://localhost:8000/api/auth/google/callback` | Must match Google Console |
+
+## Auth API
+
+| Method | Path | Auth | Notes |
+|--------|------|------|-------|
+| POST | `/api/register` | No | Returns `{ user, token }` |
+| POST | `/api/login` | No | Returns `{ user, token }` |
+| POST | `/api/logout` | Bearer | Revokes current token |
+| GET | `/api/user` | Bearer | Current user |
+| GET | `/api/auth/google/redirect` | No | Starts Google OAuth |
+| GET | `/api/auth/google/callback` | No | Redirects to frontend with `?token=` |
+
+```bash
+cd backend && php artisan test --filter=AuthTest
+```
 
 ## Run
 
@@ -61,3 +79,6 @@ npm run dev:api
 ## Frontend
 
 Serve the static frontend on port 3000 (`npm start`) and ensure `js/api.js` points at `http://localhost:8000`.
+
+- Login: `http://localhost:3000/login.html`
+- Signup: `http://localhost:3000/signup.html`

@@ -2,3 +2,12 @@ node_modules
 package-lock.json
 distc
 pnpm-lock.yaml
+
+# Laravel backend
+backend/vendor/
+backend/.env
+backend/.env.backup
+backend/storage/*.key
+backend/public/storage
+backend/database/*.sqlite
+backend/database/*.sqlite-journal

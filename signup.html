@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign up | Cashflow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="header-inner">
+        <a class="logo logo-link" href="index.html">
+          <span class="logo-flag">🇵🇰</span>
+          <div>
+            <h1>Cashflow</h1>
+            <p class="tagline">Create an account</p>
+          </div>
+        </a>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="main auth-main">
+      <section class="calculator-card auth-card">
+        <h2 class="auth-title">Sign up</h2>
+        <p class="auth-subtitle">Already have an account? <a href="login.html">Log in</a></p>
+
+        <div id="auth-alert" class="auth-alert" hidden role="alert"></div>
+
+        <form id="signup-form" class="auth-form" novalidate>
+          <label class="input-label" for="name">Name</label>
+          <input class="auth-input" type="text" id="name" name="name" required autocomplete="name" />
+
+          <label class="input-label" for="email">Email</label>
+          <input class="auth-input" type="email" id="email" name="email" required autocomplete="email" />
+
+          <label class="input-label" for="password">Password</label>
+          <input class="auth-input" type="password" id="password" name="password" required minlength="8" autocomplete="new-password" />
+
+          <label class="input-label" for="password_confirmation">Confirm password</label>
+          <input class="auth-input" type="password" id="password_confirmation" name="password_confirmation" required minlength="8" autocomplete="new-password" />
+
+          <button type="submit" class="auth-submit" id="signup-submit">Create account</button>
+        </form>
+
+        <div class="auth-divider"><span>or</span></div>
+
+        <a class="auth-google" id="google-login" href="#">Continue with Google</a>
+
+        <p class="auth-footer"><a href="index.html">← Back to tax calculator</a></p>
+      </section>
+    </main>
+  </div>
+  <script type="module" src="js/auth.js"></script>
+</body>
+</html>

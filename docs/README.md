@@ -10,14 +10,19 @@ Daily cash-flow expense tracker with a **free** Pakistan tax calculator.
 
 | # | Milestone | Phase | Status |
 |---|-----------|-------|--------|
-| M1 | [Foundation — Laravel API shell](./milestones/M1-foundation.md) | 1 | In progress (T1, T3, T7 done) |
-| M2 | [Authentication — email + Google](./milestones/M2-authentication.md) | 1 | Pending |
+| M1 | [Foundation — Laravel API shell](./milestones/M1-foundation.md) | 1 | Done |
+| M2 | [Authentication — email + Google](./milestones/M2-authentication.md) | 1 | Done |
 | M3 | [Daily cash flow](./milestones/M3-cashflow.md) | 1 | Pending |
 | M4 | [Reports — weekly & monthly](./milestones/M4-reports.md) | 1 | Pending |
 | M5 | [Free tax calculator integration](./milestones/M5-tax-calculator.md) | 1 | Pending |
 | M6 | [Subscriptions — JazzCash & EasyPaisa](./milestones/M6-billing.md) | 2 | Pending |
 | M7 | [Subscription gating](./milestones/M7-subscription-gate.md) | 2 | Pending |
 | M8 | [Receipt addon scaffold](./milestones/M8-receipt-addon.md) | 3 | Pending |
+
+## Agent handoff
+
+- **[`CONTEXT.md`](./CONTEXT.md)** — read first in any new session (status + next task)
+- **`.cursor/rules/task-completion.mdc`** — after each task: checkbox, modified files, QA notes
 
 ## Task index
 

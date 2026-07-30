@@ -851,3 +851,125 @@ body {
     content: '';
   }
 }
+
+/* Auth pages */
+.logo-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.auth-main {
+  display: flex;
+  justify-content: center;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+}
+
+.auth-title {
+  font-size: 1.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.auth-subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 1.25rem;
+}
+
+.auth-subtitle a,
+.auth-footer a {
+  color: var(--accent);
+}
+
+.auth-form .input-label {
+  margin-top: 0.85rem;
+}
+
+.auth-input {
+  width: 100%;
+  background: var(--surface-2);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 1rem;
+  padding: 0.7rem 0.9rem;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.auth-submit,
+.auth-google {
+  display: block;
+  width: 100%;
+  margin-top: 1.25rem;
+  text-align: center;
+  border-radius: var(--radius);
+  font-family: var(--font);
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.auth-submit {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border: none;
+}
+
+.auth-submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.auth-google {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.auth-alert {
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  background: color-mix(in srgb, var(--danger) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent);
+  color: var(--text);
+}
+
+.auth-alert[data-type='success'] {
+  background: color-mix(in srgb, var(--new) 18%, transparent);
+  border-color: color-mix(in srgb, var(--new) 45%, transparent);
+}
+
+.auth-footer {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
