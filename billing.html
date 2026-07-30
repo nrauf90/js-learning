@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Billing | Cashflow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+</head>
+<body class="app-body">
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Sidebar"></aside>
+    <div class="app-overlay" id="app-overlay" aria-hidden="true"></div>
+
+    <div class="app-content">
+      <header class="app-topbar no-print">
+        <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Menu" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div class="topbar-heading">
+          <h1>Billing</h1>
+          <p class="tagline">Subscribe via JazzCash or EasyPaisa</p>
+        </div>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+      </header>
+
+      <main class="main app-main">
+      <div id="billing-alert" class="auth-alert" hidden role="alert"></div>
+
+      <section class="calculator-card" id="subscription-status">
+        <h2 class="dashboard-title">Your subscription</h2>
+        <p id="subscription-info" class="billing-muted">Loading…</p>
+      </section>
+
+      <section class="calculator-card">
+        <h2 class="dashboard-title">Choose a plan</h2>
+        <p class="billing-muted">Tax calculator stays free. New accounts get a <strong>7-day free trial</strong> for cash flow and reports.</p>
+        <div class="billing-plans" id="plan-cards"></div>
+      </section>
+
+      <section class="calculator-card">
+        <h2 class="dashboard-title">Payment method</h2>
+        <div class="billing-providers" id="provider-options"></div>
+        <button type="button" class="btn btn-primary billing-pay-btn" id="checkout-btn" disabled>Subscribe</button>
+        <p class="billing-muted" id="checkout-note"></p>
+      </section>
+
+      <section class="calculator-card" id="receipt-addon">
+        <h2 class="dashboard-title">Add-ons</h2>
+        <div class="billing-addon-card" id="receipt-addon-card">
+          <div class="billing-addon-head">
+            <span class="billing-plan-name">Receipt AI</span>
+            <span class="billing-plan-price">Rs 500/month</span>
+          </div>
+          <p class="billing-muted">Scan receipts, detect logos, and enhance image quality.</p>
+          <span class="billing-addon-badge">Coming soon</span>
+        </div>
+      </section>
+
+      <form id="gateway-form" method="POST" target="_self" hidden></form>
+      </main>
+    </div>
+  </div>
+  <script type="module" src="js/billing.js"></script>
+</body>
+</html>

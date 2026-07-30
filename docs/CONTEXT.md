@@ -32,7 +32,7 @@ js-learning/
 | [README.md](./README.md) | Milestone index |
 | [CONTEXT.md](./CONTEXT.md) | This handoff file |
 | [milestones/](./milestones/) | Goals + exit criteria per milestone |
-| [tasks/M1-tasks.md](./tasks/M1-tasks.md) … M9 | Checkboxes + completion logs |
+| [tasks/M1-tasks.md](./tasks/M1-tasks.md) … M10 | Checkboxes + completion logs |
 | [issues/](./issues/) | Offline QA bug reports (`BUG-xxx.md`) |
 | [../backend/README.md](../backend/README.md) | API setup |
 | [../e2e/README.md](../e2e/README.md) | Playwright QA harness |
@@ -40,11 +40,11 @@ js-learning/
 ## Current status
 
 - **Branch:** `feature-2`
-- **Milestone:** M9 — 7-day free trial (**done**)
+- **Milestone:** M10 — Premium UI, profile & PDF reports (**done**)
 - **Next task:** —
 - **Last updated:** 2026-07-30
-- **QA:** passed for M1–M9 (`npm run qa:milestone -- M9`, 40 tests)
-- **Notes:** New users get 7 days full access; after trial, subscribe on Billing. Tax calculator always free.
+- **QA:** passed for M1–M10 (`npm run qa:milestone -- M10`, 45 tests)
+- **Notes:** Logged-in pages use a sidebar app shell (`js/shell.js`); dashboard has Chart.js line/bar charts; profile page updates name/password; reports export to PDF (jsPDF); landing uses GSAP + Lenis scroll animations.
 
 ## Architecture decisions (locked)
 
@@ -87,6 +87,6 @@ Follow `.cursor/rules/milestone-qa.mdc`: run `npm run qa:milestone -- Mx`, fix a
 
 ## Milestone order
 
-M1 Foundation → M2 Auth → M3 Cash flow → M4 Reports → M5 Tax nav → M6 Billing → M7 Gate → M8 Receipt stub → M9 Free trial
+M1 Foundation → M2 Auth → M3 Cash flow → M4 Reports → M5 Tax nav → M6 Billing → M7 Gate → M8 Receipt stub → M9 Free trial → M10 Premium UI
 
-M4 complete. M5 complete. M6 complete. M7 complete. M8 complete. M9 complete.
+M4 complete. M5 complete. M6 complete. M7 complete. M8 complete. M9 complete. M10 complete.

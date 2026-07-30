@@ -19,3 +19,4 @@ playwright-report/
 blob-report/
 e2e/.auth/
 docs/issues/**/shot-*.png
+./.idea

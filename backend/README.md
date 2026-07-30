@@ -53,6 +53,8 @@ Key variables in `.env`:
 | POST | `/api/login` | No | Returns `{ user, token }` |
 | POST | `/api/logout` | Bearer | Revokes current token |
 | GET | `/api/user` | Bearer | Current user |
+| PUT | `/api/user/profile` | Bearer | Update name — `{ name }` |
+| PUT | `/api/user/password` | Bearer | Change password — `{ current_password, password, password_confirmation }` |
 | GET | `/api/auth/google/redirect` | No | Starts Google OAuth |
 | GET | `/api/auth/google/callback` | No | Redirects to frontend with `?token=` |
 

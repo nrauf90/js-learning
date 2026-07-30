@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-const MILESTONE_ORDER = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9'];
+const MILESTONE_ORDER = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9', 'M10'];
 
 /** Spec globs relative to e2e/tests — only include files that exist when running. */
 const SPEC_BY_MILESTONE = {
@@ -29,6 +29,7 @@ const SPEC_BY_MILESTONE = {
   M7: 'm7-*.spec.js',
   M8: 'm8-*.spec.js',
   M9: 'm9-*.spec.js',
+  M10: 'm10-*.spec.js',
 };
 
 const API_URL = process.env.QA_API_URL || 'http://127.0.0.1:8000';

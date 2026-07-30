@@ -19,6 +19,7 @@ Daily cash-flow expense tracker with a **free** Pakistan tax calculator.
 | M7 | [Subscription gating](./milestones/M7-subscription-gate.md) | 2 | Done |
 | M8 | [Receipt addon scaffold](./milestones/M8-receipt-addon.md) | 3 | Done |
 | M9 | [7-day free trial](./milestones/M9-free-trial.md) | 2 | Done |
+| M10 | [Premium UI, profile & PDF reports](./milestones/M10-premium-ui.md) | 3 | Done |
 
 ## Agent handoff
 
