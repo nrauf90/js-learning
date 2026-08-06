@@ -20,3 +20,4 @@ blob-report/
 e2e/.auth/
 docs/issues/**/shot-*.png
 ./.idea
+composer.phar
