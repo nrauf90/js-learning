@@ -22,6 +22,8 @@ const ICONS = {
   home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>',
   calculator:
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h.01M12 19h.01M16 19h.01"/></svg>',
+  pos:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h12M6 16h8"/></svg>',
   logout:
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>',
 };
@@ -29,6 +31,7 @@ const ICONS = {
 const APP_LINKS = [
   { key: 'dashboard', href: 'dashboard.html', label: 'Dashboard' },
   { key: 'cashflow', href: 'cashflow.html', label: 'Cash Flow' },
+  { key: 'pos', href: 'pos.html', label: 'POS Till' },
   { key: 'reports', href: 'reports.html', label: 'Reports' },
   { key: 'billing', href: 'billing.html', label: 'Billing' },
   { key: 'profile', href: 'profile.html', label: 'Profile' },
@@ -41,6 +44,9 @@ const ADMIN_SIDEBAR_LINKS = [
   { key: 'admin-entries', href: 'admin-entries.html', label: 'Cash Entries' },
   { key: 'admin-payments', href: 'admin-payments.html', label: 'Payments' },
   { key: 'admin-categories', href: 'admin-categories.html', label: 'Categories' },
+  { key: 'admin-pos', href: 'admin-pos.html', label: 'POS Dashboard' },
+  { key: 'admin-pos-products', href: 'admin-pos-products.html', label: 'POS Products' },
+  { key: 'admin-pos-sales', href: 'admin-pos-sales.html', label: 'POS Sales' },
 ];
 
 const SITE_LINKS = [

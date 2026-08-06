@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>POS Dashboard | Admin | Cashflow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+</head>
+<body class="app-body">
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Sidebar"></aside>
+    <div class="app-overlay" id="app-overlay"></div>
+    <div class="app-content">
+      <header class="app-topbar no-print">
+        <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+        <div class="topbar-heading"><h1>POS Dashboard</h1><p class="tagline">Sales, refunds, and till overview</p></div>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch theme"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></button>
+      </header>
+      <main class="main app-main">
+        <div id="admin-alert" class="auth-alert" hidden></div>
+        <section class="admin-stat-cards">
+          <div class="admin-stat-card"><div class="admin-stat-content"><span class="admin-stat-label">Today's Sales</span><span class="admin-stat-value" id="pos-stat-sales">—</span></div></div>
+          <div class="admin-stat-card"><div class="admin-stat-content"><span class="admin-stat-label">Today's Refunds</span><span class="admin-stat-value" id="pos-stat-refunds">—</span></div></div>
+          <div class="admin-stat-card"><div class="admin-stat-content"><span class="admin-stat-label">Today's Net</span><span class="admin-stat-value" id="pos-stat-net">—</span></div></div>
+          <div class="admin-stat-card"><div class="admin-stat-content"><span class="admin-stat-label">Active Products</span><span class="admin-stat-value" id="pos-stat-products">—</span></div></div>
+          <div class="admin-stat-card"><div class="admin-stat-content"><span class="admin-stat-label">Total Sales</span><span class="admin-stat-value" id="pos-stat-total">—</span></div></div>
+        </section>
+        <section class="calculator-card">
+          <h2 class="dashboard-title">Recent POS Sales</h2>
+          <div class="admin-table-container">
+            <table class="admin-table">
+              <thead><tr><th>ID</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th></tr></thead>
+              <tbody id="pos-recent-body"><tr><td colspan="5" class="admin-table-empty">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+        <section class="calculator-card">
+          <h2 class="dashboard-title">Quick Links</h2>
+          <div class="admin-quick-links">
+            <a href="admin-pos-products.html" class="admin-quick-link">Manage Products</a>
+            <a href="admin-pos-sales.html" class="admin-quick-link">Sales &amp; Refunds</a>
+            <a href="pos.html" class="admin-quick-link">Open Till</a>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script type="module" src="js/admin-pos.js"></script>
+</body>
+</html>

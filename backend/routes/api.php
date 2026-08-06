@@ -1,12 +1,16 @@
 <?php
 
 use App\Http\Controllers\Api\AdminController;
+use App\Http\Controllers\Api\AdminPosController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BillingCallbackController;
 use App\Http\Controllers\Api\BillingController;
 use App\Http\Controllers\Api\CashEntryController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\GoogleAuthController;
+use App\Http\Controllers\Api\PosProductController;
+use App\Http\Controllers\Api\PosRefundController;
+use App\Http\Controllers\Api\PosSaleController;
 use App\Http\Controllers\Api\QaController;
 use App\Http\Controllers\Api\ReceiptController;
 use App\Http\Controllers\Api\ReportController;
@@ -55,6 +59,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/reports/yearly', [ReportController::class, 'yearly']);
 
         Route::post('/receipts/upload', [ReceiptController::class, 'upload']);
+
+        Route::get('/pos/products', [PosProductController::class, 'index']);
+        Route::get('/pos/sales', [PosSaleController::class, 'index']);
+        Route::get('/pos/sales/{posSale}', [PosSaleController::class, 'show']);
+        Route::post('/pos/sales/sync', [PosSaleController::class, 'sync']);
+        Route::post('/pos/refunds/sync', [PosRefundController::class, 'sync']);
     });
 
     Route::get('/billing/subscription', [BillingController::class, 'subscription']);
@@ -82,6 +92,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/categories', [AdminController::class, 'categoryStore']);
         Route::put('/categories/{category}', [AdminController::class, 'categoryUpdate']);
         Route::delete('/categories/{category}', [AdminController::class, 'categoryDestroy']);
+
+        Route::get('/pos/dashboard', [AdminPosController::class, 'dashboard']);
+        Route::get('/pos/products', [AdminPosController::class, 'products']);
+        Route::post('/pos/products', [AdminPosController::class, 'productStore']);
+        Route::put('/pos/products/{posProduct}', [AdminPosController::class, 'productUpdate']);
+        Route::delete('/pos/products/{posProduct}', [AdminPosController::class, 'productDestroy']);
+        Route::get('/pos/sales', [AdminPosController::class, 'sales']);
+        Route::get('/pos/sales/{posSale}', [AdminPosController::class, 'saleShow']);
+        Route::get('/pos/refunds', [AdminPosController::class, 'refunds']);
     });
 });
 

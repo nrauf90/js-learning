@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>POS Till | Cashflow</title>
+  <link rel="manifest" href="pos-manifest.json" />
+  <meta name="theme-color" content="#14b8a6" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+</head>
+<body class="app-body">
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Sidebar"></aside>
+    <div class="app-overlay" id="app-overlay" aria-hidden="true"></div>
+
+    <div class="app-content">
+      <header class="app-topbar no-print">
+        <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Menu" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div class="topbar-heading">
+          <h1>POS Till</h1>
+          <p class="tagline">Offline-capable point of sale</p>
+        </div>
+        <span id="pos-status" class="pos-status pos-status-online">Online</span>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch theme" aria-pressed="false">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+      </header>
+
+      <main class="main app-main">
+        <div class="pos-layout">
+          <section class="pos-products-panel calculator-card">
+            <h2 class="dashboard-title">Products</h2>
+            <div id="pos-products" class="pos-products-grid"></div>
+          </section>
+
+          <section class="pos-cart-panel calculator-card">
+            <h2 class="dashboard-title">Current Sale</h2>
+            <ul id="pos-cart" class="pos-cart-list"></ul>
+            <div class="pos-cart-footer">
+              <div class="pos-total-row">
+                <span>Total</span>
+                <strong id="pos-total">Rs 0</strong>
+              </div>
+              <label class="pos-payment-label">
+                Payment
+                <select id="pos-payment" class="year-select">
+                  <option value="cash">Cash</option>
+                  <option value="card">Card</option>
+                  <option value="jazzcash">JazzCash</option>
+                  <option value="easypaisa">EasyPaisa</option>
+                </select>
+              </label>
+              <div class="pos-actions">
+                <button type="button" id="pos-clear" class="btn-secondary">Clear</button>
+                <button type="button" id="pos-checkout" class="btn-primary" disabled>Complete Sale</button>
+              </div>
+            </div>
+
+            <h3 class="pos-recent-title">Recent Sales</h3>
+            <ul id="pos-recent" class="pos-recent-list"></ul>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script type="module" src="js/pos-till.js"></script>
+</body>
+</html>

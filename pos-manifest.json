@@ -1,0 +1,9 @@
+{
+  "name": "Cashflow POS Till",
+  "short_name": "POS Till",
+  "start_url": "/pos.html",
+  "display": "standalone",
+  "background_color": "#0f1419",
+  "theme_color": "#14b8a6",
+  "description": "Offline-capable point of sale till"
+}

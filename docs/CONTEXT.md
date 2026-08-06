@@ -40,10 +40,10 @@ js-learning/
 ## Current status
 
 - **Branch:** `feature-2`
-- **Milestone:** M11 — Admin panel (**done**)
+- **Milestone:** M12 — POS offline till (**done**)
 - **Next task:** —
-- **Last updated:** 2026-07-30
-- **QA:** passed for M1–M11 (`npm run qa:milestone -- M11`, 63 tests; `cd backend && php artisan test`, 65 tests)
+- **Last updated:** 2026-08-06
+- **QA:** passed for M1–M11 (`npm run qa:milestone -- M11`, 63 tests; `cd backend && php artisan test`, 76 tests incl. POS)
 - **Notes:** Logged-in pages use a sidebar app shell (`js/shell.js`); dashboard has Chart.js line/bar charts; profile page updates name/password; reports export to PDF (jsPDF); landing uses GSAP + Lenis scroll animations. M11 added an admin panel (`admin*.html`, `AdminController`, `is_admin` on users) — it was built outside this workflow and had several bugs (see `docs/issues/M11/`) that were reviewed and fixed: `is_admin` mass-assignment, the `/api/user` payload missing `is_admin` (sidebar link disappeared), wrong endpoint/field names on the Cash Entries admin page, a `gateway`/`provider` column mismatch on Payments, `e2e/playwright.config.js` never actually running the M11 suite, and stored-XSS/broken-onclick issues in the admin tables.
 
 ## Architecture decisions (locked)
@@ -89,4 +89,4 @@ Follow `.cursor/rules/milestone-qa.mdc`: run `npm run qa:milestone -- Mx`, fix a
 
 M1 Foundation → M2 Auth → M3 Cash flow → M4 Reports → M5 Tax nav → M6 Billing → M7 Gate → M8 Receipt stub → M9 Free trial → M10 Premium UI → M11 Admin panel
 
-M4 complete. M5 complete. M6 complete. M7 complete. M8 complete. M9 complete. M10 complete. M11 complete.
+M4 complete. M5 complete. M6 complete. M7 complete. M8 complete. M9 complete. M10 complete. M11 complete. M12 complete (POS offline till, sync schema, line-level refunds, admin POS screens).
