@@ -42,4 +42,16 @@ class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
+
+    /**
+     * Create an admin user. `is_admin` is intentionally not mass-assignable
+     * (see User::$fillable), so it can't be set via a plain factory state
+     * array — this uses forceFill() after creation instead.
+     */
+    public function admin(): static
+    {
+        return $this->afterCreating(function (User $user) {
+            $user->forceFill(['is_admin' => true])->save();
+        });
+    }
 }

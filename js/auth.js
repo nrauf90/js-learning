@@ -1,35 +1,8 @@
 import { API_BASE_URL, apiPost, getAuthToken, setAuthToken } from './api.js';
 import { initNav } from './nav.js';
+import { initTheme } from './theme.js';
 
-const THEME_KEY = 'tax-calculator-theme';
 const USER_KEY = 'cashflow_auth_user';
-
-function applyTheme(theme) {
-  const root = document.documentElement;
-  const toggle = document.getElementById('theme-toggle');
-  root.setAttribute('data-theme', theme);
-  if (!toggle) return;
-  toggle.setAttribute('aria-pressed', String(theme === 'light'));
-  toggle.setAttribute(
-    'aria-label',
-    theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'
-  );
-}
-
-function initTheme() {
-  const stored = localStorage.getItem(THEME_KEY);
-  if (stored === 'light' || stored === 'dark') {
-    applyTheme(stored);
-  } else {
-    applyTheme(window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-  }
-
-  document.getElementById('theme-toggle')?.addEventListener('click', () => {
-    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    applyTheme(next);
-    localStorage.setItem(THEME_KEY, next);
-  });
-}
 
 function showAlert(message, type = 'error') {
   const el = document.getElementById('auth-alert');
@@ -64,9 +37,9 @@ function redirectAfterAuth() {
   window.location.href = next;
 }
 
-async function handleGoogleTokenFromUrl() {
+async function handleGoogleCodeFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  const token = params.get('token');
+  const code = params.get('google_code');
   const error = params.get('error');
 
   if (error) {
@@ -74,17 +47,17 @@ async function handleGoogleTokenFromUrl() {
     return;
   }
 
-  if (!token) return;
+  if (!code) return;
 
-  saveSession(token, null);
+  // The redirect carries a short-lived, single-use code — never the bearer
+  // token itself — which is exchanged here for the real token via POST so
+  // it never sits in the URL/browser history.
+  window.history.replaceState({}, '', window.location.pathname);
   try {
-    const { apiGet } = await import('./api.js');
-    const data = await apiGet('/api/user');
-    saveSession(token, data.user);
-    window.history.replaceState({}, '', window.location.pathname);
+    const data = await apiPost('/api/auth/google/exchange', { code });
+    saveSession(data.token, data.user);
     redirectAfterAuth();
   } catch {
-    setAuthToken(null);
     showAlert('Could not complete Google sign-in. Please try again.');
   }
 }
@@ -174,7 +147,7 @@ initNav();
 wireGoogleButton();
 wireLoginForm();
 wireSignupForm();
-handleGoogleTokenFromUrl();
+handleGoogleCodeFromUrl();
 
 if (getAuthToken() && !new URLSearchParams(window.location.search).has('token')) {
   if (document.getElementById('login-form') || document.getElementById('signup-form')) {

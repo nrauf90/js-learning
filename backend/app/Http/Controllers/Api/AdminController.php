@@ -14,13 +14,21 @@ use Illuminate\Support\Facades\Validator;
 
 class AdminController extends Controller
 {
+    /** Hard cap on `per_page` so a huge value can't be used for a DoS-y page load. */
+    private const MAX_PER_PAGE = 100;
+
+    private function perPage(Request $request, int $default = 20): int
+    {
+        return max(1, min(self::MAX_PER_PAGE, (int) $request->input('per_page', $default)));
+    }
+
     /**
      * Admin dashboard statistics
      */
     public function dashboard(Request $request)
     {
         $totalUsers = User::count();
-        $activeSubscriptions = Subscription::where('status', 'active')
+        $activeSubscriptions = Subscription::whereIn('status', Subscription::ACTIVE_STATUSES)
             ->where('ends_at', '>', now())
             ->count();
 
@@ -44,6 +52,7 @@ class AdminController extends Controller
                 'total_users' => $totalUsers,
                 'active_subscriptions' => $activeSubscriptions,
                 'monthly_revenue' => $monthlyRevenue,
+                'currency' => config('billing.currency', 'USD'),
                 'total_entries' => $totalEntries,
             ],
             'recent_users' => $recentUsers,
@@ -70,7 +79,7 @@ class AdminController extends Controller
             $query->where('is_admin', true);
         }
 
-        $perPage = $request->input('per_page', 20);
+        $perPage = $this->perPage($request);
         $users = $query->withCount(['cashEntries', 'subscriptions', 'payments'])
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
@@ -122,7 +131,15 @@ class AdminController extends Controller
             return response()->json(['error' => 'Cannot remove admin privileges from yourself'], 422);
         }
 
-        $user->update($request->only(['name', 'email', 'is_admin']));
+        $user->fill($request->only(['name', 'email']));
+
+        // is_admin is intentionally not mass-assignable (see User::$fillable);
+        // set it explicitly here, the one place it's allowed to change.
+        if ($request->has('is_admin')) {
+            $user->is_admin = $request->boolean('is_admin');
+        }
+
+        $user->save();
 
         return response()->json(['user' => $user]);
     }
@@ -163,7 +180,7 @@ class AdminController extends Controller
             $query->where('plan', $request->input('plan'));
         }
 
-        $perPage = $request->input('per_page', 20);
+        $perPage = $this->perPage($request);
         $subscriptions = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
         return response()->json($subscriptions);
@@ -174,8 +191,11 @@ class AdminController extends Controller
      */
     public function subscriptionUpdate(Request $request, Subscription $subscription)
     {
+        // Matches the statuses Paddle actually reports (note the single-l
+        // "canceled" — the old value here was "cancelled", which no webhook
+        // ever writes, so an admin edit could not round-trip a real status).
         $validator = Validator::make($request->all(), [
-            'status' => 'sometimes|in:active,cancelled,expired',
+            'status' => 'sometimes|in:active,trialing,past_due,paused,canceled,expired',
             'ends_at' => 'sometimes|date',
         ]);
 
@@ -211,7 +231,7 @@ class AdminController extends Controller
             $query->where('entry_date', '<=', $request->input('date_to'));
         }
 
-        $perPage = $request->input('per_page', 20);
+        $perPage = $this->perPage($request);
         $entries = $query->orderBy('entry_date', 'desc')->paginate($perPage);
 
         return response()->json($entries);
@@ -242,7 +262,7 @@ class AdminController extends Controller
             $query->where('provider', $request->input('gateway'));
         }
 
-        $perPage = $request->input('per_page', 20);
+        $perPage = $this->perPage($request);
         $payments = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
         return response()->json($payments);

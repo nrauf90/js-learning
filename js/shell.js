@@ -1,6 +1,6 @@
 /**
  * App shell: sidebar navigation for logged-in pages
- * (dashboard, cashflow, reports, billing, profile).
+ * (pos, products, dashboard, cashflow, reports, billing, profile).
  */
 import { apiGet, apiPost, getAuthToken, setAuthToken } from './api.js';
 
@@ -20,13 +20,16 @@ const ICONS = {
   admin:
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>',
   home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>',
-  calculator:
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h.01M12 19h.01M16 19h.01"/></svg>',
+  pos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18l-1.5 9h-15z"/><path d="M3 6L2 3"/><circle cx="9" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg>',
+  products:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>',
   logout:
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>',
 };
 
 const APP_LINKS = [
+  { key: 'pos', href: 'pos.html', label: 'Sell' },
+  { key: 'products', href: 'products.html', label: 'Products' },
   { key: 'dashboard', href: 'dashboard.html', label: 'Dashboard' },
   { key: 'cashflow', href: 'cashflow.html', label: 'Cash Flow' },
   { key: 'reports', href: 'reports.html', label: 'Reports' },
@@ -43,10 +46,7 @@ const ADMIN_SIDEBAR_LINKS = [
   { key: 'admin-categories', href: 'admin-categories.html', label: 'Categories' },
 ];
 
-const SITE_LINKS = [
-  { key: 'home', href: 'index.html', label: 'Home' },
-  { key: 'calculator', href: 'calculator.html', label: 'Tax Calculator' },
-];
+const SITE_LINKS = [{ key: 'home', href: 'index.html', label: 'Home' }];
 
 function storedUser() {
   try {
@@ -90,7 +90,7 @@ function closeSidebar() {
 }
 
 /**
- * @param {{ current?: 'dashboard' | 'cashflow' | 'reports' | 'billing' | 'profile' | 'admin' | 'admin-users' }} [options]
+ * @param {{ current?: 'pos' | 'products' | 'dashboard' | 'cashflow' | 'reports' | 'billing' | 'profile' | 'admin' | 'admin-users' }} [options]
  */
 export function initShell(options = {}) {
   const sidebar = document.getElementById('app-sidebar');

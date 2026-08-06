@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sell | Cashflow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+</head>
+<body class="app-body">
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Sidebar"></aside>
+    <div class="app-overlay" id="app-overlay" aria-hidden="true"></div>
+
+    <div class="app-content">
+      <header class="app-topbar no-print">
+        <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Menu" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div class="topbar-heading">
+          <h1>Sell</h1>
+          <p class="tagline">Scan or search, then take payment</p>
+        </div>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark theme" aria-pressed="true">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+      </header>
+
+      <main class="main app-main">
+        <div id="pos-alert" class="auth-alert" hidden role="alert"></div>
+
+        <div class="pos-layout">
+          <section class="calculator-card pos-catalog" aria-label="Products">
+            <form id="pos-search-form" class="pos-search" novalidate>
+              <label class="input-label" for="pos-search">Scan barcode or search</label>
+              <input
+                class="auth-input"
+                type="text"
+                id="pos-search"
+                autocomplete="off"
+                enterkeyhint="done"
+                placeholder="Barcode, SKU, or product name"
+              />
+            </form>
+
+            <div class="pos-day-summary" id="pos-day-summary" aria-live="polite"></div>
+
+            <div id="pos-products" class="pos-product-grid"></div>
+            <p id="pos-products-empty" class="cashflow-empty" hidden>
+              No products yet. <a href="products.html">Add your first product</a> to start selling.
+            </p>
+          </section>
+
+          <section class="calculator-card pos-ticket" aria-label="Current sale">
+            <div class="pos-ticket-head">
+              <h2 class="auth-title">Ticket</h2>
+              <button type="button" class="btn btn-ghost pos-clear" id="pos-clear">Clear</button>
+            </div>
+
+            <ul id="pos-lines" class="pos-lines"></ul>
+            <p id="pos-lines-empty" class="cashflow-empty">Nothing on the ticket yet.</p>
+
+            <dl class="pos-totals">
+              <div><dt>Subtotal</dt><dd id="pos-subtotal">Rs 0</dd></div>
+              <div>
+                <dt><label class="input-label" for="pos-discount">Discount</label></dt>
+                <dd><input class="auth-input pos-discount-input" type="number" id="pos-discount" min="0" step="0.01" value="0" /></dd>
+              </div>
+              <div class="pos-total-row"><dt>Total</dt><dd id="pos-total">Rs 0</dd></div>
+            </dl>
+
+            <div class="pos-payment">
+              <label class="input-label" for="pos-method">Payment</label>
+              <select class="auth-input" id="pos-method">
+                <option value="cash">Cash</option>
+                <option value="card">Card</option>
+                <option value="other">Other</option>
+              </select>
+
+              <div id="pos-cash-fields">
+                <label class="input-label" for="pos-tendered">Amount received</label>
+                <input class="auth-input" type="number" id="pos-tendered" min="0" step="0.01" placeholder="0" />
+                <p class="pos-change" id="pos-change" aria-live="polite"></p>
+              </div>
+            </div>
+
+            <button type="button" class="auth-submit pos-complete" id="pos-complete" disabled>Complete sale</button>
+          </section>
+        </div>
+
+        <section class="calculator-card pos-receipt" id="pos-receipt" hidden aria-label="Receipt">
+          <div class="pos-receipt-head">
+            <h2 class="auth-title">Sale complete</h2>
+            <button type="button" class="btn btn-secondary" id="pos-new-sale">New sale</button>
+          </div>
+          <div id="pos-receipt-body"></div>
+          <button type="button" class="btn btn-secondary no-print" id="pos-print">Print receipt</button>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script type="module" src="js/pos.js"></script>
+</body>
+</html>

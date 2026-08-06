@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Products | Cashflow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+</head>
+<body class="app-body">
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Sidebar"></aside>
+    <div class="app-overlay" id="app-overlay" aria-hidden="true"></div>
+
+    <div class="app-content">
+      <header class="app-topbar no-print">
+        <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Menu" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div class="topbar-heading">
+          <h1>Products</h1>
+          <p class="tagline">Catalog, pricing &amp; stock</p>
+        </div>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark theme" aria-pressed="true">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+      </header>
+
+      <main class="main app-main">
+        <div id="products-alert" class="auth-alert" hidden role="alert"></div>
+
+        <section class="calculator-card">
+          <h2 class="auth-title" id="product-form-title">Add product</h2>
+          <form id="product-form" class="cashflow-form" novalidate>
+            <input type="hidden" id="product-id" value="" />
+
+            <div class="cashflow-form-grid">
+              <div>
+                <label class="input-label" for="product-name">Name</label>
+                <input class="auth-input" type="text" id="product-name" maxlength="160" required placeholder="e.g. Cola 500ml" />
+              </div>
+              <div>
+                <label class="input-label" for="product-price">Price (PKR)</label>
+                <input class="auth-input" type="number" id="product-price" min="0" step="0.01" required placeholder="0" />
+              </div>
+              <div>
+                <label class="input-label" for="product-cost">Cost (PKR)</label>
+                <input class="auth-input" type="number" id="product-cost" min="0" step="0.01" placeholder="Optional" />
+              </div>
+              <div>
+                <label class="input-label" for="product-category">Category</label>
+                <select class="auth-input" id="product-category"></select>
+              </div>
+              <div>
+                <label class="input-label" for="product-sku">SKU</label>
+                <input class="auth-input" type="text" id="product-sku" maxlength="64" placeholder="Optional" />
+              </div>
+              <div>
+                <label class="input-label" for="product-barcode">Barcode</label>
+                <input class="auth-input" type="text" id="product-barcode" maxlength="64" placeholder="Optional" />
+              </div>
+              <div>
+                <label class="input-label" for="product-stock">Opening stock</label>
+                <input class="auth-input" type="number" id="product-stock" min="0" step="1" value="0" />
+              </div>
+              <div>
+                <label class="input-label" for="product-low">Low stock alert at</label>
+                <input class="auth-input" type="number" id="product-low" min="0" step="1" value="0" />
+              </div>
+            </div>
+
+            <label class="pos-checkbox">
+              <input type="checkbox" id="product-track" checked />
+              <span>Track stock for this product</span>
+            </label>
+
+            <div class="cashflow-form-actions">
+              <button type="submit" class="auth-submit cashflow-btn" id="product-submit">Add product</button>
+              <button type="button" class="auth-google cashflow-btn" id="product-cancel" hidden>Cancel edit</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="calculator-card">
+          <div class="pos-ticket-head">
+            <h2 class="auth-title">Catalog</h2>
+            <div class="pos-filters">
+              <input class="auth-input" type="search" id="product-search" placeholder="Search name, SKU or barcode" />
+              <label class="pos-checkbox">
+                <input type="checkbox" id="filter-low-stock" />
+                <span>Low stock only</span>
+              </label>
+            </div>
+          </div>
+
+          <p id="products-empty" class="cashflow-empty" hidden>No products match.</p>
+          <ul id="products-list" class="pos-catalog-list"></ul>
+        </section>
+
+        <section class="calculator-card">
+          <h2 class="auth-title">Categories</h2>
+          <form id="category-form" class="pos-category-form" novalidate>
+            <input class="auth-input" type="text" id="category-name" maxlength="80" placeholder="New category name" required />
+            <button type="submit" class="auth-submit cashflow-btn">Add</button>
+          </form>
+          <ul id="categories-list" class="pos-category-list"></ul>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script type="module" src="js/products.js"></script>
+</body>
+</html>

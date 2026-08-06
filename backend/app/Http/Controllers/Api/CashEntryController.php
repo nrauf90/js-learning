@@ -11,12 +11,18 @@ use Illuminate\Validation\ValidationException;
 
 class CashEntryController extends Controller
 {
+    private const DEFAULT_PER_PAGE = 50;
+
+    private const MAX_PER_PAGE = 100;
+
     public function index(Request $request): JsonResponse
     {
         $this->authorize('viewAny', CashEntry::class);
 
         $validated = $request->validate([
             'date' => ['nullable', 'date'],
+            'page' => ['nullable', 'integer', 'min:1'],
+            'per_page' => ['nullable', 'integer', 'min:1'],
         ]);
 
         $query = CashEntry::query()
@@ -27,11 +33,26 @@ class CashEntryController extends Controller
 
         if (! empty($validated['date'])) {
             $query->whereDate('entry_date', $validated['date']);
+
+            $entries = $query->get();
+
+            // A single day's entries are naturally bounded, so this path stays
+            // a plain (non-paginated) list — the shape cashflow.js expects.
+            return response()->json(['entries' => $entries->map(fn (CashEntry $e) => $this->payload($e))]);
         }
 
-        $entries = $query->get();
+        $perPage = min((int) ($validated['per_page'] ?? self::DEFAULT_PER_PAGE), self::MAX_PER_PAGE);
+        $paginator = $query->paginate($perPage, ['*'], 'page', $validated['page'] ?? 1);
 
-        return response()->json(['entries' => $entries->map(fn (CashEntry $e) => $this->payload($e))]);
+        return response()->json([
+            'entries' => collect($paginator->items())->map(fn (CashEntry $e) => $this->payload($e)),
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+                'last_page' => $paginator->lastPage(),
+            ],
+        ]);
     }
 
     public function store(Request $request): JsonResponse
@@ -41,7 +62,7 @@ class CashEntryController extends Controller
         $validated = $request->validate([
             'category_id' => ['required', 'integer', 'exists:expense_categories,id'],
             'type' => ['required', 'in:income,expense'],
-            'amount' => ['required', 'numeric', 'gt:0'],
+            'amount' => ['required', 'numeric', 'gt:0', 'max:999999999.99'],
             'entry_date' => ['required', 'date'],
             'note' => ['nullable', 'string', 'max:500'],
         ]);
@@ -65,7 +86,7 @@ class CashEntryController extends Controller
         $validated = $request->validate([
             'category_id' => ['sometimes', 'integer', 'exists:expense_categories,id'],
             'type' => ['sometimes', 'in:income,expense'],
-            'amount' => ['sometimes', 'numeric', 'gt:0'],
+            'amount' => ['sometimes', 'numeric', 'gt:0', 'max:999999999.99'],
             'entry_date' => ['sometimes', 'date'],
             'note' => ['nullable', 'string', 'max:500'],
         ]);

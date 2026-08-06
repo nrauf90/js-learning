@@ -24,7 +24,7 @@ class AdminPanelTest extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->create(['is_admin' => true]);
+        return User::factory()->admin()->create();
     }
 
     public function test_non_admin_is_forbidden_from_admin_routes(): void
@@ -56,7 +56,7 @@ class AdminPanelTest extends TestCase
         // Regression test: User::$fillable previously omitted `is_admin`,
         // so this update silently no-op'd despite returning 200 OK.
         $admin = $this->admin();
-        $target = User::factory()->create(['is_admin' => false]);
+        $target = User::factory()->create();
 
         $this->actingAs($admin, 'sanctum')
             ->putJson("/api/admin/users/{$target->id}", ['is_admin' => true])
@@ -142,28 +142,64 @@ class AdminPanelTest extends TestCase
         $user = User::factory()->create();
         Payment::create([
             'user_id' => $user->id,
-            'provider' => 'jazzcash',
+            'provider' => 'paddle',
             'plan' => 'monthly',
-            'amount' => 500,
+            'amount' => 5,
             'status' => 'completed',
-            'txn_ref' => 'TXN-JC-1',
+            'txn_ref' => 'TXN-PD-1',
         ]);
         Payment::create([
             'user_id' => $user->id,
-            'provider' => 'easypaisa',
+            'provider' => 'manual',
             'plan' => 'monthly',
-            'amount' => 500,
+            'amount' => 5,
             'status' => 'completed',
-            'txn_ref' => 'TXN-EP-1',
+            'txn_ref' => 'TXN-MAN-1',
         ]);
 
         $response = $this->actingAs($admin, 'sanctum')
-            ->getJson('/api/admin/payments?gateway=jazzcash')
+            ->getJson('/api/admin/payments?gateway=paddle')
             ->assertOk();
 
         $data = $response->json('data');
         $this->assertCount(1, $data);
-        $this->assertSame('jazzcash', $data[0]['provider']);
+        $this->assertSame('paddle', $data[0]['provider']);
+    }
+
+    public function test_admin_payments_endpoint_never_exposes_raw_gateway_payload(): void
+    {
+        // M12-T5: the raw provider callback payload can contain internal
+        // fields not meant for the admin UI/network tab.
+        $admin = $this->admin();
+        $user = User::factory()->create();
+        Payment::create([
+            'user_id' => $user->id,
+            'provider' => 'paddle',
+            'plan' => 'monthly',
+            'amount' => 5,
+            'status' => 'completed',
+            'txn_ref' => 'TXN-PD-2',
+            'payload' => ['internal_reference' => 'secret-internal-value'],
+        ]);
+
+        $response = $this->actingAs($admin, 'sanctum')
+            ->getJson('/api/admin/payments')
+            ->assertOk();
+
+        $response->assertJsonMissingPath('data.0.payload');
+        $this->assertStringNotContainsString('secret-internal-value', $response->getContent());
+    }
+
+    public function test_admin_list_endpoints_clamp_per_page(): void
+    {
+        // M12-T5: no max bound previously existed on `per_page`.
+        $admin = $this->admin();
+
+        $response = $this->actingAs($admin, 'sanctum')
+            ->getJson('/api/admin/users?per_page=100000')
+            ->assertOk();
+
+        $this->assertSame(100, $response->json('per_page'));
     }
 
     public function test_admin_can_create_update_and_delete_category(): void

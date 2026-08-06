@@ -26,9 +26,11 @@ export async function activateSandboxSubscription(request, token) {
     Accept: 'application/json',
   };
 
+  // Requires BILLING_SANDBOX=true on the backend under test — checkout returns
+  // a local test payment instead of calling Paddle.
   const checkout = await request.post(`${API}/api/billing/checkout`, {
     headers,
-    data: { plan: 'monthly', provider: 'jazzcash' },
+    data: { plan: 'monthly' },
   });
   expect(checkout.status()).toBe(201);
   const paymentId = (await checkout.json()).payment.id;

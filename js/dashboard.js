@@ -1,35 +1,13 @@
 import { apiGet, getAuthToken } from './api.js';
 import { initShell } from './shell.js';
-
-const THEME_KEY = 'tax-calculator-theme';
+import { initTheme as initSharedTheme } from './theme.js';
 
 let trendChart = null;
 let netChart = null;
 let lastWeekData = null;
 
-function applyTheme(theme) {
-  const root = document.documentElement;
-  const toggle = document.getElementById('theme-toggle');
-  root.setAttribute('data-theme', theme);
-  if (!toggle) return;
-  toggle.setAttribute('aria-pressed', String(theme === 'light'));
-  toggle.setAttribute(
-    'aria-label',
-    theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'
-  );
-}
-
 function initTheme() {
-  const stored = localStorage.getItem(THEME_KEY);
-  if (stored === 'light' || stored === 'dark') {
-    applyTheme(stored);
-  } else {
-    applyTheme(window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-  }
-  document.getElementById('theme-toggle')?.addEventListener('click', () => {
-    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    applyTheme(next);
-    localStorage.setItem(THEME_KEY, next);
+  initSharedTheme(() => {
     if (lastWeekData) renderCharts(lastWeekData.days, lastWeekData.byDay);
   });
 }
@@ -63,23 +41,16 @@ function shortDay(iso) {
   return d.toLocaleDateString('en-PK', { weekday: 'short' });
 }
 
-function weekRangeISO() {
-  const end = new Date();
-  end.setHours(12, 0, 0, 0);
-  const start = new Date(end);
-  start.setDate(start.getDate() - 6);
-
-  const toISO = (d) => {
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${d.getFullYear()}-${m}-${day}`;
-  };
-
-  return { start: toISO(start), end: toISO(end), startDate: start, endDate: end };
+function toISO(d) {
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${m}-${day}`;
 }
 
-function inWeek(entryDate, startISO, endISO) {
-  return entryDate >= startISO && entryDate <= endISO;
+function todayISO() {
+  const now = new Date();
+  now.setHours(12, 0, 0, 0);
+  return toISO(now);
 }
 
 function cssVar(name, fallback) {

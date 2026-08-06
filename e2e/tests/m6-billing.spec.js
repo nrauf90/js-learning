@@ -25,8 +25,11 @@ test.describe('M6 — Billing', () => {
     const res = await request.get(`${API}/api/billing/plans`);
     expect(res.ok()).toBeTruthy();
     const body = await res.json();
-    expect(body.plans.some((p) => p.id === 'monthly' && p.amount === 500)).toBeTruthy();
-    expect(body.plans.some((p) => p.id === 'yearly' && p.amount === 5400)).toBeTruthy();
+    // Amounts are env-configurable, so assert on shape rather than a figure
+    // that would have to be edited every time pricing moves in Paddle.
+    expect(body.provider.id).toBe('paddle');
+    expect(body.plans.some((p) => p.id === 'monthly' && p.amount > 0)).toBeTruthy();
+    expect(body.plans.some((p) => p.id === 'yearly' && p.amount > 0)).toBeTruthy();
   });
 
   test('sandbox checkout activates subscription via API', async ({ request }) => {
@@ -38,7 +41,7 @@ test.describe('M6 — Billing', () => {
 
     const checkout = await request.post(`${API}/api/billing/checkout`, {
       headers,
-      data: { plan: 'monthly', provider: 'jazzcash' },
+      data: { plan: 'monthly' },
     });
     expect(checkout.status()).toBe(201);
     const checkoutBody = await checkout.json();

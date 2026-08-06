@@ -62,4 +62,35 @@ class ProfileTest extends TestCase
         $this->putJson('/api/user/profile', ['name' => 'X'])->assertUnauthorized();
         $this->putJson('/api/user/password', [])->assertUnauthorized();
     }
+
+    public function test_password_update_revokes_other_sessions(): void
+    {
+        // M12-T4: changing the password should log out every other
+        // device/session — only the token used to make this request survives.
+        $user = User::factory()->create(['password' => 'password123']);
+        $currentToken = $user->createToken('current')->plainTextToken;
+        $otherToken = $user->createToken('other-device')->plainTextToken;
+
+        $this->withToken($currentToken)
+            ->putJson('/api/user/password', [
+                'current_password' => 'password123',
+                'password' => 'new-password-456',
+                'password_confirmation' => 'new-password-456',
+            ])
+            ->assertOk();
+
+        $this->flushHeaders();
+        $this->app['auth']->forgetGuards();
+
+        $this->withToken($otherToken)
+            ->getJson('/api/user')
+            ->assertUnauthorized();
+
+        $this->flushHeaders();
+        $this->app['auth']->forgetGuards();
+
+        $this->withToken($currentToken)
+            ->getJson('/api/user')
+            ->assertOk();
+    }
 }

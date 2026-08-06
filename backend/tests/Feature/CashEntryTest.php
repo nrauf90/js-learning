@@ -62,6 +62,25 @@ class CashEntryTest extends TestCase
             ->assertJsonPath('entry.category.slug', 'salary');
     }
 
+    public function test_entry_amount_has_a_max_bound(): void
+    {
+        // M12-T5: unbounded amount could be abused (huge numbers, overflow-y
+        // formatting). Amount must reject values above the sane max.
+        $user = User::factory()->create();
+        $this->subscribeUser($user);
+        $salary = ExpenseCategory::where('slug', 'salary')->firstOrFail();
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson('/api/cash-entries', [
+                'category_id' => $salary->id,
+                'type' => 'income',
+                'amount' => 9999999999,
+                'entry_date' => '2026-07-30',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['amount']);
+    }
+
     public function test_income_entry_rejects_expense_category(): void
     {
         $user = User::factory()->create();
@@ -189,6 +208,44 @@ class CashEntryTest extends TestCase
             ->getJson('/api/cash-entries?date=2026-07-30')
             ->assertOk()
             ->assertJsonCount(0, 'entries');
+    }
+
+    public function test_unfiltered_list_is_paginated(): void
+    {
+        $user = User::factory()->create();
+        $this->subscribeUser($user);
+        $category = ExpenseCategory::where('kind', 'expense')->firstOrFail();
+
+        foreach (range(1, 5) as $i) {
+            CashEntry::create([
+                'user_id' => $user->id,
+                'category_id' => $category->id,
+                'type' => 'expense',
+                'amount' => 100 + $i,
+                'entry_date' => "2026-07-0{$i}",
+            ]);
+        }
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson('/api/cash-entries?per_page=2')
+            ->assertOk()
+            ->assertJsonCount(2, 'entries')
+            ->assertJsonPath('meta.total', 5)
+            ->assertJsonPath('meta.last_page', 3)
+            ->assertJsonPath('meta.per_page', 2)
+            ->assertJsonPath('meta.current_page', 1);
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson('/api/cash-entries?per_page=500')
+            ->assertOk()
+            ->assertJsonPath('meta.per_page', 100);
+
+        // Date-filtered requests stay a plain (non-paginated) list.
+        $this->actingAs($user, 'sanctum')
+            ->getJson('/api/cash-entries?date=2026-07-01')
+            ->assertOk()
+            ->assertJsonCount(1, 'entries')
+            ->assertJsonMissingPath('meta');
     }
 
     public function test_guest_cannot_access_cash_entries(): void

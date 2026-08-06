@@ -1,33 +1,6 @@
 import { apiGet, getAuthToken } from './api.js';
 import { initShell } from './shell.js';
-
-const THEME_KEY = 'tax-calculator-theme';
-
-function applyTheme(theme) {
-  const root = document.documentElement;
-  const toggle = document.getElementById('theme-toggle');
-  root.setAttribute('data-theme', theme);
-  if (!toggle) return;
-  toggle.setAttribute('aria-pressed', String(theme === 'light'));
-  toggle.setAttribute(
-    'aria-label',
-    theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'
-  );
-}
-
-function initTheme() {
-  const stored = localStorage.getItem(THEME_KEY);
-  if (stored === 'light' || stored === 'dark') {
-    applyTheme(stored);
-  } else {
-    applyTheme(window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-  }
-  document.getElementById('theme-toggle')?.addEventListener('click', () => {
-    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    applyTheme(next);
-    localStorage.setItem(THEME_KEY, next);
-  });
-}
+import { initTheme } from './theme.js';
 
 function requireAuth() {
   if (getAuthToken()) return true;
@@ -43,9 +16,14 @@ function showAlert(message, type = 'error') {
   el.dataset.type = type;
 }
 
-function formatRs(amount) {
-  const n = Number(amount) || 0;
-  return `Rs ${Math.round(n).toLocaleString('en-PK')}`;
+/** Subscription money, billed by Paddle — not the PKR the rest of the app deals in. */
+function formatMoney(amount, currency = 'USD') {
+  const value = Number(amount) || 0;
+  try {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(value);
+  } catch {
+    return `${currency} ${value.toFixed(2)}`;
+  }
 }
 
 function formatDate(dateString) {
@@ -69,7 +47,7 @@ function formatDateTime(dateString) {
 function renderStats(stats) {
   document.getElementById('stat-users').textContent = stats.total_users?.toLocaleString('en-PK') || '0';
   document.getElementById('stat-subscriptions').textContent = stats.active_subscriptions?.toLocaleString('en-PK') || '0';
-  document.getElementById('stat-revenue').textContent = formatRs(stats.monthly_revenue || 0);
+  document.getElementById('stat-revenue').textContent = formatMoney(stats.monthly_revenue || 0, stats.currency);
   document.getElementById('stat-entries').textContent = stats.total_entries?.toLocaleString('en-PK') || '0';
 }
 
@@ -109,7 +87,7 @@ function renderRecentPayments(payments) {
     return `
       <tr>
         <td><strong>${escapeHtml(payment.user?.name || 'Unknown')}</strong><br><small>${escapeHtml(payment.user?.email || '')}</small></td>
-        <td><strong>${formatRs(payment.amount)}</strong></td>
+        <td><strong>${formatMoney(payment.amount, payment.currency)}</strong></td>
         <td>${payment.provider ? payment.provider.toUpperCase() : '—'}</td>
         <td><span class="admin-badge admin-badge-${statusClass}">${payment.status || '—'}</span></td>
         <td>${formatDateTime(payment.created_at)}</td>

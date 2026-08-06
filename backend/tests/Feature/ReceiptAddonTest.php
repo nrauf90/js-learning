@@ -82,10 +82,7 @@ class ReceiptAddonTest extends TestCase
         $this->subscribeUser($user);
 
         $checkout = $this->actingAs($user, 'sanctum')
-            ->postJson('/api/billing/checkout', [
-                'plan' => 'receipt_addon',
-                'provider' => 'jazzcash',
-            ])
+            ->postJson('/api/billing/checkout', ['plan' => 'receipt_addon'])
             ->assertCreated();
 
         $paymentId = $checkout->json('payment.id');

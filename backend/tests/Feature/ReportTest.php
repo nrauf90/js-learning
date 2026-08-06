@@ -156,6 +156,53 @@ class ReportTest extends TestCase
             ->assertJsonPath('net', 116000);
     }
 
+    public function test_weekly_report_includes_sql_aggregated_daily_breakdown(): void
+    {
+        $user = User::factory()->create();
+        $this->subscribeUser($user);
+        $grocery = ExpenseCategory::where('slug', 'grocery')->firstOrFail();
+        $salary = ExpenseCategory::where('slug', 'salary')->firstOrFail();
+
+        CashEntry::create([
+            'user_id' => $user->id,
+            'category_id' => $grocery->id,
+            'type' => 'expense',
+            'amount' => 200,
+            'entry_date' => '2026-07-28',
+        ]);
+        CashEntry::create([
+            'user_id' => $user->id,
+            'category_id' => $grocery->id,
+            'type' => 'expense',
+            'amount' => 300,
+            'entry_date' => '2026-07-28',
+        ]);
+        CashEntry::create([
+            'user_id' => $user->id,
+            'category_id' => $salary->id,
+            'type' => 'income',
+            'amount' => 1000,
+            'entry_date' => '2026-07-29',
+        ]);
+
+        $response = $this->actingAs($user, 'sanctum')
+            ->getJson('/api/reports/weekly?start=2026-07-30')
+            ->assertOk();
+
+        $byDay = $response->json('by_day');
+        $this->assertIsArray($byDay);
+
+        $day28 = collect($byDay)->firstWhere('date', '2026-07-28');
+        $this->assertNotNull($day28);
+        $this->assertEquals(500, $day28['expense']);
+        $this->assertEquals(0, $day28['income']);
+
+        $day29 = collect($byDay)->firstWhere('date', '2026-07-29');
+        $this->assertNotNull($day29);
+        $this->assertEquals(1000, $day29['income']);
+        $this->assertEquals(0, $day29['expense']);
+    }
+
     public function test_reports_exclude_other_users_entries(): void
     {
         $owner = User::factory()->create();

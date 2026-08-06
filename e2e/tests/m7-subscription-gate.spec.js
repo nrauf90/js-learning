@@ -56,9 +56,9 @@ test.describe('M7 — Subscription gating', () => {
     await expect(page).not.toHaveURL(/billing/);
   });
 
-  test('tax calculator stays free without login', async ({ page }) => {
-    await page.goto('/calculator.html');
-    await expect(page.getByRole('heading', { name: /Pakistan Tax Calculator/i })).toBeVisible();
+  test('landing page stays public without login', async ({ page }) => {
+    await page.goto('/index.html');
+    await expect(page.getByRole('heading', { name: /Ring up sales/i })).toBeVisible();
     await expect(page).not.toHaveURL(/login|billing/);
   });
 });

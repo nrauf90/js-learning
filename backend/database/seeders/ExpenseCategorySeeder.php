@@ -36,6 +36,8 @@ class ExpenseCategorySeeder extends Seeder
         }
 
         $incomeCategories = [
+            // Every POS sale posts against this one — see SaleService.
+            'Sales',
             'Salary',
             'Freelance',
             'Business',

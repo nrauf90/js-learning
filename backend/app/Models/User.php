@@ -24,13 +24,18 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+    /**
+     * `is_admin` is deliberately NOT fillable — a privilege-escalation
+     * footgun waiting to happen if a future controller ever mass-assigns
+     * unfiltered request input. It's only ever set explicitly, e.g. via
+     * `forceFill()` in AdminController::userUpdate() or the admin seeder.
+     */
     protected $fillable = [
         'name',
         'email',
         'password',
         'google_id',
         'avatar',
-        'is_admin',
     ];
 
     /**
@@ -75,5 +80,34 @@ class User extends Authenticatable
     public function subscriptionAddons(): HasMany
     {
         return $this->hasMany(SubscriptionAddon::class);
+    }
+
+    /**
+     * `paddle_customer_id` is deliberately NOT fillable, for the same reason as
+     * `is_admin` — it is written only by the billing layer, never from request
+     * input. Pointing a user row at someone else's Paddle customer would hand
+     * them that customer's portal, invoices and payment methods.
+     */
+    public function setPaddleCustomerId(string $customerId): void
+    {
+        $this->forceFill(['paddle_customer_id' => $customerId])->save();
+    }
+
+    /**
+     * The shape of a user returned from any auth endpoint (login/register/
+     * /user/Google exchange). Deliberately omits `google_id` — it's an
+     * internal linking id with no frontend use.
+     *
+     * @return array{id: int, name: string, email: string, avatar: ?string, is_admin: bool}
+     */
+    public function toAuthArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'email' => $this->email,
+            'avatar' => $this->avatar,
+            'is_admin' => (bool) $this->is_admin,
+        ];
     }
 }

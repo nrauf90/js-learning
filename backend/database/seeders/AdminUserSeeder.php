@@ -17,13 +17,15 @@ class AdminUserSeeder extends Seeder
         $adminExists = User::where('email', 'admin@cashflow.local')->exists();
 
         if (!$adminExists) {
-            User::create([
+            $admin = User::create([
                 'name' => 'Admin User',
                 'email' => 'admin@cashflow.local',
                 'password' => Hash::make('admin123'),
-                'is_admin' => true,
                 'email_verified_at' => now(),
             ]);
+
+            // is_admin is intentionally not mass-assignable; set it explicitly.
+            $admin->forceFill(['is_admin' => true])->save();
 
             $this->command->info('Admin user created successfully!');
             $this->command->info('Email: admin@cashflow.local');
