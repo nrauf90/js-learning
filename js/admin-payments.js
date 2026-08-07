@@ -1,33 +1,6 @@
 import { apiGet, getAuthToken } from './api.js';
 import { initShell } from './shell.js';
-
-const THEME_KEY = 'tax-calculator-theme';
-
-function applyTheme(theme) {
-  const root = document.documentElement;
-  const toggle = document.getElementById('theme-toggle');
-  root.setAttribute('data-theme', theme);
-  if (!toggle) return;
-  toggle.setAttribute('aria-pressed', String(theme === 'light'));
-  toggle.setAttribute(
-    'aria-label',
-    theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'
-  );
-}
-
-function initTheme() {
-  const stored = localStorage.getItem(THEME_KEY);
-  if (stored === 'light' || stored === 'dark') {
-    applyTheme(stored);
-  } else {
-    applyTheme(window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-  }
-  document.getElementById('theme-toggle')?.addEventListener('click', () => {
-    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    applyTheme(next);
-    localStorage.setItem(THEME_KEY, next);
-  });
-}
+import { initTheme } from './theme.js';
 
 function requireAuth() {
   if (getAuthToken()) return true;
@@ -44,8 +17,14 @@ function showAlert(message, type = 'error') {
   setTimeout(() => { el.hidden = true; }, 5000);
 }
 
-function formatRs(amount) {
-  return `Rs ${Math.round(amount || 0).toLocaleString('en-PK')}`;
+/** Subscription money, billed by Paddle — not the PKR the rest of the app deals in. */
+function formatMoney(amount, currency = 'USD') {
+  const value = Number(amount) || 0;
+  try {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(value);
+  } catch {
+    return `${currency} ${value.toFixed(2)}`;
+  }
 }
 
 function formatDateTime(dateString) {
@@ -77,7 +56,7 @@ function renderPayments(payments) {
   tbody.innerHTML = payments.map(p => `
     <tr>
       <td><strong>${escapeHtml(p.user?.name || 'Unknown')}</strong><br><small>${escapeHtml(p.user?.email || '')}</small></td>
-      <td><strong>${formatRs(p.amount)}</strong></td>
+      <td><strong>${formatMoney(p.amount, p.currency)}</strong></td>
       <td><span class="admin-badge admin-badge-info">${p.provider?.toUpperCase() || '—'}</span></td>
       <td><span class="admin-badge admin-badge-${p.status === 'completed' ? 'success' : (p.status === 'pending' ? 'warning' : 'danger')}">${escapeHtml(p.status || '—')}</span></td>
       <td>${formatDateTime(p.created_at)}</td>

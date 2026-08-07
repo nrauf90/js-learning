@@ -4,13 +4,20 @@ const USER_KEY = 'cashflow_auth_user';
 
 const PAGES = {
   home: { href: 'index.html', label: 'Home' },
-  calculator: { href: 'calculator.html', label: 'Tax Calculator' },
+  pos: { href: 'pos.html', label: 'Sell' },
+  products: { href: 'products.html', label: 'Products' },
   dashboard: { href: 'dashboard.html', label: 'Dashboard' },
   reports: { href: 'reports.html', label: 'Reports' },
   cashflow: { href: 'cashflow.html', label: 'Cash Flow' },
-  billing: { href: 'billing.html', label: 'Billing' },
+  // No billing entry: shops are opened and renewed by the platform admin, and
+  // the page turns a shop away. Removed here as well as from the app shell so
+  // the legacy top nav on the public pages cannot offer a door the sidebar has
+  // already closed.
   profile: { href: 'profile.html', label: 'Profile' },
 };
+
+/** Pages that only make sense once you have an account. */
+const AUTH_ONLY = new Set(['pos', 'products', 'dashboard', 'reports', 'cashflow', 'profile']);
 
 function wireLogout(link) {
   link.textContent = 'Log out';
@@ -76,7 +83,7 @@ function ensureNavToggle(headerActions) {
 }
 
 /**
- * @param {{ current?: 'home' | 'calculator' | 'dashboard' | 'reports' | 'cashflow' | 'billing' }} [options]
+ * @param {{ current?: 'home' | 'pos' | 'products' | 'dashboard' | 'reports' | 'cashflow' | 'billing' | 'profile' }} [options]
  */
 export function initNav(options = {}) {
   const nav = document.querySelector('.site-nav');
@@ -91,11 +98,7 @@ export function initNav(options = {}) {
   nav.innerHTML = '';
 
   for (const [key, page] of Object.entries(PAGES)) {
-    if (
-      (key === 'dashboard' || key === 'reports' || key === 'billing' || key === 'profile') &&
-      !loggedIn
-    )
-      continue;
+    if (AUTH_ONLY.has(key) && !loggedIn) continue;
 
     const a = document.createElement('a');
     a.href = page.href;

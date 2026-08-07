@@ -1,33 +1,6 @@
-import { apiGet, getAuthToken } from './api.js';
+import { apiGet, apiPost, getAuthToken } from './api.js';
 import { initShell } from './shell.js';
-
-const THEME_KEY = 'tax-calculator-theme';
-
-function applyTheme(theme) {
-  const root = document.documentElement;
-  const toggle = document.getElementById('theme-toggle');
-  root.setAttribute('data-theme', theme);
-  if (!toggle) return;
-  toggle.setAttribute('aria-pressed', String(theme === 'light'));
-  toggle.setAttribute(
-    'aria-label',
-    theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'
-  );
-}
-
-function initTheme() {
-  const stored = localStorage.getItem(THEME_KEY);
-  if (stored === 'light' || stored === 'dark') {
-    applyTheme(stored);
-  } else {
-    applyTheme(window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-  }
-  document.getElementById('theme-toggle')?.addEventListener('click', () => {
-    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    applyTheme(next);
-    localStorage.setItem(THEME_KEY, next);
-  });
-}
+import { initTheme } from './theme.js';
 
 function requireAuth() {
   if (getAuthToken()) return true;
@@ -42,10 +15,6 @@ function showAlert(message, type = 'error') {
   el.textContent = message;
   el.dataset.type = type;
   setTimeout(() => { el.hidden = true; }, 5000);
-}
-
-function formatRs(amount) {
-  return `Rs ${Math.round(amount || 0).toLocaleString('en-PK')}`;
 }
 
 function formatDate(dateString) {
@@ -89,10 +58,49 @@ async function loadSubscriptions() {
   }
 }
 
+/**
+ * The only route a shop has to a working subscription now that self-serve
+ * checkout is closed. Extending is the same call as granting — the backend
+ * adds a term to whatever the shop still has left rather than restarting it.
+ */
+async function onGrant(event) {
+  event.preventDefault();
+
+  const email = document.getElementById('grant-email').value.trim();
+  const plan = document.getElementById('grant-plan').value;
+  const endsAt = document.getElementById('grant-ends-at').value;
+  if (!email) {
+    showAlert('Enter the shop owner’s email.');
+    return;
+  }
+
+  const btn = document.getElementById('grant-submit');
+  btn.disabled = true;
+
+  try {
+    const payload = { email, plan };
+    if (endsAt) payload.ends_at = endsAt;
+
+    const data = await apiPost('/api/admin/subscriptions', payload);
+    showAlert(`Subscription active until ${formatDate(data.subscription?.ends_at)}.`, 'success');
+    document.getElementById('grant-form').reset();
+    await loadSubscriptions();
+  } catch (err) {
+    const errors = err.body?.errors;
+    showAlert(
+      errors ? Object.values(errors).flat().join(' ') : err.message || 'Could not grant subscription'
+    );
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 async function boot() {
   initTheme();
   initShell({ current: 'admin-subscriptions' });
   if (!requireAuth()) return;
+
+  document.getElementById('grant-form')?.addEventListener('submit', onGrant);
   await loadSubscriptions();
 }
 

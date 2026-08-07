@@ -68,10 +68,9 @@ class AuthTest extends TestCase
         // Regression test: userPayload() previously omitted `is_admin`, so
         // the sidebar's "Admin Panel" link disappeared moments after page
         // load once js/shell.js refreshed the cached user from /api/user.
-        $admin = User::factory()->create([
+        $admin = User::factory()->admin()->create([
             'email' => 'admin2@example.com',
             'password' => 'password123',
-            'is_admin' => true,
         ]);
 
         $login = $this->postJson('/api/login', [

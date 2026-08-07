@@ -20,28 +20,40 @@ export async function registerAndToken(request, prefix = 'qa') {
   return { email, token: (await res.json()).token };
 }
 
-export async function activateSandboxSubscription(request, token) {
-  const headers = {
-    Authorization: `Bearer ${token}`,
-    Accept: 'application/json',
-  };
+let adminTokenPromise = null;
 
-  const checkout = await request.post(`${API}/api/billing/checkout`, {
-    headers,
-    data: { plan: 'monthly', provider: 'jazzcash' },
-  });
-  expect(checkout.status()).toBe(201);
-  const paymentId = (await checkout.json()).payment.id;
+/**
+ * One operator login per worker. Every subscribed fixture in the suite needs an
+ * admin now, and /api/login is rate-limited — logging in per fixture would trip
+ * the throttle long before the suite finished.
+ */
+function adminToken(request) {
+  if (!adminTokenPromise) {
+    adminTokenPromise = loginAdmin(request).then((session) => session.token);
+  }
+  return adminTokenPromise;
+}
 
-  const complete = await request.post(`${API}/api/billing/sandbox/complete/${paymentId}`, {
-    headers,
+/**
+ * Give a shop its subscription the way the product now does it: the platform
+ * admin grants it. Shops cannot reach checkout, the portal or the sandbox
+ * completer any more, so a fixture that bought its own access would be testing
+ * a flow that no longer exists.
+ */
+export async function grantSubscription(request, email, plan = 'monthly') {
+  const res = await request.post(`${API}/api/admin/subscriptions`, {
+    headers: {
+      Authorization: `Bearer ${await adminToken(request)}`,
+      Accept: 'application/json',
+    },
+    data: { email, plan },
   });
-  expect(complete.ok()).toBeTruthy();
+  expect(res.status()).toBe(201);
 }
 
 export async function registerSubscribedUser(request, prefix = 'qa') {
   const { email, token } = await registerAndToken(request, prefix);
-  await activateSandboxSubscription(request, token);
+  await grantSubscription(request, email);
   return { email, token };
 }
 

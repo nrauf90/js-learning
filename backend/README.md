@@ -78,46 +78,91 @@ From the repo root:
 npm run dev:api
 ```
 
-## Billing API (JazzCash & EasyPaisa)
+## Billing API (Paddle)
+
+Paddle is the merchant of record: it hosts checkout, charges the card, and handles sales
+tax/VAT. **Webhooks are the only thing that moves subscription state** — the browser's
+post-checkout redirect is cosmetic and carries nothing we trust.
 
 | Method | Path | Auth | Notes |
 |--------|------|------|-------|
-| GET | `/api/billing/plans` | No | Plan prices (PKR 500/mo, 5400/yr) |
-| GET | `/api/billing/subscription` | Bearer | Current subscription + addon flags |
-| POST | `/api/billing/checkout` | Bearer | `{ plan, provider }` → payment + gateway form |
-| POST | `/api/billing/sandbox/complete/{payment}` | Bearer | Local sandbox only (`BILLING_SANDBOX=true`) |
+| GET | `/api/billing/plans` | No | Plans + display prices |
+| GET | `/api/billing/subscription` | Bearer | Current subscription, trial, addon flags |
+| POST | `/api/billing/checkout` | Bearer | `{ plan }` → `redirect_url` to Paddle's hosted checkout |
+| POST | `/api/billing/portal` | Bearer | Single-use hosted customer-portal link (never cache it) |
+| POST | `/api/billing/cancel` | Bearer | Cancels at period end via Paddle |
+| POST | `/api/billing/sandbox/complete/{payment}` | Bearer | Local test mode only (`BILLING_SANDBOX=true`) |
+| POST | `/api/billing/paddle/webhook` | Signature | `Paddle-Signature` HMAC over the raw body |
 | POST | `/api/receipts/upload` | Bearer + subscription | Stub — returns **501** “Coming soon” (M8) |
-| POST | `/api/billing/jazzcash/ipn` | No | JazzCash IPN callback |
-| GET/POST | `/api/billing/jazzcash/return` | No | Redirects to frontend billing page |
-| POST | `/api/billing/easypaisa/ipn` | No | EasyPaisa IPN callback |
-| GET/POST | `/api/billing/easypaisa/return` | No | Redirects to frontend billing page |
 
 ```bash
 cd backend && php artisan test --filter=BillingTest
 ```
 
+### Paddle dashboard setup
+
+Checkout will not work until all of these are done:
+
+1. Create the products/prices and copy their IDs into `PADDLE_PRICE_*`.
+2. Set a **default payment link** (Checkout → Checkout settings). Without one, Paddle returns a
+   transaction with no `checkout.url` and checkout fails with a 503.
+3. Set the default success URL to `{FRONTEND_URL}/billing.html?status=success`.
+4. Add a notification destination pointing at `POST {APP_URL}/api/billing/paddle/webhook`,
+   subscribed to `transaction.completed`, `transaction.payment_failed`, `subscription.*` and
+   `adjustment.created`. Copy its `pdl_ntfset_…` secret into `PADDLE_WEBHOOK_SECRET`.
+5. Give the API key the `customer_portal_session.write` permission, or portal links come back
+   empty.
+
 ### Billing environment variables
 
-Add to `.env` (sandbox works without keys when `BILLING_SANDBOX=true`):
+See `.env.example` for the full annotated list. The ones that matter most:
 
 | Variable | Purpose |
 |----------|---------|
-| `BILLING_SANDBOX` | `true` for local sandbox checkout (default in local) |
+| `BILLING_SANDBOX` | `true` skips Paddle entirely for local dev and the E2E harness. Must be set explicitly — it does **not** default on for `APP_ENV=local`, and must never be on for a publicly reachable instance |
 | `BILLING_TRIAL_DAYS` | Free trial length for new users (default **7**) |
-| `FRONTEND_URL` | Frontend origin — return redirects to `{FRONTEND_URL}/billing.html` |
-| `JAZZCASH_MERCHANT_ID` | JazzCash merchant ID |
-| `JAZZCASH_PASSWORD` | JazzCash password |
-| `JAZZCASH_INTEGRITY_SALT` | JazzCash HMAC salt |
-| `JAZZCASH_RETURN_URL` | Optional override (default `{APP_URL}/api/billing/jazzcash/return`) |
-| `JAZZCASH_IPN_URL` | Optional override (default `{APP_URL}/api/billing/jazzcash/ipn`) |
-| `JAZZCASH_CHECKOUT_URL` | JazzCash form POST URL (sandbox URL by default) |
-| `EASYPAISA_STORE_ID` | EasyPaisa store ID |
-| `EASYPAISA_HASH_KEY` | EasyPaisa hash key |
-| `EASYPAISA_RETURN_URL` | Optional override |
-| `EASYPAISA_IPN_URL` | Optional override |
-| `EASYPAISA_CHECKOUT_URL` | EasyPaisa initiate URL |
+| `BILLING_CURRENCY` | Subscription currency (**USD** — Paddle does not support PKR) |
+| `PADDLE_ENV` | `sandbox` or `production`; picks the API host. Sandbox price IDs are invalid in production |
+| `PADDLE_API_KEY` | Server-side API key |
+| `PADDLE_WEBHOOK_SECRET` | Notification-setting secret. Verification **fails closed** without it |
+| `PADDLE_PRICE_MONTHLY` / `_YEARLY` / `_RECEIPT_ADDON` | Price IDs (`pri_…`) |
+| `FRONTEND_URL` | Frontend origin — used for the post-checkout return |
 
-Pricing is configured in `config/billing.php` (monthly **500**, yearly **5400**, receipt add-on **500**).
+Display prices live in `config/billing.php`; Paddle is the source of truth for what is actually
+charged, so the two must be kept in step by hand.
+
+## Point of sale API
+
+All routes require `auth:sanctum` **and** an active subscription/trial.
+
+| Method | Path | Notes |
+|--------|------|-------|
+| GET | `/api/products` | `search`, `category_id`, `active`, `low_stock`, paginated |
+| POST | `/api/products` | `stock_quantity` here is opening stock and logs an `initial` movement |
+| GET | `/api/products/lookup?code=` | Exact barcode/SKU match for the scanner; 404 if unknown |
+| GET/PUT/DELETE | `/api/products/{id}` | PUT **ignores** `stock_quantity` on purpose |
+| POST | `/api/products/{id}/stock` | `{ quantity_delta, type: restock\|adjustment, note? }` |
+| GET/POST/PUT/DELETE | `/api/product-categories` | Per-seller categories |
+| GET | `/api/sales` | `date`, `status`, paginated |
+| POST | `/api/sales` | `{ items:[{product_id, quantity}], discount_amount?, payment_method?, amount_tendered?, note? }` |
+| GET | `/api/sales/today` | Counter summary for drawer reconciliation |
+| GET | `/api/sales/{id}` | Full sale with line items |
+| POST | `/api/sales/{id}/refund` | Restores stock, removes the income entry |
+
+Notes:
+
+- **Stock only moves through `SaleService`** (sale, refund, adjust). Every change writes a
+  `stock_movements` row carrying the running balance, so a drifted count can be explained.
+- Sales run in a transaction with the products `lockForUpdate()` — two cashiers selling the last
+  unit at once is the normal POS race, and without the lock both writes succeed.
+- Every sale posts an income `cash_entry` under the `sales` category, which is how the dashboard,
+  reports and exports pick up POS revenue with no extra wiring. Seed it with
+  `php artisan db:seed --class=ExpenseCategorySeeder`.
+- Sale line items snapshot the product name and prices, so receipts survive a rename or delete.
+
+```bash
+cd backend && php artisan test --filter=PosTest
+```
 
 Receipt images will use the private `receipts` disk (`storage/app/receipts`) when upload is implemented.
 

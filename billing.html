@@ -21,7 +21,7 @@
         </button>
         <div class="topbar-heading">
           <h1>Billing</h1>
-          <p class="tagline">Subscribe via JazzCash or EasyPaisa</p>
+          <p class="tagline">Platform administrators only — secure checkout by Paddle</p>
         </div>
         <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">
           <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
@@ -34,18 +34,25 @@
 
       <section class="calculator-card" id="subscription-status">
         <h2 class="dashboard-title">Your subscription</h2>
+        <p class="billing-muted">
+          Shops do not buy for themselves. To activate or extend a shop's access, use
+          <a href="admin-subscriptions.html">Subscriptions</a> in the admin panel.
+        </p>
         <p id="subscription-info" class="billing-muted">Loading…</p>
+        <div class="billing-manage" id="manage-billing" hidden>
+          <button type="button" class="btn btn-secondary" id="portal-btn">Manage billing</button>
+          <button type="button" class="btn btn-ghost" id="cancel-btn" hidden>Cancel subscription</button>
+        </div>
       </section>
 
       <section class="calculator-card">
         <h2 class="dashboard-title">Choose a plan</h2>
-        <p class="billing-muted">Tax calculator stays free. New accounts get a <strong>7-day free trial</strong> for cash flow and reports.</p>
+        <p class="billing-muted">New accounts get a <strong>7-day free trial</strong> for cash flow and reports.</p>
         <div class="billing-plans" id="plan-cards"></div>
       </section>
 
       <section class="calculator-card">
-        <h2 class="dashboard-title">Payment method</h2>
-        <div class="billing-providers" id="provider-options"></div>
+        <h2 class="dashboard-title">Checkout</h2>
         <button type="button" class="btn btn-primary billing-pay-btn" id="checkout-btn" disabled>Subscribe</button>
         <p class="billing-muted" id="checkout-note"></p>
       </section>
@@ -55,14 +62,13 @@
         <div class="billing-addon-card" id="receipt-addon-card">
           <div class="billing-addon-head">
             <span class="billing-plan-name">Receipt AI</span>
-            <span class="billing-plan-price">Rs 500/month</span>
+            <span class="billing-plan-price">—</span>
           </div>
           <p class="billing-muted">Scan receipts, detect logos, and enhance image quality.</p>
           <span class="billing-addon-badge">Coming soon</span>
         </div>
       </section>
 
-      <form id="gateway-form" method="POST" target="_self" hidden></form>
       </main>
     </div>
   </div>

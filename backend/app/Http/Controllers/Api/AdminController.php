@@ -6,21 +6,33 @@ use App\Http\Controllers\Controller;
 use App\Models\CashEntry;
 use App\Models\ExpenseCategory;
 use App\Models\Payment;
+use App\Models\Shop;
 use App\Models\Subscription;
 use App\Models\User;
+use App\Services\Billing\SubscriptionService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Password;
 
 class AdminController extends Controller
 {
+    /** Hard cap on `per_page` so a huge value can't be used for a DoS-y page load. */
+    private const MAX_PER_PAGE = 100;
+
+    private function perPage(Request $request, int $default = 20): int
+    {
+        return max(1, min(self::MAX_PER_PAGE, (int) $request->input('per_page', $default)));
+    }
+
     /**
      * Admin dashboard statistics
      */
     public function dashboard(Request $request)
     {
         $totalUsers = User::count();
-        $activeSubscriptions = Subscription::where('status', 'active')
+        $activeSubscriptions = Subscription::whereIn('status', Subscription::ACTIVE_STATUSES)
             ->where('ends_at', '>', now())
             ->count();
 
@@ -44,6 +56,7 @@ class AdminController extends Controller
                 'total_users' => $totalUsers,
                 'active_subscriptions' => $activeSubscriptions,
                 'monthly_revenue' => $monthlyRevenue,
+                'currency' => config('billing.currency', 'USD'),
                 'total_entries' => $totalEntries,
             ],
             'recent_users' => $recentUsers,
@@ -70,7 +83,7 @@ class AdminController extends Controller
             $query->where('is_admin', true);
         }
 
-        $perPage = $request->input('per_page', 20);
+        $perPage = $this->perPage($request);
         $users = $query->withCount(['cashEntries', 'subscriptions', 'payments'])
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
@@ -122,7 +135,15 @@ class AdminController extends Controller
             return response()->json(['error' => 'Cannot remove admin privileges from yourself'], 422);
         }
 
-        $user->update($request->only(['name', 'email', 'is_admin']));
+        $user->fill($request->only(['name', 'email']));
+
+        // is_admin is intentionally not mass-assignable (see User::$fillable);
+        // set it explicitly here, the one place it's allowed to change.
+        if ($request->has('is_admin')) {
+            $user->is_admin = $request->boolean('is_admin');
+        }
+
+        $user->save();
 
         return response()->json(['user' => $user]);
     }
@@ -149,6 +170,111 @@ class AdminController extends Controller
     }
 
     /**
+     * List shop admins with the shop each one runs.
+     *
+     * Paginated in the same shape as users() so the admin UI can reuse its
+     * pagination renderer.
+     */
+    public function shopAdmins(Request $request)
+    {
+        // is_admin is what makes an account a platform operator; `role` on
+        // those rows is just the column default, so they are excluded here
+        // rather than showing up as customers of the platform.
+        $query = User::query()
+            ->where('role', User::ROLE_SHOP_ADMIN)
+            ->where('is_admin', false)
+            ->with('ownedShop');
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhereHas('ownedShop', fn ($shop) => $shop->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        $shopAdmins = $query->orderBy('created_at', 'desc')->paginate($this->perPage($request));
+
+        // One grouped count for the whole page rather than a count query per
+        // row — this list is the platform's customer list and only grows.
+        $staffCounts = User::query()
+            ->whereIn('shop_id', $shopAdmins->pluck('ownedShop.id')->filter()->all())
+            ->where('role', User::ROLE_STAFF)
+            ->selectRaw('shop_id, COUNT(*) as staff_total')
+            ->groupBy('shop_id')
+            ->pluck('staff_total', 'shop_id');
+
+        return response()->json($shopAdmins->through(fn (User $user) => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'created_at' => $user->created_at,
+            'shop' => $user->ownedShop ? [
+                'id' => $user->ownedShop->id,
+                'name' => $user->ownedShop->name,
+                'phone' => $user->ownedShop->phone,
+                'address' => $user->ownedShop->address,
+            ] : null,
+            'staff_count' => (int) ($staffCounts[$user->ownedShop?->id] ?? 0),
+        ]));
+    }
+
+    /**
+     * Onboard a shop: the owner's login and the shop it runs, in one call.
+     *
+     * The two halves are useless apart — an owner with no shop cannot add
+     * staff, a shop with no owner has nobody to run it — so they share a
+     * transaction.
+     */
+    public function shopAdminStore(Request $request)
+    {
+        // Password rules come from AuthController::register via
+        // Password::defaults(); an account created here logs in through the
+        // same endpoint as one that signed itself up.
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'confirmed', Password::defaults()],
+            'shop_name' => ['required', 'string', 'max:160'],
+            'shop_phone' => ['nullable', 'string', 'max:32'],
+            'shop_address' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        [$owner, $shop] = DB::transaction(function () use ($validated) {
+            // Only name/email/password are mass-assigned. is_admin stays out of
+            // reach entirely — this endpoint creates shop owners, never another
+            // platform operator, however the request is shaped.
+            $owner = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => $validated['password'],
+            ]);
+
+            $shop = Shop::create([
+                'owner_id' => $owner->id,
+                'name' => $validated['shop_name'],
+                'phone' => $validated['shop_phone'] ?? null,
+                'address' => $validated['shop_address'] ?? null,
+            ]);
+
+            $owner->assignRole(User::ROLE_SHOP_ADMIN, $shop->id);
+
+            return [$owner->fresh(), $shop];
+        });
+
+        return response()->json([
+            'user' => $owner->toAuthArray(),
+            'shop' => [
+                'id' => $shop->id,
+                'name' => $shop->name,
+                'phone' => $shop->phone,
+                'address' => $shop->address,
+            ],
+        ], 201);
+    }
+
+    /**
      * List all subscriptions
      */
     public function subscriptions(Request $request)
@@ -163,10 +289,80 @@ class AdminController extends Controller
             $query->where('plan', $request->input('plan'));
         }
 
-        $perPage = $request->input('per_page', 20);
+        $perPage = $this->perPage($request);
         $subscriptions = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
         return response()->json($subscriptions);
+    }
+
+    /**
+     * Grant a shop its subscription, or extend the one it has.
+     *
+     * Shops no longer buy for themselves, and subscriptionUpdate() can only
+     * edit a row that already exists — a shop onboarded through
+     * shopAdminStore() has none, which left every new shop stuck on the trial
+     * with no way off it.
+     */
+    public function subscriptionStore(Request $request, SubscriptionService $subscriptions)
+    {
+        $validated = $request->validate([
+            'user_id' => ['required_without:email', 'integer', 'exists:users,id'],
+            'email' => ['required_without:user_id', 'email', 'exists:users,email'],
+            'plan' => ['required', 'in:monthly,yearly'],
+            'ends_at' => ['nullable', 'date', 'after_or_equal:today'],
+        ]);
+
+        $user = isset($validated['user_id'])
+            ? User::findOrFail($validated['user_id'])
+            : User::where('email', $validated['email'])->firstOrFail();
+
+        $existing = $subscriptions->currentSubscription($user);
+
+        // Extend from whatever the shop still has left rather than from today,
+        // so renewing a few days early never throws away days already granted.
+        $base = $existing && $existing->ends_at?->isFuture() ? $existing->ends_at->copy() : now();
+        // An explicit date means "through the end of that day". Taking it bare
+        // would cut the shop off at midnight — a day earlier than the operator
+        // picked, and the sort of thing nobody notices until the till locks.
+        $endsAt = isset($validated['ends_at'])
+            ? Carbon::parse($validated['ends_at'])->endOfDay()
+            : $this->planEndsAt($base, $validated['plan']);
+
+        if ($existing) {
+            $existing->update([
+                'plan' => $validated['plan'],
+                'status' => 'active',
+                'ends_at' => $endsAt,
+                'renews_at' => $endsAt,
+            ]);
+
+            return response()->json(['subscription' => $existing->fresh()], 201);
+        }
+
+        $subscription = Subscription::create([
+            'user_id' => $user->id,
+            // No external_id: nothing at Paddle backs a hand-granted
+            // subscription, and that absence is what keeps the portal and
+            // cancel controls off it.
+            'provider' => 'manual',
+            'plan' => $validated['plan'],
+            'status' => 'active',
+            'starts_at' => now(),
+            'ends_at' => $endsAt,
+            'renews_at' => $endsAt,
+        ]);
+
+        return response()->json(['subscription' => $subscription], 201);
+    }
+
+    private function planEndsAt(Carbon $from, string $plan): Carbon
+    {
+        $config = config("billing.plans.{$plan}");
+        $count = max(1, (int) ($config['interval_count'] ?? 1));
+
+        return ($config['interval'] ?? 'month') === 'year'
+            ? $from->copy()->addYears($count)
+            : $from->copy()->addMonths($count);
     }
 
     /**
@@ -174,8 +370,11 @@ class AdminController extends Controller
      */
     public function subscriptionUpdate(Request $request, Subscription $subscription)
     {
+        // Matches the statuses Paddle actually reports (note the single-l
+        // "canceled" — the old value here was "cancelled", which no webhook
+        // ever writes, so an admin edit could not round-trip a real status).
         $validator = Validator::make($request->all(), [
-            'status' => 'sometimes|in:active,cancelled,expired',
+            'status' => 'sometimes|in:active,trialing,past_due,paused,canceled,expired',
             'ends_at' => 'sometimes|date',
         ]);
 
@@ -211,7 +410,7 @@ class AdminController extends Controller
             $query->where('entry_date', '<=', $request->input('date_to'));
         }
 
-        $perPage = $request->input('per_page', 20);
+        $perPage = $this->perPage($request);
         $entries = $query->orderBy('entry_date', 'desc')->paginate($perPage);
 
         return response()->json($entries);
@@ -242,7 +441,7 @@ class AdminController extends Controller
             $query->where('provider', $request->input('gateway'));
         }
 
-        $perPage = $request->input('per_page', 20);
+        $perPage = $this->perPage($request);
         $payments = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
         return response()->json($payments);

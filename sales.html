@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sales | Cashflow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+</head>
+<body class="app-body sales-body">
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Sidebar"></aside>
+    <div class="app-overlay" id="app-overlay" aria-hidden="true"></div>
+
+    <div class="app-content">
+      <header class="app-topbar no-print">
+        <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Menu" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div class="topbar-heading">
+          <h1>Sales</h1>
+          <p class="tagline">Takings, profit &amp; what is still owed</p>
+        </div>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark theme" aria-pressed="true">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+      </header>
+
+      <main class="main app-main">
+        <div id="sales-alert" class="auth-alert" hidden role="alert"></div>
+
+        <section class="calculator-card">
+          <h2 class="dashboard-title">Takings &amp; profit</h2>
+          <div class="sales-stat-grid" id="sales-stats" aria-live="polite"></div>
+          <p class="sales-legend" id="sales-legend" hidden>
+            <span class="profit-flag" aria-hidden="true">*</span>
+            Profit marked with an asterisk is incomplete — some items were sold without a
+            recorded cost, so their takings are left out of the figure. Hover a marked
+            amount to see how much. Add the cost on <a href="products.html">Products</a>
+            to complete it.
+          </p>
+        </section>
+
+        <section class="calculator-card">
+          <div class="admin-filters sales-filters">
+            <div class="reports-mode sales-period" role="group" aria-label="Period">
+              <button type="button" class="reports-mode-btn active" data-period="today">Today</button>
+              <button type="button" class="reports-mode-btn" data-period="week">This week</button>
+              <button type="button" class="reports-mode-btn" data-period="month">This month</button>
+              <button type="button" class="reports-mode-btn" data-period="">All</button>
+            </div>
+
+            <label class="activity-filter">
+              <span>From</span>
+              <input type="date" id="filter-from" />
+            </label>
+            <label class="activity-filter">
+              <span>To</span>
+              <input type="date" id="filter-to" />
+            </label>
+            <button type="button" class="btn btn-secondary pos-mini" id="filter-range">Apply range</button>
+
+            <label class="activity-filter">
+              <span>Category</span>
+              <select id="filter-category"><option value="">All categories</option></select>
+            </label>
+            <label class="activity-filter">
+              <span>Payment</span>
+              <select id="filter-payment-status">
+                <option value="">Any status</option>
+                <option value="paid">Paid</option>
+                <option value="partial">Part paid</option>
+                <option value="pending">Unpaid</option>
+              </select>
+            </label>
+
+            <button type="button" class="btn btn-ghost pos-mini" id="filter-reset">Clear</button>
+          </div>
+        </section>
+
+        <section class="calculator-card">
+          <h2 class="dashboard-title">Sales</h2>
+          <p class="dashboard-range" id="sales-range">—</p>
+
+          <div class="admin-table-container">
+            <table class="admin-table sales-table">
+              <thead>
+                <tr>
+                  <th>Receipt</th>
+                  <th>When</th>
+                  <th class="sales-num">Items</th>
+                  <th class="sales-num">Total</th>
+                  <th class="sales-num">Profit</th>
+                  <th class="sales-num">Paid</th>
+                  <th class="sales-num">Pending</th>
+                  <th>Method</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="sales-body">
+                <tr><td colspan="9" class="admin-table-empty">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="admin-pagination" id="sales-pagination"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Outside .app-layout on purpose: printing a reprint hides the shell and
+       leaves this dialog as the only thing on the roll (see the sales.html
+       print rules at the end of css/styles.css). -->
+  <div class="pos-modal" id="sale-detail" hidden role="dialog" aria-modal="true" aria-labelledby="sale-detail-title">
+    <div class="pos-modal-overlay no-print" id="sale-detail-overlay"></div>
+    <div class="pos-modal-card sale-detail-card">
+      <div class="pos-receipt-head no-print">
+        <h2 class="auth-title" id="sale-detail-title">Sale</h2>
+        <div class="pos-receipt-actions">
+          <label class="input-label pos-paper-label" for="sale-paper">Roll</label>
+          <select class="auth-input pos-paper-select" id="sale-paper">
+            <option value="80">80 mm</option>
+            <option value="58">58 mm</option>
+          </select>
+          <button type="button" class="btn btn-secondary pos-mini" id="sale-print">Print receipt</button>
+          <button type="button" class="pos-modal-close" id="sale-detail-close" aria-label="Close sale">&times;</button>
+        </div>
+      </div>
+
+      <div class="pos-modal-body">
+        <div class="sale-detail-inner">
+          <!-- Shop-side figures, kept off the paper: the customer's copy has no
+               business carrying the margin the shop made on them. -->
+          <dl class="sale-facts no-print" id="sale-facts"></dl>
+
+          <div id="sale-receipt"></div>
+
+          <div id="sale-payment-alert" class="auth-alert no-print" hidden role="alert"></div>
+
+          <form class="sale-payment-form no-print" id="sale-payment-form" novalidate hidden>
+            <h3 class="auth-title sale-payment-title">Adjust payment</h3>
+            <p class="sale-payment-due" id="sale-payment-due"></p>
+
+            <div class="sale-payment-grid">
+              <div>
+                <label class="input-label" for="payment-amount">Amount received (PKR)</label>
+                <input class="auth-input" type="number" id="payment-amount" min="0.01" step="0.01" placeholder="0" />
+              </div>
+              <div>
+                <label class="input-label" for="payment-method">Method</label>
+                <!-- No "credit" option: settling a debt with more credit moves
+                     no money, and the API rejects it. -->
+                <select class="auth-input" id="payment-method">
+                  <option value="cash">Cash</option>
+                  <option value="card">Card</option>
+                  <option value="easypaisa">EasyPaisa</option>
+                  <option value="jazzcash">JazzCash</option>
+                  <option value="bank_transfer">Bank transfer</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div id="payment-reference-field" hidden>
+                <label class="input-label" for="payment-reference">Reference</label>
+                <input class="auth-input" type="text" id="payment-reference" maxlength="64" placeholder="Transaction id" />
+              </div>
+            </div>
+
+            <button type="submit" class="auth-submit cashflow-btn" id="payment-submit">Record payment</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/sales.js"></script>
+</body>
+</html>

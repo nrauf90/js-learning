@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shop &amp; Staff | Cashflow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+</head>
+<body class="app-body">
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Sidebar"></aside>
+    <div class="app-overlay" id="app-overlay" aria-hidden="true"></div>
+
+    <div class="app-content">
+      <header class="app-topbar no-print">
+        <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Menu" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div class="topbar-heading">
+          <h1>Shop &amp; Staff</h1>
+          <p class="tagline">Your shop details and the people who run the till</p>
+        </div>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+      </header>
+
+      <main class="main app-main">
+        <div id="shop-alert" class="auth-alert" hidden role="alert"></div>
+
+        <section class="calculator-card">
+          <h2 class="dashboard-title">Shop details</h2>
+          <p class="shop-hint">These appear on receipts and reports.</p>
+          <form id="shop-form" class="shop-form" novalidate>
+            <div class="shop-form-grid">
+              <div class="form-field">
+                <label for="shop-name">Shop name</label>
+                <input type="text" id="shop-name" maxlength="160" required autocomplete="organization" />
+              </div>
+              <div class="form-field">
+                <label for="shop-phone">Phone</label>
+                <input type="text" id="shop-phone" maxlength="32" autocomplete="tel" />
+              </div>
+              <div class="form-field">
+                <label for="shop-address">Address</label>
+                <input type="text" id="shop-address" maxlength="255" autocomplete="street-address" />
+              </div>
+              <div class="form-field">
+                <label for="shop-footer">Receipt footer</label>
+                <input type="text" id="shop-footer" maxlength="255" placeholder="Thank you for shopping with us" />
+              </div>
+            </div>
+            <div class="shop-form-actions">
+              <button type="submit" class="btn btn-primary" id="shop-save">Save shop details</button>
+            </div>
+          </form>
+          <p class="shop-readonly-note" id="shop-readonly" hidden>
+            Only the shop owner can change these details.
+          </p>
+        </section>
+
+        <section class="calculator-card" id="staff-section" hidden>
+          <h2 class="dashboard-title">Add a staff member</h2>
+          <p class="shop-hint">
+            Staff can work the till straight away. Give them the catalogue only if they
+            should also add products, edit prices and adjust stock.
+          </p>
+          <form id="staff-form" class="shop-form" novalidate>
+            <div class="shop-form-grid">
+              <div class="form-field">
+                <label for="staff-name">Name</label>
+                <input type="text" id="staff-name" maxlength="255" required autocomplete="off" />
+              </div>
+              <div class="form-field">
+                <label for="staff-email">Email</label>
+                <input type="email" id="staff-email" maxlength="255" required autocomplete="off" />
+              </div>
+              <div class="form-field">
+                <label for="staff-password">Password</label>
+                <input type="password" id="staff-password" minlength="8" required autocomplete="new-password" />
+              </div>
+              <div class="form-field">
+                <label for="staff-password-confirm">Confirm password</label>
+                <input type="password" id="staff-password-confirm" minlength="8" required autocomplete="new-password" />
+              </div>
+            </div>
+            <label class="admin-checkbox shop-grant">
+              <input type="checkbox" id="staff-can-manage" />
+              <span>Can manage products, categories and stock</span>
+            </label>
+            <div class="shop-form-actions">
+              <button type="submit" class="btn btn-primary" id="staff-save">Add staff member</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="calculator-card" id="staff-list-section" hidden>
+          <h2 class="dashboard-title">Staff</h2>
+          <div class="admin-table-container">
+            <table class="admin-table" id="staff-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Catalogue</th>
+                  <th>Added</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="staff-body">
+                <tr>
+                  <td colspan="5" class="admin-table-empty">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Deactivate confirmation -->
+  <div class="admin-modal" id="deactivate-modal" hidden>
+    <div class="admin-modal-overlay" id="deactivate-overlay"></div>
+    <div class="admin-modal-content admin-modal-small">
+      <div class="admin-modal-header">
+        <h3>Deactivate staff member</h3>
+        <button type="button" class="admin-modal-close" id="deactivate-close" aria-label="Close">×</button>
+      </div>
+      <div class="admin-modal-body">
+        <p>
+          They will be signed out and lose access to this shop straight away.
+          Their sales and activity history stays exactly as it is.
+        </p>
+        <p><strong id="deactivate-name"></strong></p>
+      </div>
+      <div class="admin-modal-footer">
+        <button type="button" class="btn btn-secondary" id="deactivate-cancel">Cancel</button>
+        <button type="button" class="btn btn-danger" id="deactivate-confirm">Deactivate</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/shop.js"></script>
+</body>
+</html>

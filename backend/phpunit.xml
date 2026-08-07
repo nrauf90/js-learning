@@ -29,6 +29,10 @@
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
+        <!-- Local test mode: checkout completes without calling Paddle, so the
+             suite needs no live API key. Tests that exercise the real Paddle
+             path override this per-test with Config::set. -->
+        <env name="BILLING_SANDBOX" value="true"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>

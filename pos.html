@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sell | Cashflow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+</head>
+<!-- No app shell here: the till owns the whole viewport and offers one way
+     out (Back), so a cashier cannot wander into billing or reports mid-sale. -->
+<body class="app-body pos-body">
+  <div class="pos-shell">
+    <header class="pos-topbar no-print">
+      <a class="btn btn-secondary pos-back" href="dashboard.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        Back
+      </a>
+      <div class="pos-topbar-heading">
+        <h1>Sell</h1>
+        <p class="tagline">Scan or search, then take payment</p>
+      </div>
+      <div class="pos-day-summary" id="pos-day-summary" aria-live="polite"></div>
+      <button type="button" class="btn btn-secondary pos-mini pos-day-btn" id="pos-close-day" hidden>Close day</button>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark theme" aria-pressed="true">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      </button>
+    </header>
+
+    <div id="pos-alert" class="auth-alert pos-alert" hidden role="alert"></div>
+
+    <div class="pos-layout">
+      <aside class="pos-pane pos-rail" aria-label="Categories">
+        <div class="pos-pane-head">
+          <label class="input-label" for="pos-category-search">Categories</label>
+          <input
+            class="auth-input pos-rail-search"
+            type="search"
+            id="pos-category-search"
+            autocomplete="off"
+            placeholder="Find a category"
+          />
+        </div>
+        <div class="pos-pane-scroll pos-rail-scroll">
+          <div id="pos-categories" class="pos-rail-list"></div>
+          <p id="pos-categories-empty" class="cashflow-empty" hidden>No category matches that.</p>
+        </div>
+      </aside>
+
+      <section class="pos-pane pos-catalog" aria-label="Products">
+        <form id="pos-search-form" class="pos-pane-head pos-search" novalidate>
+          <label class="input-label" for="pos-search">Scan barcode or search</label>
+          <input
+            class="auth-input"
+            type="text"
+            id="pos-search"
+            autocomplete="off"
+            enterkeyhint="done"
+            placeholder="Barcode, SKU, or product name"
+          />
+        </form>
+
+        <div class="pos-pane-scroll">
+          <div id="pos-products" class="pos-product-grid"></div>
+          <p id="pos-products-empty" class="cashflow-empty" hidden>
+            No products yet. <a href="products.html">Add your first product</a> to start selling.
+          </p>
+        </div>
+      </section>
+
+      <section class="pos-pane pos-ticket" aria-label="Current sale">
+        <div class="pos-pane-head pos-ticket-head">
+          <h2 class="auth-title">Ticket</h2>
+          <button type="button" class="btn btn-ghost pos-clear" id="pos-clear">Clear</button>
+        </div>
+
+        <div class="pos-pane-scroll pos-ticket-scroll">
+          <ul id="pos-lines" class="pos-lines"></ul>
+          <p id="pos-lines-empty" class="cashflow-empty">Nothing on the ticket yet.</p>
+        </div>
+
+        <div class="pos-ticket-foot">
+          <dl class="pos-totals">
+            <div><dt>Subtotal</dt><dd id="pos-subtotal">Rs 0</dd></div>
+            <div>
+              <dt><label class="input-label" for="pos-discount">Discount</label></dt>
+              <dd><input class="auth-input pos-discount-input" type="number" id="pos-discount" min="0" step="0.01" value="0" /></dd>
+            </div>
+            <!-- Only shown when rounding actually moved the ticket. A standing
+                 "Rounding Rs 0" line is noise on every sale that came out even. -->
+            <div id="pos-rounding-row" hidden><dt>Rounding</dt><dd id="pos-rounding">Rs 0</dd></div>
+            <div class="pos-total-row"><dt>Total</dt><dd id="pos-total">Rs 0</dd></div>
+          </dl>
+
+          <div class="pos-payment">
+            <!-- Every method here settles at the counter. Udhaar is not one of
+                 them and is deliberately not in this list — see #pos-credit. -->
+            <label class="input-label" for="pos-method">Payment</label>
+            <select class="auth-input" id="pos-method">
+              <option value="cash">Cash</option>
+              <option value="card">Card</option>
+              <option value="easypaisa">EasyPaisa</option>
+              <option value="jazzcash">JazzCash</option>
+              <option value="bank_transfer">Bank transfer</option>
+              <option value="other">Other</option>
+            </select>
+
+            <div id="pos-cash-fields">
+              <label class="input-label" for="pos-tendered">Amount received</label>
+              <input class="auth-input" type="number" id="pos-tendered" min="0" step="0.01" placeholder="0" />
+              <p class="pos-change" id="pos-change" aria-live="polite"></p>
+            </div>
+
+            <!-- Cash is the only settled method that leaves no trace to check a
+                 statement against; a card slip, a wallet transfer and a bank
+                 deposit all carry an id the shop reconciles with later. -->
+            <div id="pos-reference-field" hidden>
+              <label class="input-label" for="pos-reference">Reference (optional)</label>
+              <input class="auth-input" type="text" id="pos-reference" autocomplete="off" maxlength="64" placeholder="Transaction ID" />
+            </div>
+          </div>
+
+          <div class="pos-actions">
+            <button type="button" class="auth-submit pos-complete" id="pos-complete" disabled>Complete sale</button>
+            <!-- Its own button, not a value in the dropdown above: letting the
+                 goods go without the money is a different act from taking
+                 payment, and must not be reachable by mis-picking a select. -->
+            <button type="button" class="btn btn-secondary pos-credit" id="pos-credit" disabled>Save as Udhaar</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="pos-modal" id="pos-receipt" hidden role="dialog" aria-modal="true" aria-labelledby="pos-receipt-title">
+    <div class="pos-modal-overlay no-print" id="pos-receipt-overlay"></div>
+    <div class="pos-modal-card">
+      <div class="pos-receipt-head no-print">
+        <!-- A blank "Amount received" still settles a cash sale in full, which
+             is how a till works — but the cashier has to be told that is what
+             just happened, and told what is still owed when it is not. -->
+        <div class="pos-receipt-heading">
+          <h2 class="auth-title" id="pos-receipt-title">Sale complete</h2>
+          <p class="pos-receipt-state" id="pos-receipt-state" aria-live="polite"></p>
+        </div>
+        <div class="pos-receipt-actions">
+          <label class="input-label pos-paper-label" for="pos-paper">Roll</label>
+          <select class="auth-input pos-paper-select" id="pos-paper">
+            <option value="80">80 mm</option>
+            <option value="58">58 mm</option>
+          </select>
+          <button type="button" class="btn btn-secondary pos-mini" id="pos-print">Print receipt</button>
+          <button type="button" class="btn btn-primary pos-mini" id="pos-new-sale">New sale</button>
+          <button type="button" class="pos-modal-close" id="pos-receipt-close" aria-label="Close receipt">&times;</button>
+        </div>
+      </div>
+      <div class="pos-modal-body">
+        <div id="pos-receipt-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Day-book gate.
+       Deliberately not dismissible: a sale rung into a day nobody opened can
+       never be reconciled against a drawer count, which is the entire point of
+       bracketing the day. The way past it is to record the float or to walk
+       back out via Back to dashboard — the till does not offer "sell anyway".
+       The same dialog states the case when today has already been closed. -->
+  <div class="pos-modal pos-gate" id="pos-day-gate" hidden role="dialog" aria-modal="true" aria-labelledby="pos-gate-title">
+    <div class="pos-modal-overlay no-print"></div>
+    <div class="pos-modal-card pos-gate-card">
+      <h2 class="auth-title" id="pos-gate-title">Open the till</h2>
+
+      <form id="pos-open-form" novalidate>
+        <p class="pos-gate-note">
+          Count the cash already in the drawer and record it as today's opening float
+          — <strong id="pos-gate-date"></strong>. Every sale is measured against it.
+        </p>
+        <label class="input-label" for="pos-open-amount">Opening float (PKR)</label>
+        <input class="auth-input" type="number" id="pos-open-amount" min="0" step="0.01" value="0" inputmode="decimal" />
+        <div id="pos-open-error" class="auth-alert pos-gate-error" hidden role="alert"></div>
+        <button type="submit" class="auth-submit" id="pos-open-submit">Open day</button>
+        <a class="btn btn-ghost pos-gate-back" href="dashboard.html">Back to dashboard</a>
+      </form>
+
+      <div id="pos-gate-closed" hidden>
+        <p class="pos-gate-note">
+          Today's drawer has been counted and the day book closed. Reopening it would
+          leave that count unreconciled, so the till stops selling until tomorrow.
+        </p>
+        <dl class="pos-day-figures" id="pos-closed-figures"></dl>
+        <p class="pos-variance" id="pos-closed-variance"></p>
+        <a class="btn btn-primary pos-gate-back" href="dashboard.html">Back to dashboard</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="pos-modal" id="pos-day-close" hidden role="dialog" aria-modal="true" aria-labelledby="pos-day-close-title">
+    <div class="pos-modal-overlay no-print" id="pos-day-close-overlay"></div>
+    <div class="pos-modal-card pos-gate-card">
+      <div class="pos-gate-head">
+        <h2 class="auth-title" id="pos-day-close-title">Close the day</h2>
+        <button type="button" class="pos-modal-close" id="pos-day-close-dismiss" aria-label="Close this dialog">&times;</button>
+      </div>
+
+      <form id="pos-close-form" novalidate>
+        <!-- What the system expects is itemised before the box the count goes
+             into: a cashier who types a figure blind has no way to spot that
+             the "shortfall" is really a card sale rung up as cash. -->
+        <dl class="pos-day-figures" id="pos-close-expected"></dl>
+        <label class="input-label" for="pos-close-amount">Cash counted in the drawer (PKR)</label>
+        <input class="auth-input" type="number" id="pos-close-amount" min="0" step="0.01" inputmode="decimal" placeholder="0" />
+        <p class="pos-variance" id="pos-close-preview" aria-live="polite"></p>
+        <div id="pos-close-error" class="auth-alert pos-gate-error" hidden role="alert"></div>
+        <button type="submit" class="auth-submit" id="pos-close-submit">Close day</button>
+      </form>
+
+      <div id="pos-close-result" hidden>
+        <dl class="pos-day-figures" id="pos-close-summary"></dl>
+        <p class="pos-variance" id="pos-close-variance" aria-live="polite"></p>
+        <button type="button" class="auth-submit" id="pos-close-done">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Weight / amount keypad.
+       Opens whenever a weighed or poured product is tapped, because there is no
+       such thing as "one" of something scooped out of a sack. Both ways in are
+       offered because both are asked for over a Pakistani counter: the customer
+       names a weight ("ek pao daal"), or names the money ("pachaas ka daal do")
+       and the till has to work the weight back. -->
+  <div class="pos-modal" id="pos-weigh" hidden role="dialog" aria-modal="true" aria-labelledby="pos-weigh-title">
+    <div class="pos-modal-overlay no-print" id="pos-weigh-overlay"></div>
+    <div class="pos-modal-card pos-weigh-card">
+      <div class="pos-gate-head">
+        <h2 class="auth-title" id="pos-weigh-title">Weigh item</h2>
+        <button type="button" class="pos-modal-close" id="pos-weigh-dismiss" aria-label="Close keypad">&times;</button>
+      </div>
+
+      <p class="pos-weigh-product">
+        <span class="pos-weigh-name" id="pos-weigh-name"></span>
+        <span class="pos-weigh-rate" id="pos-weigh-rate"></span>
+      </p>
+
+      <div class="pos-weigh-tabs" role="tablist" aria-label="How to enter the amount">
+        <button type="button" class="pos-weigh-tab is-active" data-mode="quantity" role="tab" aria-selected="true">By weight</button>
+        <button type="button" class="pos-weigh-tab" data-mode="amount" role="tab" aria-selected="false">By amount</button>
+      </div>
+
+      <div class="pos-weigh-readout">
+        <div class="pos-weigh-entry">
+          <span class="pos-weigh-prefix" id="pos-weigh-prefix" hidden>Rs</span>
+          <span class="pos-weigh-typed" id="pos-weigh-typed">0</span>
+          <!-- Shop scales here are set to grams or to kilos depending on the
+               shop, so the unit is switched rather than assumed — otherwise
+               half the cashiers are mentally dividing by 1000 all day. -->
+          <span class="pos-weigh-units" id="pos-weigh-units"></span>
+        </div>
+        <p class="pos-weigh-derived" id="pos-weigh-derived" aria-live="polite"></p>
+      </div>
+
+      <div class="pos-weigh-quick" id="pos-weigh-quick"></div>
+
+      <div class="pos-weigh-pad">
+        <button type="button" class="pos-weigh-key" data-key="7">7</button>
+        <button type="button" class="pos-weigh-key" data-key="8">8</button>
+        <button type="button" class="pos-weigh-key" data-key="9">9</button>
+        <button type="button" class="pos-weigh-key" data-key="4">4</button>
+        <button type="button" class="pos-weigh-key" data-key="5">5</button>
+        <button type="button" class="pos-weigh-key" data-key="6">6</button>
+        <button type="button" class="pos-weigh-key" data-key="1">1</button>
+        <button type="button" class="pos-weigh-key" data-key="2">2</button>
+        <button type="button" class="pos-weigh-key" data-key="3">3</button>
+        <button type="button" class="pos-weigh-key" data-key=".">.</button>
+        <button type="button" class="pos-weigh-key" data-key="0">0</button>
+        <button type="button" class="pos-weigh-key pos-weigh-back" data-key="back" aria-label="Backspace">&#9003;</button>
+      </div>
+
+      <div id="pos-weigh-error" class="auth-alert pos-gate-error" hidden role="alert"></div>
+      <button type="button" class="auth-submit" id="pos-weigh-add">Add to ticket</button>
+    </div>
+  </div>
+
+  <!-- Udhaar (credit) ticket.
+       A debt nobody can name is a debt nobody can collect, so the name is the
+       one thing this dialog insists on. One box does both jobs: it searches the
+       khata as the cashier types, because the common case is a regular who
+       already has a page — typing the name afresh every time is how one man
+       ends up with three of them — and whatever is left in it opens a new page
+       when nobody is picked, because most khata customers are written down at
+       the moment of their first credit sale. -->
+  <div class="pos-modal" id="pos-udhaar" hidden role="dialog" aria-modal="true" aria-labelledby="pos-udhaar-title">
+    <div class="pos-modal-overlay no-print" id="pos-udhaar-overlay"></div>
+    <div class="pos-modal-card pos-gate-card pos-udhaar-card">
+      <div class="pos-gate-head">
+        <h2 class="auth-title" id="pos-udhaar-title">Save as Udhaar</h2>
+        <button type="button" class="pos-modal-close" id="pos-udhaar-dismiss" aria-label="Close this dialog">&times;</button>
+      </div>
+
+      <p class="pos-gate-note">
+        The goods go out now and the money goes on the khata. Put it on an
+        existing page, or write a new name.
+      </p>
+
+      <!-- Outside the form on purpose: a scanner or an impatient Enter in this
+           box would otherwise submit the sale mid-search. `type="text"` rather
+           than `type="search"`, because the browser's own Escape-clears-the-box
+           behaviour fights the first Escape, which belongs to the list. -->
+      <div id="pos-udhaar-pick">
+        <label class="input-label" for="pos-udhaar-search">Customer</label>
+        <div class="pos-combo">
+          <input class="auth-input" type="text" id="pos-udhaar-search"
+                 role="combobox" aria-expanded="false" aria-controls="pos-udhaar-results"
+                 aria-haspopup="listbox" aria-autocomplete="list"
+                 autocomplete="off" maxlength="120" placeholder="Name or phone" />
+          <div class="pos-combo-panel" id="pos-udhaar-results" role="listbox"
+               aria-label="Matching khata pages" hidden></div>
+        </div>
+      </div>
+
+      <!-- Stands in for the search box once a page is picked. What the customer
+           already owes and how much of their limit is left are the figures that
+           decide whether these goods leave the shop, so they are put in front of
+           the cashier before the sale is saved, not after. -->
+      <div class="pos-udhaar-picked" id="pos-udhaar-picked" hidden>
+        <div class="pos-udhaar-picked-head">
+          <span class="pos-udhaar-picked-name" id="pos-udhaar-picked-name"></span>
+          <button type="button" class="pos-udhaar-unpick" id="pos-udhaar-unpick">Change</button>
+        </div>
+        <span class="pos-udhaar-picked-phone" id="pos-udhaar-picked-phone"></span>
+        <dl class="pos-day-figures" id="pos-udhaar-customer"></dl>
+      </div>
+
+      <form id="pos-udhaar-form" novalidate>
+        <!-- The new-page path, hidden only while an existing page is picked: a
+             phone box beside someone else's khata page invites a number that
+             would silently re-point the debt. -->
+        <div class="pos-udhaar-new" id="pos-udhaar-new">
+          <p class="pos-udhaar-new-note" id="pos-udhaar-new-note"></p>
+          <label class="input-label" for="pos-udhaar-phone">Phone (optional)</label>
+          <input class="auth-input" type="tel" id="pos-udhaar-phone" autocomplete="off" maxlength="32" placeholder="03001234567" />
+        </div>
+
+        <label class="input-label" for="pos-udhaar-deposit">Deposit taken now (PKR)</label>
+        <input class="auth-input" type="number" id="pos-udhaar-deposit" min="0" step="0.01" inputmode="decimal" placeholder="0" />
+
+        <label class="input-label" for="pos-udhaar-method">Deposit paid by</label>
+        <select class="auth-input" id="pos-udhaar-method">
+          <option value="cash">Cash</option>
+          <option value="card">Card</option>
+          <option value="easypaisa">EasyPaisa</option>
+          <option value="jazzcash">JazzCash</option>
+          <option value="bank_transfer">Bank transfer</option>
+          <option value="other">Other</option>
+        </select>
+
+        <dl class="pos-day-figures pos-udhaar-figures">
+          <div><dt>Ticket total</dt><dd id="pos-udhaar-total">Rs 0</dd></div>
+          <div class="is-total"><dt>Goes on the khata</dt><dd id="pos-udhaar-book">Rs 0</dd></div>
+        </dl>
+
+        <div id="pos-udhaar-error" class="auth-alert pos-gate-error" hidden role="alert"></div>
+        <button type="submit" class="auth-submit" id="pos-udhaar-save">Save as udhaar</button>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="js/pos.js"></script>
+</body>
+</html>

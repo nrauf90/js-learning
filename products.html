@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Products | Cashflow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+</head>
+<body class="app-body">
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Sidebar"></aside>
+    <div class="app-overlay" id="app-overlay" aria-hidden="true"></div>
+
+    <div class="app-content">
+      <header class="app-topbar no-print">
+        <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Menu" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div class="topbar-heading">
+          <h1>Products</h1>
+          <p class="tagline">Catalog, pricing &amp; stock</p>
+        </div>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark theme" aria-pressed="true">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+      </header>
+
+      <main class="main app-main">
+        <div id="products-alert" class="auth-alert" hidden role="alert"></div>
+
+        <section class="calculator-card">
+          <h2 class="auth-title" id="product-form-title">Add product</h2>
+          <form id="product-form" class="cashflow-form" novalidate>
+            <input type="hidden" id="product-id" value="" />
+
+            <div class="cashflow-form-grid">
+              <div>
+                <label class="input-label" for="product-name">Name</label>
+                <input class="auth-input" type="text" id="product-name" maxlength="160" required placeholder="e.g. Cola 500ml" />
+              </div>
+              <div>
+                <label class="input-label" for="product-unit-type">Sold by</label>
+                <select class="auth-input" id="product-unit-type">
+                  <option value="each">Counted (packets, bottles)</option>
+                  <option value="weight">Weighed (atta, daal, sabzi)</option>
+                  <option value="volume">Poured (oil, milk, ghee)</option>
+                </select>
+              </div>
+              <div>
+                <label class="input-label" for="product-price-unit">Price per</label>
+                <select class="auth-input" id="product-price-unit"></select>
+              </div>
+              <div>
+                <label class="input-label" for="product-price" id="product-price-label">Price (PKR)</label>
+                <input class="auth-input" type="number" id="product-price" min="0" step="0.01" required placeholder="0" />
+              </div>
+              <div>
+                <label class="input-label" for="product-cost" id="product-cost-label">Cost (PKR)</label>
+                <input class="auth-input" type="number" id="product-cost" min="0" step="0.01" placeholder="Optional" />
+              </div>
+              <div>
+                <label class="input-label" for="product-category">Category</label>
+                <select class="auth-input" id="product-category"></select>
+              </div>
+              <div>
+                <label class="input-label" for="product-sku">SKU</label>
+                <input class="auth-input" type="text" id="product-sku" maxlength="64" placeholder="Optional" />
+              </div>
+              <div>
+                <label class="input-label" for="product-barcode">Barcode</label>
+                <input class="auth-input" type="text" id="product-barcode" maxlength="64" placeholder="Optional" />
+              </div>
+              <div>
+                <label class="input-label" for="product-stock" id="product-stock-label">Opening stock</label>
+                <input class="auth-input" type="number" id="product-stock" min="0" step="any" value="0" />
+              </div>
+              <div>
+                <label class="input-label" for="product-low" id="product-low-label">Low stock alert at</label>
+                <input class="auth-input" type="number" id="product-low" min="0" step="any" value="0" />
+              </div>
+              <!-- A peti of 24 Coke is bought whole and sold as singles, so the
+                   pack is a buying fact only — nothing on the till prices off it. -->
+              <div>
+                <label class="input-label" for="product-pack-size" id="product-pack-size-label">Pack size</label>
+                <input class="auth-input" type="number" id="product-pack-size" min="0" step="any" value="1" />
+              </div>
+              <div>
+                <label class="input-label" for="product-pack-label">Pack name</label>
+                <input class="auth-input" type="text" id="product-pack-label" maxlength="32" placeholder="Peti, Carton, Bori" />
+              </div>
+              <div>
+                <label class="input-label" for="product-expiry">Expiry date</label>
+                <input class="auth-input" type="date" id="product-expiry" />
+              </div>
+            </div>
+
+            <div class="image-field">
+              <span class="input-label" id="product-image-label">Picture</span>
+              <div class="image-picker">
+                <span class="image-preview">
+                  <img id="product-image-thumb" alt="" hidden />
+                  <span class="image-empty" id="product-image-empty">No picture</span>
+                </span>
+                <div class="image-picker-controls">
+                  <input class="image-input" type="file" id="product-image"
+                         accept="image/jpeg,image/png,image/webp" aria-labelledby="product-image-label" />
+                  <button type="button" class="btn btn-ghost pos-mini" id="product-image-remove" hidden>Remove picture</button>
+                  <p class="image-hint">JPG, PNG or WebP up to 2 MB. Shown on the till tile.</p>
+                </div>
+              </div>
+            </div>
+
+            <label class="pos-checkbox">
+              <input type="checkbox" id="product-track" checked />
+              <span>Track stock for this product</span>
+            </label>
+
+            <label class="pos-checkbox">
+              <input type="checkbox" id="product-track-expiry" />
+              <span>Warn me before this expires (doodh, dahi, bread, anday)</span>
+            </label>
+
+            <div class="cashflow-form-actions">
+              <button type="submit" class="auth-submit cashflow-btn" id="product-submit">Add product</button>
+              <button type="button" class="auth-google cashflow-btn" id="product-cancel" hidden>Cancel edit</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="calculator-card">
+          <div class="pos-ticket-head">
+            <h2 class="auth-title">Catalog</h2>
+            <div class="pos-filters">
+              <input class="auth-input" type="search" id="product-search" placeholder="Search name, SKU or barcode" />
+              <label class="pos-checkbox">
+                <input type="checkbox" id="filter-low-stock" />
+                <span>Low stock only</span>
+              </label>
+              <label class="pos-checkbox">
+                <input type="checkbox" id="filter-expiring" />
+                <span>Expiring soon</span>
+              </label>
+            </div>
+          </div>
+
+          <p class="dashboard-range" id="products-range">&mdash;</p>
+
+          <p id="products-empty" class="cashflow-empty" hidden>No products match.</p>
+          <ul id="products-list" class="pos-catalog-list"></ul>
+
+          <div class="admin-pagination" id="products-pagination"></div>
+        </section>
+
+        <section class="calculator-card">
+          <h2 class="auth-title" id="category-form-title">Categories</h2>
+          <form id="category-form" class="pos-category-form" novalidate>
+            <input type="hidden" id="category-id" value="" />
+            <input class="auth-input" type="text" id="category-name" maxlength="80" placeholder="New category name" required />
+
+            <div class="image-picker image-picker-inline">
+              <span class="image-preview image-preview-sm">
+                <img id="category-image-thumb" alt="" hidden />
+                <span class="image-empty" id="category-image-empty">No picture</span>
+              </span>
+              <input class="image-input" type="file" id="category-image"
+                     accept="image/jpeg,image/png,image/webp" aria-label="Category picture" />
+              <button type="button" class="btn btn-ghost pos-mini" id="category-image-remove" hidden>Remove picture</button>
+            </div>
+
+            <button type="submit" class="auth-submit cashflow-btn" id="category-submit">Add</button>
+            <button type="button" class="auth-google cashflow-btn" id="category-cancel" hidden>Cancel edit</button>
+          </form>
+          <ul id="categories-list" class="pos-category-list"></ul>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Stock adjustment.
+       Stock coming off the shelf without a sale is money gone, so the dialog
+       asks what happened to it and prices the loss while the figure is being
+       typed — a shopkeeper who can see "Rs 240 thrown away" is far likelier to
+       notice the day the number stops being small. Built on the till's dialog
+       chrome so the app has one dialog look. -->
+  <div class="pos-modal" id="stock-modal" hidden role="dialog" aria-modal="true" aria-labelledby="stock-modal-title">
+    <div class="pos-modal-overlay" id="stock-modal-overlay"></div>
+    <div class="pos-modal-card pos-gate-card">
+      <div class="pos-gate-head">
+        <h2 class="auth-title" id="stock-modal-title">Adjust stock</h2>
+        <button type="button" class="pos-modal-close" id="stock-modal-dismiss" aria-label="Close this dialog">&times;</button>
+      </div>
+
+      <form id="stock-form" novalidate>
+        <p class="pos-gate-note" id="stock-modal-note"></p>
+
+        <label class="input-label" for="stock-delta" id="stock-delta-label">Change</label>
+        <input class="auth-input" type="number" id="stock-delta" step="any" inputmode="decimal" placeholder="0" />
+
+        <!-- Only shown once the figure goes negative: a delivery explains
+             itself, and asking why on the way in would slow the one path
+             that is always benign. -->
+        <div id="stock-reason-field" hidden>
+          <label class="input-label" for="stock-reason">What happened to it</label>
+          <select class="auth-input" id="stock-reason"></select>
+        </div>
+
+        <label class="input-label" for="stock-note">Note</label>
+        <input class="auth-input" type="text" id="stock-note" maxlength="255" placeholder="Optional" />
+
+        <p class="pos-variance" id="stock-preview" aria-live="polite"></p>
+        <div id="stock-error" class="auth-alert pos-gate-error" hidden role="alert"></div>
+        <button type="submit" class="auth-submit" id="stock-submit">Save adjustment</button>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="js/products.js"></script>
+</body>
+</html>

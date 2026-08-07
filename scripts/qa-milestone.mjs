@@ -16,7 +16,8 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-const MILESTONE_ORDER = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9', 'M10', 'M11'];
+// M5 (tax calculator) was removed from the product; its spec file went with it.
+const MILESTONE_ORDER = ['M1', 'M2', 'M3', 'M4', 'M6', 'M7', 'M8', 'M9', 'M10', 'M11', 'M12', 'M13', 'M23', 'M35'];
 
 /** Spec globs relative to e2e/tests — only include files that exist when running. */
 const SPEC_BY_MILESTONE = {
@@ -24,13 +25,19 @@ const SPEC_BY_MILESTONE = {
   M2: 'm2-*.spec.js',
   M3: 'm3-*.spec.js',
   M4: 'm4-*.spec.js',
-  M5: 'm5-*.spec.js',
   M6: 'm6-*.spec.js',
   M7: 'm7-*.spec.js',
   M8: 'm8-*.spec.js',
   M9: 'm9-*.spec.js',
   M10: 'm10-*.spec.js',
   M11: 'm11-*.spec.js',
+  // M12 (security hardening) has no dedicated frontend E2E behavior of its
+  // own — it's covered by backend PHPUnit tests instead. This just lets
+  // `qa:milestone -- M12` regress M1-M11's E2E suite.
+  M12: 'm12-*.spec.js',
+  M13: 'm13-*.spec.js',
+  M23: 'm23-*.spec.js',
+  M35: 'm35-*.spec.js',
 };
 
 const API_URL = process.env.QA_API_URL || 'http://127.0.0.1:8000';
@@ -39,7 +46,7 @@ const FE_URL = process.env.QA_FRONTEND_URL || 'http://127.0.0.1:3000';
 function parseMilestone(argv) {
   const raw = (argv[2] || process.env.QA_MILESTONE || '').toUpperCase();
   if (!MILESTONE_ORDER.includes(raw)) {
-    console.error(`Usage: npm run qa:milestone -- <M1|M2|...|M8>`);
+    console.error(`Usage: npm run qa:milestone -- <${MILESTONE_ORDER.join('|')}>`);
     console.error(`Got: ${argv[2] || '(empty)'}`);
     process.exit(1);
   }
@@ -75,12 +82,12 @@ async function waitFor(url, label, attempts = 40) {
   throw new Error(`Timed out waiting for ${label} at ${url}`);
 }
 
-function startProcess(command, args, cwd, name) {
+function startProcess(command, args, cwd, name, extraEnv = {}) {
   const child = spawn(command, args, {
     cwd,
     shell: true,
     stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env },
+    env: { ...process.env, ...extraEnv },
   });
   child.stdout.on('data', (d) => {
     if (process.env.QA_VERBOSE) process.stdout.write(`[${name}] ${d}`);
@@ -109,11 +116,14 @@ function killTree(child) {
 
 function runPlaywright(milestone) {
   return new Promise((resolve) => {
+    // `shell: true` concatenates argv without escaping, so a checkout under a
+    // path containing spaces ("E:\Ciklum Latop Data\...") reached Playwright
+    // as two arguments and it looked for a config named "E:\Ciklum".
     const args = [
       'playwright',
       'test',
       '--config',
-      path.join(ROOT, 'e2e/playwright.config.js'),
+      JSON.stringify(path.join(ROOT, 'e2e/playwright.config.js')),
     ];
 
     const child = spawn('npx', args, {
@@ -146,7 +156,16 @@ async function main() {
   try {
     if (!(await isUp(`${API_URL}/api/health`))) {
       console.log('Starting API on :8000 …');
-      apiChild = startProcess('php', ['backend/artisan', 'serve', '--port=8000', '--host=127.0.0.1'], ROOT, 'api');
+      // Force local billing test mode: M6 drives the admin-only checkout,
+      // which otherwise calls Paddle for real. Shop fixtures are subscribed by
+      // an admin grant and do not need it.
+      apiChild = startProcess(
+        'php',
+        ['backend/artisan', 'serve', '--port=8000', '--host=127.0.0.1'],
+        ROOT,
+        'api',
+        { BILLING_SANDBOX: 'true' }
+      );
       started.push(apiChild);
       await waitFor(`${API_URL}/api/health`, 'API');
     } else {

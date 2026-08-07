@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shops | Admin | Cashflow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+</head>
+<body class="app-body">
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Sidebar"></aside>
+    <div class="app-overlay" id="app-overlay" aria-hidden="true"></div>
+
+    <div class="app-content">
+      <header class="app-topbar no-print">
+        <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Menu" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div class="topbar-heading">
+          <h1>Shops</h1>
+          <p class="tagline">Onboard shop owners and see the shops they run</p>
+        </div>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+      </header>
+
+      <main class="main app-main">
+        <div id="admin-alert" class="auth-alert" hidden role="alert"></div>
+
+        <section class="calculator-card">
+          <h2 class="dashboard-title">Create a shop admin</h2>
+          <p class="shop-hint">
+            Creates the owner's login and their shop together. They can then add their
+            own staff from the app.
+          </p>
+          <form id="shop-admin-form" class="shop-form" novalidate>
+            <div class="shop-form-grid">
+              <div class="form-field">
+                <label for="owner-name">Owner name</label>
+                <input type="text" id="owner-name" maxlength="255" required autocomplete="off" />
+              </div>
+              <div class="form-field">
+                <label for="owner-email">Owner email</label>
+                <input type="email" id="owner-email" maxlength="255" required autocomplete="off" />
+              </div>
+              <div class="form-field">
+                <label for="owner-password">Password</label>
+                <input type="password" id="owner-password" minlength="8" required autocomplete="new-password" />
+              </div>
+              <div class="form-field">
+                <label for="owner-password-confirm">Confirm password</label>
+                <input type="password" id="owner-password-confirm" minlength="8" required autocomplete="new-password" />
+              </div>
+              <div class="form-field">
+                <label for="new-shop-name">Shop name</label>
+                <input type="text" id="new-shop-name" maxlength="160" required autocomplete="off" />
+              </div>
+              <div class="form-field">
+                <label for="new-shop-phone">Shop phone</label>
+                <input type="text" id="new-shop-phone" maxlength="32" autocomplete="off" />
+              </div>
+              <div class="form-field">
+                <label for="new-shop-address">Shop address</label>
+                <input type="text" id="new-shop-address" maxlength="255" autocomplete="off" />
+              </div>
+            </div>
+            <div class="shop-form-actions">
+              <button type="submit" class="btn btn-primary" id="shop-admin-save">Create shop admin</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="calculator-card">
+          <div class="admin-filters">
+            <div class="admin-search">
+              <input type="search" id="search-input" placeholder="Search by owner, email or shop..." />
+            </div>
+          </div>
+        </section>
+
+        <section class="calculator-card">
+          <h2 class="dashboard-title">Shop admins</h2>
+          <div class="admin-table-container">
+            <table class="admin-table" id="shop-admins-table">
+              <thead>
+                <tr>
+                  <th>Owner</th>
+                  <th>Email</th>
+                  <th>Shop</th>
+                  <th>Phone</th>
+                  <th>Staff</th>
+                  <th>Joined</th>
+                </tr>
+              </thead>
+              <tbody id="shop-admins-body">
+                <tr>
+                  <td colspan="6" class="admin-table-empty">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="admin-pagination" id="pagination"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script type="module" src="js/admin-shops.js"></script>
+</body>
+</html>

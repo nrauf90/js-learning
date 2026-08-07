@@ -19,6 +19,9 @@ test.describe('M7 — Subscription gating', () => {
     expect(res.status()).toBe(402);
     const body = await res.json();
     expect(body.code).toBe('trial_expired');
+    // Self-serve billing is gone, so the 402 must name an action the shop can
+    // actually take rather than telling them to subscribe.
+    expect(body.message).toMatch(/contact the administrator/i);
   });
 
   test('subscribed user can access cash-entries API', async ({ request }) => {
@@ -32,8 +35,11 @@ test.describe('M7 — Subscription gating', () => {
     expect(res.ok()).toBeTruthy();
   });
 
-  test('user with expired trial is redirected from cashflow to billing', async ({ page, request }) => {
-    const { token } = await registerAndToken(request, 'qa_cf_gate');
+  test('expired shop is told to contact the administrator, not to subscribe', async ({
+    page,
+    request,
+  }) => {
+    const { email, token } = await registerAndToken(request, 'qa_cf_gate');
     await expireTrial(request, token);
 
     await page.addInitScript((t) => {
@@ -41,7 +47,15 @@ test.describe('M7 — Subscription gating', () => {
     }, token);
 
     await page.goto('/cashflow.html');
-    await expect(page).toHaveURL(/\/billing(\.html)?(\?|$)/, { timeout: 15_000 });
+
+    const notice = page.locator('#subscription-lapsed');
+    await expect(notice).toBeVisible({ timeout: 15_000 });
+    await expect(notice).toContainText(/contact the administrator/i);
+    // Their own details, so they can quote the account being asked about.
+    await expect(page.locator('#subscription-lapsed-details')).toContainText(email);
+    // The old behaviour was a redirect to a checkout they can no longer use.
+    await expect(page).not.toHaveURL(/billing/);
+    await expect(notice.getByRole('button', { name: /subscribe/i })).toHaveCount(0);
   });
 
   test('subscribed user can open cashflow page', async ({ page, request }) => {
@@ -53,12 +67,12 @@ test.describe('M7 — Subscription gating', () => {
 
     await page.goto('/cashflow.html');
     await expect(page.getByRole('heading', { name: /Daily Cash Flow/i })).toBeVisible();
-    await expect(page).not.toHaveURL(/billing/);
+    await expect(page.locator('#subscription-lapsed')).toHaveCount(0);
   });
 
-  test('tax calculator stays free without login', async ({ page }) => {
-    await page.goto('/calculator.html');
-    await expect(page.getByRole('heading', { name: /Pakistan Tax Calculator/i })).toBeVisible();
+  test('landing page stays public without login', async ({ page }) => {
+    await page.goto('/index.html');
+    await expect(page.getByRole('heading', { name: /Ring up sales/i })).toBeVisible();
     await expect(page).not.toHaveURL(/login|billing/);
   });
 });

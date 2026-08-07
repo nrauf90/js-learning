@@ -6,7 +6,10 @@ import { fileURLToPath } from 'node:url';
 const root = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.join(root, '..');
 
-const MILESTONE_ORDER = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9', 'M10', 'M11'];
+// Must stay in step with MILESTONE_ORDER in scripts/qa-milestone.mjs. M23 was
+// missing here, so `qa:milestone -- M23` fell through to index 0 and silently
+// ran the M1 specs alone — the POS suite never executed.
+const MILESTONE_ORDER = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9', 'M10', 'M11', 'M12', 'M13', 'M23', 'M35'];
 const target = (process.env.QA_MILESTONE || 'M1').toUpperCase();
 const idx = Math.max(0, MILESTONE_ORDER.indexOf(target));
 const milestones = MILESTONE_ORDER.slice(0, idx + 1);

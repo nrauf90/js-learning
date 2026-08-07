@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cashflow — Daily Expenses &amp; Free Pakistan Tax Calculator</title>
-  <meta name="description" content="Track daily income and expenses. Calculate Pakistan FBR income tax for free — no account required." />
+  <title>Cashflow — Point of Sale &amp; Daily Cash Flow for Small Businesses</title>
+  <meta name="description" content="Ring up sales, track stock, and see your daily cash flow in one place. Built for small shops and counters in Pakistan." />
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -18,7 +18,7 @@
           <span class="logo-flag">🇵🇰</span>
           <div>
             <h1>Cashflow</h1>
-            <p class="tagline">Expenses · Tax · Clarity</p>
+            <p class="tagline">Sell · Stock · Clarity</p>
           </div>
         </a>
         <div class="header-actions">
@@ -37,48 +37,33 @@
         <div class="hero-inner">
           <div class="hero-copy">
             <p class="hero-badge">Built for Pakistan 🇵🇰</p>
-            <h2 class="hero-title">Track money daily.<br />Know your tax instantly.</h2>
+            <h2 class="hero-title">Ring up sales.<br />Watch your stock and cash.</h2>
             <p class="hero-lead">
-              Cashflow combines a simple expense tracker with a <strong>free</strong> FBR income tax calculator —
-              so you always know where your rupees go and what you owe.
+              Cashflow is a point of sale for small shops and counters. Sell in a few taps, keep stock
+              accurate automatically, and see every sale land in your daily cash flow.
             </p>
             <div class="hero-cta">
               <a class="btn btn-primary" href="signup.html">Start free</a>
-              <a class="btn btn-secondary" href="calculator.html">Full tax calculator</a>
+              <a class="btn btn-secondary" href="#how-it-works">See how it works</a>
             </div>
             <ul class="hero-stats">
-              <li><strong>Free</strong> tax tool</li>
-              <li><strong>7-day</strong> dashboard</li>
-              <li><strong>FBR</strong> slab data</li>
+              <li><strong>7-day</strong> free trial</li>
+              <li><strong>Live</strong> stock counts</li>
+              <li><strong>One</strong> daily ledger</li>
             </ul>
           </div>
 
-          <aside class="hero-widget calculator-card" aria-label="Quick tax estimate">
-            <h3 class="hero-widget-title">Quick tax estimate</h3>
-            <p class="hero-widget-note">FY 2025–26 · New regime · Total tax only</p>
+          <aside class="hero-widget calculator-card" aria-label="What a sale looks like">
+            <h3 class="hero-widget-title">A sale, start to finish</h3>
+            <p class="hero-widget-note">Scan or tap · take payment · stock updates itself</p>
 
-            <label class="input-label" for="hero-income">Your income (PKR)</label>
-            <div class="income-row">
-              <input type="number" id="hero-income" class="income-input" min="0" step="1000" value="1200000" />
-              <div class="income-type-toggle" role="group" aria-label="Income period">
-                <span class="toggle-slider" aria-hidden="true"></span>
-                <label class="toggle-option">
-                  <input type="radio" name="hero-income-type" value="annual" checked />
-                  <span>Yearly</span>
-                </label>
-                <label class="toggle-option">
-                  <input type="radio" name="hero-income-type" value="monthly" />
-                  <span>Monthly</span>
-                </label>
-              </div>
-            </div>
+            <ol class="hero-flow">
+              <li><span class="hero-flow-step">1</span> Search or scan an item onto the ticket</li>
+              <li><span class="hero-flow-step">2</span> Take cash or card and hand over change</li>
+              <li><span class="hero-flow-step">3</span> Stock drops, the sale posts to today's income</li>
+            </ol>
 
-            <div class="hero-tax-result" aria-live="polite">
-              <span class="hero-tax-label">Estimated annual tax</span>
-              <span class="hero-tax-value" id="hero-tax-total">Rs 0</span>
-            </div>
-
-            <a class="hero-widget-link" href="calculator.html">See slab breakdown &amp; history →</a>
+            <a class="hero-widget-link" href="signup.html">Open your first till →</a>
           </aside>
         </div>
       </section>
@@ -86,20 +71,20 @@
       <section class="landing-section" id="about">
         <div class="section-header" data-reveal>
           <p class="section-eyebrow">About us</p>
-          <h2 class="section-title">Personal finance, made for everyday Pakistanis</h2>
+          <h2 class="section-title">A till that keeps your books honest</h2>
         </div>
         <div class="about-grid" data-reveal data-reveal-stagger>
           <p>
-            Cashflow started from a simple idea: most of us juggle a salary, daily spending, and tax season —
-            but the tools are either too complex or locked behind subscriptions.
+            Cashflow started from a simple idea: most small shops run the counter in one place and the
+            accounts in another, so the two never quite agree at the end of the day.
           </p>
           <p>
-            We built a lightweight app that lets you log income and expenses by category, see your weekly balance
-            on a dashboard, and estimate FBR salaried tax using published slab rates — <strong>without paying for the calculator</strong>.
+            So we built one app for both. Every sale you ring up moves stock and posts straight into your
+            daily income — no double entry, no reconciling a drawer against a notebook.
           </p>
           <p>
-            Your data stays on your account. The tax tool runs entirely in your browser, so you can check your
-            liability anytime, even without signing in.
+            Your data stays on your account, and the whole thing runs in a browser on whatever you already
+            have at the counter — a phone, a tablet, or an old laptop.
           </p>
         </div>
       </section>
@@ -112,18 +97,18 @@
         <ol class="steps-grid" data-reveal data-reveal-stagger>
           <li class="step-card">
             <span class="step-num">1</span>
-            <h3>Estimate your tax</h3>
-            <p>Use the quick widget above or the full calculator with FY history, deductions, and printable reports.</p>
+            <h3>Add your products</h3>
+            <p>Name, price and opening stock. Give each one a barcode or SKU if you scan at the counter.</p>
           </li>
           <li class="step-card">
             <span class="step-num">2</span>
-            <h3>Track daily cash flow</h3>
-            <p>Sign up, add income and expenses by category, and see day totals on the Cash Flow page.</p>
+            <h3>Sell at the till</h3>
+            <p>Search or scan onto the ticket, take cash or card, and Cashflow works out the change.</p>
           </li>
           <li class="step-card">
             <span class="step-num">3</span>
-            <h3>Review your week</h3>
-            <p>Your dashboard summarises the last 7 days — income, expenses, and what’s left over.</p>
+            <h3>Review your day</h3>
+            <p>Stock drops as you sell, sales post to your income, and the dashboard totals the week.</p>
           </li>
         </ol>
       </section>
@@ -132,7 +117,7 @@
         <div class="section-header" data-reveal>
           <p class="section-eyebrow">Contact us</p>
           <h2 class="section-title">Questions or feedback?</h2>
-          <p class="section-lead">We’d love to hear from you — whether it’s a bug, a feature idea, or a tax slab update.</p>
+          <p class="section-lead">We’d love to hear from you — whether it’s a bug, a feature idea, or something your counter needs.</p>
         </div>
         <div class="contact-grid" data-reveal data-reveal-stagger>
           <div class="contact-info">
@@ -157,16 +142,14 @@
           <a href="privacy.html">Privacy Policy</a>
           <span aria-hidden="true">·</span>
           <a href="terms.html">Terms &amp; Conditions</a>
-          <span aria-hidden="true">·</span>
-          <a href="calculator.html">Tax Calculator</a>
         </p>
         <p class="disclaimer-text">
-          Tax estimates are for information only. Not affiliated with FBR. © 2026 Cashflow.
+          © 2026 Cashflow.
         </p>
       </footer>
     </main>
   </div>
 
-  <script type="module" src="js/landing.js"></script>
+  <script type="module" src="js/home.js"></script>
 </body>
 </html>

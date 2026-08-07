@@ -1,35 +1,13 @@
 import { apiGet, getAuthToken } from './api.js';
 import { initShell } from './shell.js';
-
-const THEME_KEY = 'tax-calculator-theme';
+import { initTheme as initSharedTheme } from './theme.js';
 
 let trendChart = null;
 let netChart = null;
 let lastWeekData = null;
 
-function applyTheme(theme) {
-  const root = document.documentElement;
-  const toggle = document.getElementById('theme-toggle');
-  root.setAttribute('data-theme', theme);
-  if (!toggle) return;
-  toggle.setAttribute('aria-pressed', String(theme === 'light'));
-  toggle.setAttribute(
-    'aria-label',
-    theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'
-  );
-}
-
 function initTheme() {
-  const stored = localStorage.getItem(THEME_KEY);
-  if (stored === 'light' || stored === 'dark') {
-    applyTheme(stored);
-  } else {
-    applyTheme(window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-  }
-  document.getElementById('theme-toggle')?.addEventListener('click', () => {
-    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    applyTheme(next);
-    localStorage.setItem(THEME_KEY, next);
+  initSharedTheme(() => {
     if (lastWeekData) renderCharts(lastWeekData.days, lastWeekData.byDay);
   });
 }
@@ -63,23 +41,47 @@ function shortDay(iso) {
   return d.toLocaleDateString('en-PK', { weekday: 'short' });
 }
 
-function weekRangeISO() {
-  const end = new Date();
-  end.setHours(12, 0, 0, 0);
-  const start = new Date(end);
-  start.setDate(start.getDate() - 6);
-
-  const toISO = (d) => {
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${d.getFullYear()}-${m}-${day}`;
-  };
-
-  return { start: toISO(start), end: toISO(end), startDate: start, endDate: end };
+function toISO(d) {
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${m}-${day}`;
 }
 
-function inWeek(entryDate, startISO, endISO) {
-  return entryDate >= startISO && entryDate <= endISO;
+function todayISO() {
+  const now = new Date();
+  now.setHours(12, 0, 0, 0);
+  return toISO(now);
+}
+
+/**
+ * The shop's current week, Monday to Sunday.
+ *
+ * Deliberately the same week `ReportController::weekly` uses, rather than "the
+ * last seven days": the dashboard and the weekly report get read side by side,
+ * and two different definitions of "this week" showing two different totals is
+ * how an owner learns to distrust both.
+ *
+ * Noon rather than midnight, like todayISO(), so a daylight-saving shift cannot
+ * roll the date back a day.
+ *
+ * @returns {{ start: string, end: string, startDate: Date }}
+ */
+function weekRangeISO() {
+  const start = new Date();
+  start.setHours(12, 0, 0, 0);
+  // getDay() calls Sunday 0, so Sunday belongs to the week that began six days
+  // earlier rather than starting a new one.
+  start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+
+  return { start: toISO(start), end: toISO(end), startDate: start };
+}
+
+/** `YYYY-MM-DD` sorts lexicographically, so the bounds need no date parsing. */
+function inWeek(iso, start, end) {
+  return typeof iso === 'string' && iso >= start && iso <= end;
 }
 
 function cssVar(name, fallback) {
@@ -278,20 +280,28 @@ async function boot() {
     const hasAccess = billing.subscription?.active || billing.trial?.active;
 
     if (!hasAccess) {
+      // No buy button: shops are activated by the platform admin, so the only
+      // useful thing this screen can say is who to ask and what to quote.
+      const account = billing.account || {};
+      const quote = [account.shop?.name, account.email].filter(Boolean).join(' · ');
+
       document.getElementById('week-range').textContent = billing.trial?.expired
         ? 'Free trial ended'
-        : 'Subscription required';
-      document.getElementById('week-empty').hidden = false;
-      document.getElementById('week-empty').innerHTML = billing.trial?.expired
-        ? 'Your 7-day free trial has ended. <a href="billing.html">Subscribe to continue</a>'
-        : 'Subscribe to see your weekly summary. <a href="billing.html">View plans</a>';
+        : 'Subscription ended';
+      const empty = document.getElementById('week-empty');
+      empty.hidden = false;
+      empty.textContent =
+        `${billing.trial?.expired ? 'Your 7-day free trial has ended.' : 'Your subscription has ended.'} ` +
+        'Please contact the administrator to have it renewed.' +
+        (quote ? ` Quote: ${quote}` : '');
       return;
     }
 
     if (billing.trial?.active) {
       const days = billing.trial.days_remaining ?? 0;
       showAlert(
-        `Free trial: ${days} day${days === 1 ? '' : 's'} remaining. Subscribe anytime on Billing.`,
+        `Free trial: ${days} day${days === 1 ? '' : 's'} remaining. ` +
+          'Contact the administrator before it ends to keep access.',
         'success'
       );
     }

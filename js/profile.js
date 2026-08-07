@@ -1,33 +1,14 @@
 import { apiGet, apiPut, getAuthToken } from './api.js';
 import { initShell } from './shell.js';
+import { initTheme } from './theme.js';
 
-const THEME_KEY = 'tax-calculator-theme';
 const USER_KEY = 'cashflow_auth_user';
+const USER_FETCHED_KEY = 'cashflow_auth_user_at';
 
-function applyTheme(theme) {
-  const root = document.documentElement;
-  const toggle = document.getElementById('theme-toggle');
-  root.setAttribute('data-theme', theme);
-  if (!toggle) return;
-  toggle.setAttribute('aria-pressed', String(theme === 'light'));
-  toggle.setAttribute(
-    'aria-label',
-    theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'
-  );
-}
-
-function initTheme() {
-  const stored = localStorage.getItem(THEME_KEY);
-  if (stored === 'light' || stored === 'dark') {
-    applyTheme(stored);
-  } else {
-    applyTheme(window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-  }
-  document.getElementById('theme-toggle')?.addEventListener('click', () => {
-    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    applyTheme(next);
-    localStorage.setItem(THEME_KEY, next);
-  });
+/** Both writes here come straight from the API, so they refresh the shell's cache. */
+function cacheUser(user) {
+  localStorage.setItem(USER_KEY, JSON.stringify(user));
+  localStorage.setItem(USER_FETCHED_KEY, String(Date.now()));
 }
 
 function requireAuth() {
@@ -67,7 +48,7 @@ async function loadUser() {
   if (!user) return;
   document.getElementById('profile-name').value = user.name || '';
   document.getElementById('profile-email').value = user.email || '';
-  localStorage.setItem(USER_KEY, JSON.stringify(user));
+  cacheUser(user);
 }
 
 function wireProfileForm() {
@@ -86,7 +67,7 @@ function wireProfileForm() {
     try {
       const data = await apiPut('/api/user/profile', { name });
       if (data?.user) {
-        localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+        cacheUser(data.user);
         initShell({ current: 'profile' });
       }
       showAlert('Profile updated.', 'success');

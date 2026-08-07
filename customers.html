@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Khata | Cashflow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+</head>
+<body class="app-body">
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Sidebar"></aside>
+    <div class="app-overlay" id="app-overlay" aria-hidden="true"></div>
+
+    <div class="app-content">
+      <header class="app-topbar no-print">
+        <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Menu" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div class="topbar-heading">
+          <h1>Khata</h1>
+          <p class="tagline">Udhaar ledger &mdash; who owes the shop</p>
+        </div>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark theme" aria-pressed="true">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+      </header>
+
+      <main class="main app-main">
+        <div id="customers-alert" class="auth-alert" hidden role="alert"></div>
+
+        <section class="calculator-card">
+          <h2 class="dashboard-title">Outstanding udhaar</h2>
+          <div class="sales-stat-grid" id="khata-summary" aria-live="polite"></div>
+          <p class="sales-legend">
+            Debts are aged from the day the goods went out. Anything past 90 days has
+            been on the page for three months &mdash; time to go and ask.
+          </p>
+        </section>
+
+        <section class="calculator-card">
+          <div class="admin-filters sales-filters">
+            <div class="reports-mode sales-period" role="group" aria-label="Which customers to show">
+              <button type="button" class="reports-mode-btn active" data-view="owing">Owes money</button>
+              <button type="button" class="reports-mode-btn" data-view="all">Everyone</button>
+            </div>
+
+            <label class="activity-filter">
+              <span>Search</span>
+              <input type="search" id="customer-search" placeholder="Name or number" />
+            </label>
+
+            <button type="button" class="btn btn-ghost pos-mini" id="customer-search-clear">Clear</button>
+          </div>
+
+          <p class="dashboard-range" id="khata-range">&mdash;</p>
+
+          <div class="admin-table-container">
+            <table class="admin-table sales-table">
+              <thead>
+                <tr>
+                  <th>Customer</th>
+                  <th class="sales-num">Owed</th>
+                  <th class="sales-num">Sales</th>
+                  <th>Oldest debt</th>
+                  <th class="sales-num">Limit left</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="khata-body">
+                <tr><td colspan="6" class="admin-table-empty">Loading&hellip;</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="admin-pagination" id="khata-pagination"></div>
+        </section>
+
+        <section class="calculator-card">
+          <h2 class="auth-title" id="customer-form-title">Add customer</h2>
+          <form id="customer-form" class="cashflow-form" novalidate>
+            <input type="hidden" id="customer-id" value="" />
+
+            <div class="cashflow-form-grid">
+              <div>
+                <label class="input-label" for="customer-name">Name</label>
+                <input class="auth-input" type="text" id="customer-name" maxlength="120" required placeholder="e.g. Ali Raza" />
+              </div>
+              <div>
+                <label class="input-label" for="customer-phone">Phone</label>
+                <input class="auth-input" type="tel" id="customer-phone" maxlength="32" placeholder="0300-1234567" />
+              </div>
+              <div>
+                <label class="input-label" for="customer-address">Address</label>
+                <input class="auth-input" type="text" id="customer-address" maxlength="255" placeholder="Optional" />
+              </div>
+              <div>
+                <label class="input-label" for="customer-limit">Credit limit (PKR)</label>
+                <input class="auth-input" type="number" id="customer-limit" min="0" step="0.01" placeholder="No limit" />
+              </div>
+              <div>
+                <label class="input-label" for="customer-notes">Note</label>
+                <input class="auth-input" type="text" id="customer-notes" maxlength="500" placeholder="e.g. pays on the 1st" />
+              </div>
+            </div>
+
+            <label class="pos-checkbox">
+              <input type="checkbox" id="customer-active" checked />
+              <span>Active on the khata</span>
+            </label>
+
+            <div class="cashflow-form-actions">
+              <button type="submit" class="auth-submit cashflow-btn" id="customer-submit">Add customer</button>
+              <button type="button" class="auth-google cashflow-btn" id="customer-cancel" hidden>Cancel edit</button>
+            </div>
+          </form>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="pos-modal" id="khata-detail" hidden role="dialog" aria-modal="true" aria-labelledby="khata-detail-title">
+    <div class="pos-modal-overlay" id="khata-detail-overlay"></div>
+    <div class="pos-modal-card sale-detail-card">
+      <div class="pos-receipt-head">
+        <h2 class="auth-title" id="khata-detail-title">Khata</h2>
+        <div class="pos-receipt-actions">
+          <button type="button" class="btn btn-secondary pos-mini" id="khata-edit">Edit</button>
+          <button type="button" class="pos-modal-close" id="khata-detail-close" aria-label="Close khata">&times;</button>
+        </div>
+      </div>
+
+      <div class="pos-modal-body">
+        <div class="sale-detail-inner">
+          <dl class="sale-facts" id="khata-facts"></dl>
+
+          <div id="khata-payment-alert" class="auth-alert" hidden role="alert"></div>
+
+          <form class="sale-payment-form" id="khata-payment-form" novalidate hidden>
+            <h3 class="auth-title sale-payment-title">Take a payment</h3>
+            <p class="sale-payment-due" id="khata-payment-due"></p>
+
+            <div class="sale-payment-grid">
+              <div>
+                <label class="input-label" for="khata-amount">Amount received (PKR)</label>
+                <input class="auth-input" type="number" id="khata-amount" min="0.01" step="0.01" placeholder="0" />
+              </div>
+              <div>
+                <label class="input-label" for="khata-method">Method</label>
+                <!-- No "credit" option: settling udhaar with more udhaar moves
+                     no money, and the API rejects it. -->
+                <select class="auth-input" id="khata-method">
+                  <option value="cash">Cash</option>
+                  <option value="card">Card</option>
+                  <option value="easypaisa">EasyPaisa</option>
+                  <option value="jazzcash">JazzCash</option>
+                  <option value="bank_transfer">Bank transfer</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <!-- Who physically took the notes, which is often not whoever
+                     is logged in — the son on the counter, the boy who
+                     collected at the door. It is the answer the owner needs
+                     when a payment is disputed. -->
+                <label class="input-label" for="khata-received-by">Received by</label>
+                <input class="auth-input" type="text" id="khata-received-by" maxlength="120" placeholder="Who took the money" />
+              </div>
+              <div id="khata-reference-field" hidden>
+                <label class="input-label" for="khata-reference">Reference</label>
+                <input class="auth-input" type="text" id="khata-reference" maxlength="64" placeholder="Transaction id" />
+              </div>
+            </div>
+
+            <p class="sale-payment-due" id="khata-payment-left"></p>
+
+            <button type="submit" class="auth-submit cashflow-btn" id="khata-payment-submit">Record payment</button>
+          </form>
+
+          <!-- Shares the payment form's card styling: on this dialog the two
+               are read as one block, "what was paid" above "what is left". -->
+          <section class="sale-payment-form" id="khata-payments">
+            <h3 class="auth-title sale-payment-title">Payments received</h3>
+            <p class="sale-payment-due">Newest first, with what was still owed after each.</p>
+
+            <div class="admin-table-container">
+              <table class="admin-table sales-table">
+                <thead>
+                  <tr>
+                    <th>When</th>
+                    <th>Received by</th>
+                    <th class="sales-num">Paid</th>
+                    <th class="sales-num">Left owing</th>
+                  </tr>
+                </thead>
+                <tbody id="khata-payments-body">
+                  <tr><td colspan="4" class="admin-table-empty">Loading&hellip;</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="sale-payment-form">
+            <h3 class="auth-title sale-payment-title">Statement</h3>
+
+            <div class="admin-table-container">
+              <table class="admin-table sales-table">
+                <thead>
+                  <tr>
+                    <th>When</th>
+                    <th>Entry</th>
+                    <th class="sales-num">Amount</th>
+                    <th class="sales-num">Balance</th>
+                  </tr>
+                </thead>
+                <tbody id="khata-ledger-body">
+                  <tr><td colspan="4" class="admin-table-empty">Loading&hellip;</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/customers.js"></script>
+</body>
+</html>

@@ -6,39 +6,21 @@ import {
   getAuthToken,
 } from './api.js';
 import { initShell } from './shell.js';
-
-const THEME_KEY = 'tax-calculator-theme';
+import { initTheme } from './theme.js';
 
 let categories = [];
 let entries = [];
 let editingId = null;
 let receiptAddonActive = false;
+let currentPage = 1;
 
-function applyTheme(theme) {
-  const root = document.documentElement;
-  const toggle = document.getElementById('theme-toggle');
-  root.setAttribute('data-theme', theme);
-  if (!toggle) return;
-  toggle.setAttribute('aria-pressed', String(theme === 'light'));
-  toggle.setAttribute(
-    'aria-label',
-    theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'
-  );
-}
-
-function initTheme() {
-  const stored = localStorage.getItem(THEME_KEY);
-  if (stored === 'light' || stored === 'dark') {
-    applyTheme(stored);
-  } else {
-    applyTheme(window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-  }
-  document.getElementById('theme-toggle')?.addEventListener('click', () => {
-    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    applyTheme(next);
-    localStorage.setItem(THEME_KEY, next);
-  });
-}
+/**
+ * One screen of the day book per request. A busy day runs to hundreds of
+ * entries, and rendering all of them is both slow and unreadable; the day's
+ * totals come from the API so they stay the whole day's figures, not the
+ * page's.
+ */
+const PER_PAGE = 25;
 
 function requireAuth() {
   if (getAuthToken()) return true;
@@ -104,22 +86,49 @@ function resetForm() {
   loadCategories('expense').catch((err) => showAlert(err.message));
 }
 
-function updateTotals() {
-  let income = 0;
-  let expense = 0;
-  for (const e of entries) {
-    if (e.type === 'income') income += Number(e.amount);
-    else expense += Number(e.amount);
-  }
+function updateTotals(totals) {
+  const income = Number(totals?.income) || 0;
+  const expense = Number(totals?.expense) || 0;
+  const net = totals?.net === undefined ? income - expense : Number(totals.net) || 0;
+
   document.getElementById('total-income').textContent = formatRs(income);
   document.getElementById('total-expense').textContent = formatRs(expense);
-  document.getElementById('total-net').textContent = formatRs(income - expense);
+  document.getElementById('total-net').textContent = formatRs(net);
 }
 
-function renderEntries() {
+function renderPagination(meta) {
+  const container = document.getElementById('entries-pagination');
+  const page = Number(meta?.current_page) || 1;
+  const lastPage = Number(meta?.last_page) || 1;
+  const perPage = Number(meta?.per_page) || PER_PAGE;
+  const total = Number(meta?.total) || 0;
+  const first = total === 0 ? 0 : (page - 1) * perPage + 1;
+
+  document.getElementById('entries-range').textContent =
+    total === 0
+      ? 'No entries'
+      : `${first}–${Math.min(page * perPage, total)} of ${total} entr${total === 1 ? 'y' : 'ies'}`;
+
+  if (lastPage <= 1) {
+    container.innerHTML = '';
+    return;
+  }
+
+  const button = (target, label) =>
+    target
+      ? `<button type="button" class="admin-btn admin-btn-sm" data-page="${target}">${label}</button>`
+      : `<button type="button" class="admin-btn admin-btn-sm" disabled>${label}</button>`;
+
+  container.innerHTML =
+    button(page > 1 ? page - 1 : 0, 'Previous') +
+    `<span class="admin-pagination-info">Page ${page} of ${lastPage} (${total} entries)</span>` +
+    button(page < lastPage ? page + 1 : 0, 'Next');
+}
+
+function renderEntries(totals) {
   const list = document.getElementById('entries-list');
   const empty = document.getElementById('entries-empty');
-  updateTotals();
+  updateTotals(totals);
 
   if (!entries.length) {
     empty.hidden = false;
@@ -199,10 +208,26 @@ async function loadCategories(kind = selectedEntryType()) {
 }
 
 async function loadEntries() {
-  const date = selectedDate();
-  const data = await apiGet(`/api/cash-entries?date=${encodeURIComponent(date)}`);
+  const params = new URLSearchParams({
+    date: selectedDate(),
+    page: String(currentPage),
+    per_page: String(PER_PAGE),
+  });
+
+  const data = await apiGet(`/api/cash-entries?${params.toString()}`);
   entries = data.entries || [];
-  renderEntries();
+
+  // Deleting the last entry of the last page leaves the day book on a page that
+  // no longer exists, which reads as a day with nothing in it. Step back.
+  const lastPage = Number(data.meta?.last_page) || 1;
+  if (entries.length === 0 && currentPage > lastPage) {
+    currentPage = lastPage;
+    await loadEntries();
+    return;
+  }
+
+  renderEntries(data.totals);
+  renderPagination(data.meta);
 }
 
 function renderReceiptUpsell() {
@@ -243,6 +268,9 @@ async function onSubmit(e) {
     } else {
       await apiPost('/api/cash-entries', payload);
       showAlert('Entry added.', 'success');
+      // Newest first, so the entry just typed is on the first page — which is
+      // not where the shopkeeper is standing if they had paged back.
+      currentPage = 1;
     }
     resetForm();
     await loadEntries();
@@ -264,9 +292,21 @@ async function boot() {
 
   const dateInput = document.getElementById('entry-date');
   dateInput.value = todayISO();
+  // The date is this screen's filter, so changing it starts a new list at its
+  // first page rather than landing on a page the new day may not have.
   dateInput.addEventListener('change', () => {
     resetForm();
+    currentPage = 1;
     loadEntries().catch((err) => showAlert(err.message));
+  });
+
+  // Delegated: the pager is re-rendered on every load, and per-button
+  // listeners would leak one set each time.
+  document.getElementById('entries-pagination').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-page]');
+    if (!button) return;
+    currentPage = Number(button.dataset.page) || 1;
+    loadEntries().catch((err) => showAlert(err.message || 'Could not load entries'));
   });
 
   document.getElementById('entry-form').addEventListener('submit', onSubmit);

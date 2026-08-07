@@ -29,7 +29,7 @@ class AuthController extends Controller
         $token = $user->createToken('api')->plainTextToken;
 
         return response()->json([
-            'user' => $this->userPayload($user),
+            'user' => $user->toAuthArray(),
             'token' => $token,
         ], 201);
     }
@@ -52,7 +52,7 @@ class AuthController extends Controller
         $token = $user->createToken('api')->plainTextToken;
 
         return response()->json([
-            'user' => $this->userPayload($user),
+            'user' => $user->toAuthArray(),
             'token' => $token,
         ]);
     }
@@ -68,7 +68,7 @@ class AuthController extends Controller
     public function user(Request $request): JsonResponse
     {
         return response()->json([
-            'user' => $this->userPayload($request->user()),
+            'user' => $request->user()->toAuthArray(),
         ]);
     }
 
@@ -83,7 +83,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Profile updated.',
-            'user' => $this->userPayload($user->fresh()),
+            'user' => $user->fresh()->toAuthArray(),
         ]);
     }
 
@@ -104,21 +104,13 @@ class AuthController extends Controller
 
         $user->update(['password' => $validated['password']]);
 
-        return response()->json(['message' => 'Password updated.']);
-    }
+        // Changing the password invalidates every other session/device —
+        // only the token used to make this request (if any) survives.
+        $currentTokenId = $request->user()->currentAccessToken()?->id;
+        $user->tokens()
+            ->when($currentTokenId, fn ($query) => $query->where('id', '!=', $currentTokenId))
+            ->delete();
 
-    /**
-     * @return array{id: int, name: string, email: string, avatar: ?string, google_id: ?string, is_admin: bool}
-     */
-    private function userPayload(User $user): array
-    {
-        return [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'avatar' => $user->avatar,
-            'google_id' => $user->google_id,
-            'is_admin' => (bool) $user->is_admin,
-        ];
+        return response()->json(['message' => 'Password updated.']);
     }
 }

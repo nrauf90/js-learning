@@ -1,33 +1,15 @@
 import { apiGet, getAuthToken } from './api.js';
 import { initShell } from './shell.js';
+import { initTheme } from './theme.js';
 
-const THEME_KEY = 'tax-calculator-theme';
+let currentPage = 1;
 
-function applyTheme(theme) {
-  const root = document.documentElement;
-  const toggle = document.getElementById('theme-toggle');
-  root.setAttribute('data-theme', theme);
-  if (!toggle) return;
-  toggle.setAttribute('aria-pressed', String(theme === 'light'));
-  toggle.setAttribute(
-    'aria-label',
-    theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'
-  );
-}
-
-function initTheme() {
-  const stored = localStorage.getItem(THEME_KEY);
-  if (stored === 'light' || stored === 'dark') {
-    applyTheme(stored);
-  } else {
-    applyTheme(window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-  }
-  document.getElementById('theme-toggle')?.addEventListener('click', () => {
-    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    applyTheme(next);
-    localStorage.setItem(THEME_KEY, next);
-  });
-}
+/**
+ * One screen of the system-wide ledger per request. The endpoint has always
+ * paginated; this page used to ask for page one and render it as though it were
+ * the whole table, so an admin could not reach entry 21 at all.
+ */
+const PER_PAGE = 25;
 
 function requireAuth() {
   if (getAuthToken()) return true;
@@ -86,10 +68,53 @@ function renderEntries(entries) {
   `).join('');
 }
 
+/**
+ * `meta` is the Laravel paginator's own top-level body here — the admin
+ * endpoints return the paginator itself rather than wrapping it — but the
+ * fields, and the pager built from them, are the ones every other list on the
+ * site uses.
+ */
+function renderPagination(meta) {
+  const container = document.getElementById('pagination');
+  if (!container) return;
+
+  const page = Number(meta?.current_page) || 1;
+  const lastPage = Number(meta?.last_page) || 1;
+  const perPage = Number(meta?.per_page) || PER_PAGE;
+  const total = Number(meta?.total) || 0;
+  const first = total === 0 ? 0 : (page - 1) * perPage + 1;
+  const range = document.getElementById('entries-range');
+
+  if (range) {
+    range.textContent =
+      total === 0
+        ? 'No entries'
+        : `${first}–${Math.min(page * perPage, total)} of ${total} entr${total === 1 ? 'y' : 'ies'}`;
+  }
+
+  if (lastPage <= 1) {
+    container.innerHTML = '';
+    return;
+  }
+
+  const button = (target, label) =>
+    target
+      ? `<button type="button" class="admin-btn admin-btn-sm" data-page="${target}">${label}</button>`
+      : `<button type="button" class="admin-btn admin-btn-sm" disabled>${label}</button>`;
+
+  container.innerHTML =
+    button(page > 1 ? page - 1 : 0, 'Previous') +
+    `<span class="admin-pagination-info">Page ${page} of ${lastPage} (${total} entries)</span>` +
+    button(page < lastPage ? page + 1 : 0, 'Next');
+}
+
 async function loadEntries() {
   try {
-    const data = await apiGet('/api/admin/cash-entries');
+    const params = new URLSearchParams({ page: String(currentPage), per_page: String(PER_PAGE) });
+    const data = await apiGet(`/api/admin/cash-entries?${params.toString()}`);
+
     renderEntries(data.data || []);
+    renderPagination(data);
   } catch (err) {
     showAlert(err.message || 'Failed to load entries');
   }
@@ -99,6 +124,16 @@ async function boot() {
   initTheme();
   initShell({ current: 'admin-entries' });
   if (!requireAuth()) return;
+
+  // Delegated: the pager is re-rendered on every load, and per-button
+  // listeners would leak one set each time.
+  document.getElementById('pagination')?.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-page]');
+    if (!button) return;
+    currentPage = Number(button.dataset.page) || 1;
+    loadEntries();
+  });
+
   await loadEntries();
 }
 

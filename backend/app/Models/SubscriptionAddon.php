@@ -9,15 +9,19 @@ class SubscriptionAddon extends Model
 {
     protected $fillable = [
         'user_id',
+        'provider',
+        'external_id',
         'addon_key',
         'status',
         'ends_at',
+        'cancel_at_period_end',
     ];
 
     protected function casts(): array
     {
         return [
             'ends_at' => 'datetime',
+            'cancel_at_period_end' => 'boolean',
         ];
     }
 
@@ -28,7 +32,7 @@ class SubscriptionAddon extends Model
 
     public function isActive(): bool
     {
-        return $this->status === 'active'
+        return in_array($this->status, Subscription::ACTIVE_STATUSES, true)
             && $this->ends_at
             && $this->ends_at->isFuture();
     }

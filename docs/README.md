@@ -21,9 +21,34 @@ Daily cash-flow expense tracker with a **free** Pakistan tax calculator.
 | M9 | [7-day free trial](./milestones/M9-free-trial.md) | 2 | Done |
 | M10 | [Premium UI, profile & PDF reports](./milestones/M10-premium-ui.md) | 3 | Done |
 | M11 | [Admin panel](./milestones/M11-admin-panel.md) | 3 | Done |
+| M12 | [Security hardening](./milestones/M12-security-hardening.md) | 4 | Done |
+| M13 | [Theme default & FOUC fix](./milestones/M13-theme-default-fix.md) | 4 | Done |
+| M14 | [Performance & code-quality pass](./milestones/M14-performance-code-quality.md) | 4 | In progress |
+| M15 | [UX & accessibility polish](./milestones/M15-ux-accessibility-polish.md) | 4 | Not started |
+| M16 | [Cash-flow search, filters & date-range](./milestones/M16-cashflow-search-filters.md) | 5 | Not started |
+| M17 | [Budgets & spending limits](./milestones/M17-budgets.md) | 5 | Not started |
+| M18 | [CSV export & import](./milestones/M18-csv-export-import.md) | 5 | Not started |
+| M19 | [Recurring / scheduled transactions](./milestones/M19-recurring-transactions.md) | 5 | Not started |
+| M20 | [Multiple accounts/wallets + transfers](./milestones/M20-accounts-wallets.md) | 5 | Not started |
+| M21 | [User-managed categories](./milestones/M21-user-categories.md) | 6 | Not started |
+| M22 | [Soft delete / trash + restore](./milestones/M22-soft-delete-trash.md) | 6 | Not started |
+| M23 | [Finish the receipt-upload addon](./milestones/M23-receipt-upload.md) | 6 | Not started |
+| M24 | [Month-over-month report comparisons](./milestones/M24-report-comparisons.md) | 6 | Not started |
+| M25 | [Notifications & reminders](./milestones/M25-notifications-reminders.md) | 6 | Not started |
+| M26 | [Savings goals](./milestones/M26-savings-goals.md) | 6 | Not started |
+| M27 | [Tags / labels](./milestones/M27-tags-labels.md) | 7 | Not started |
+| M28 | [Bulk edit/delete](./milestones/M28-bulk-operations.md) | 7 | Not started |
+| M29 | [Full account backup export](./milestones/M29-full-backup-export.md) | 7 | Not started |
+| M30 | [Multi-currency support](./milestones/M30-multi-currency.md) | 7 | Not started |
+| M31 | [Entry edit history / audit trail](./milestones/M31-audit-trail.md) | 7 | Not started |
+| M32 | [Dashboard customization](./milestones/M32-dashboard-customization.md) | 7 | Not started |
+| M33 | [Offline / PWA support](./milestones/M33-offline-pwa.md) | 7 | Not started |
+| M34 | [Keyboard shortcuts](./milestones/M34-keyboard-shortcuts.md) | 7 | Not started |
+| M35 | [Kiryana pack — weighed goods, purchases, profit & khata](./milestones/M35-kiryana-pack.md) | 8 | Done |
 
 ## Agent handoff
 
+- **[`features/`](./features/)** — one doc per functional area: what each part of the app is and how it works *as it stands today* (milestones record when it was built)
 - **[`CONTEXT.md`](./CONTEXT.md)** — read first in any new session (status + next task)
 - **`.cursor/rules/task-completion.mdc`** — after each task: checkbox, modified files, QA notes
 - **`.cursor/rules/milestone-qa.mdc`** — after each milestone: `npm run qa:milestone -- Mx`

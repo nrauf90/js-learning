@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stock In | Cashflow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+</head>
+<body class="app-body">
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Sidebar"></aside>
+    <div class="app-overlay" id="app-overlay" aria-hidden="true"></div>
+
+    <div class="app-content">
+      <header class="app-topbar no-print">
+        <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Menu" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div class="topbar-heading">
+          <h1>Stock In</h1>
+          <p class="tagline">What the shop bought &amp; what it paid</p>
+        </div>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark theme" aria-pressed="true">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+      </header>
+
+      <main class="main app-main">
+        <div id="purchases-alert" class="auth-alert" hidden role="alert"></div>
+
+        <!-- Everything from here to the pagination is the list view. Opening a
+             delivery hides the lot and shows #purchase-detail in its place:
+             the shopkeeper reads that screen with the supplier's paper bill in
+             hand, so it gets the full width of the page rather than a dialog. -->
+        <div id="purchases-list-view">
+        <section class="calculator-card">
+          <h2 class="auth-title">What I owe suppliers</h2>
+          <div class="sales-stat-grid" id="payables-summary" aria-live="polite"></div>
+          <p class="sales-legend">
+            The other side of the khata. These are the shop's own debts &mdash; every delivery
+            still part paid or unpaid, oldest first, because that is the one the supplier will
+            ask about.
+          </p>
+
+          <div class="admin-table-container">
+            <table class="admin-table sales-table">
+              <thead>
+                <tr>
+                  <th>Reference</th>
+                  <th>Date</th>
+                  <th>Supplier</th>
+                  <th class="sales-num">Bill</th>
+                  <th class="sales-num">Paid</th>
+                  <th class="sales-num">Still owed</th>
+                </tr>
+              </thead>
+              <tbody id="payables-body">
+                <tr><td colspan="6" class="admin-table-empty">Loading&hellip;</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="calculator-card">
+          <h2 class="auth-title">Supplier</h2>
+          <form id="supplier-form" class="pos-category-form" novalidate>
+            <input class="auth-input" type="text" id="supplier-name" maxlength="160"
+                   placeholder="New supplier name" required />
+            <input class="auth-input" type="text" id="supplier-phone" maxlength="32" placeholder="Phone (optional)" />
+            <button type="submit" class="auth-submit cashflow-btn">Add supplier</button>
+          </form>
+        </section>
+
+        <section class="calculator-card">
+          <h2 class="auth-title">Book in a delivery</h2>
+          <form id="purchase-form" class="cashflow-form" novalidate>
+            <div class="cashflow-form-grid">
+              <div>
+                <label class="input-label" for="purchase-supplier">Bought from</label>
+                <select class="auth-input" id="purchase-supplier"></select>
+              </div>
+              <div>
+                <label class="input-label" for="purchase-invoice">Invoice number</label>
+                <input class="auth-input" type="text" id="purchase-invoice" maxlength="64" placeholder="Optional" />
+              </div>
+              <div>
+                <label class="input-label" for="purchase-date">Delivery date</label>
+                <input class="auth-input" type="date" id="purchase-date" />
+              </div>
+              <div>
+                <label class="input-label" for="purchase-note">Note</label>
+                <input class="auth-input" type="text" id="purchase-note" maxlength="500" placeholder="Optional" />
+              </div>
+            </div>
+
+            <div class="pos-ticket-head">
+              <h3 class="auth-title">Items received</h3>
+              <div class="pos-filters">
+                <input class="auth-input" type="search" id="purchase-search"
+                       placeholder="Search name, SKU or barcode" aria-label="Search products" />
+                <select class="auth-input" id="purchase-product" aria-label="Product to add"></select>
+                <button type="button" class="btn btn-secondary pos-mini" id="purchase-add-line">Add item</button>
+              </div>
+            </div>
+
+            <p id="purchase-empty" class="cashflow-empty">Nothing added yet. Pick a product and press "Add item".</p>
+            <ul id="purchase-lines" class="pos-lines"></ul>
+
+            <dl class="pos-totals">
+              <div><dt>Subtotal</dt><dd id="purchase-subtotal">Rs 0</dd></div>
+              <div>
+                <dt><label class="input-label" for="purchase-discount">Discount</label></dt>
+                <dd><input class="auth-input pos-discount-input" type="number" id="purchase-discount" min="0" step="0.01" value="0" /></dd>
+              </div>
+              <div class="pos-total-row"><dt>Bill total</dt><dd id="purchase-total">Rs 0</dd></div>
+              <div>
+                <dt><label class="input-label" for="purchase-paid">Paid now</label></dt>
+                <dd><input class="auth-input pos-discount-input" type="number" id="purchase-paid" min="0" step="0.01" value="0" /></dd>
+              </div>
+              <div><dt>Still owed</dt><dd id="purchase-outstanding">Rs 0</dd></div>
+            </dl>
+
+            <div class="cashflow-form-actions">
+              <button type="submit" class="auth-submit cashflow-btn" id="purchase-submit">Save stock in</button>
+              <button type="button" class="auth-google cashflow-btn" id="purchase-clear">Clear</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="calculator-card">
+          <div class="pos-ticket-head">
+            <h2 class="auth-title">Recent deliveries</h2>
+            <p class="dashboard-range" id="purchases-range">—</p>
+          </div>
+
+          <div class="admin-table-container">
+            <!-- .sales-table for its nine-column padding and right-aligned
+                 money cells. Rows carry .sales-row: a click opens the invoice. -->
+            <table class="admin-table sales-table">
+              <thead>
+                <tr>
+                  <th>Reference</th>
+                  <th>Date</th>
+                  <th>Supplier</th>
+                  <th>Invoice</th>
+                  <th class="sales-num">Items</th>
+                  <th class="sales-num">Total</th>
+                  <th class="sales-num">Paid</th>
+                  <th class="sales-num">Pending</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="purchases-body">
+                <tr><td colspan="9" class="admin-table-empty">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="admin-pagination" id="purchases-pagination"></div>
+        </section>
+        </div><!-- /#purchases-list-view -->
+
+        <section class="calculator-card" id="purchase-detail" hidden>
+          <div class="pos-ticket-head">
+            <div class="topbar-heading">
+              <h2 class="auth-title" id="purchase-detail-title">Delivery</h2>
+              <p class="tagline" id="purchase-detail-subtitle">&mdash;</p>
+            </div>
+            <button type="button" class="btn btn-secondary pos-mini" id="purchase-detail-back">&larr; Back to deliveries</button>
+          </div>
+
+          <dl class="sale-facts" id="purchase-detail-facts"></dl>
+
+          <div class="pos-ticket-head">
+            <h3 class="auth-title">Goods received</h3>
+          </div>
+
+          <div class="admin-table-container">
+            <table class="admin-table sales-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th class="sales-num">Quantity</th>
+                  <th class="sales-num">Unit cost</th>
+                  <th class="sales-num">Line total</th>
+                </tr>
+              </thead>
+              <tbody id="purchase-detail-items">
+                <tr><td colspan="4" class="admin-table-empty">Loading&hellip;</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <dl class="pos-totals">
+            <div><dt>Subtotal</dt><dd id="purchase-detail-subtotal">Rs 0</dd></div>
+            <div><dt>Discount</dt><dd id="purchase-detail-discount">Rs 0</dd></div>
+            <div class="pos-total-row"><dt>Bill total</dt><dd id="purchase-detail-total">Rs 0</dd></div>
+            <div><dt>Paid to date</dt><dd id="purchase-detail-paid">Rs 0</dd></div>
+            <div class="pos-total-row"><dt>Still owed</dt><dd id="purchase-detail-outstanding">Rs 0</dd></div>
+          </dl>
+
+          <div id="purchase-payment-alert" class="auth-alert" hidden role="alert"></div>
+
+          <form class="sale-payment-form" id="purchase-payment-form" novalidate hidden>
+            <h3 class="auth-title sale-payment-title">Record payment</h3>
+            <p class="sale-payment-due" id="purchase-payment-due"></p>
+
+            <div class="sale-payment-grid">
+              <div>
+                <label class="input-label" for="purchase-payment-amount">Amount paid (PKR)</label>
+                <input class="auth-input" type="number" id="purchase-payment-amount" min="0.01" step="0.01" placeholder="0" />
+              </div>
+              <div>
+                <label class="input-label" for="purchase-payment-method">Method</label>
+                <!-- No "credit" option: paying a bill with more credit moves no
+                     money, and the API rejects it. -->
+                <select class="auth-input" id="purchase-payment-method">
+                  <option value="cash">Cash</option>
+                  <option value="card">Card</option>
+                  <option value="easypaisa">EasyPaisa</option>
+                  <option value="jazzcash">JazzCash</option>
+                  <option value="bank_transfer">Bank transfer</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label class="input-label" for="purchase-payment-paid-by">Paid by</label>
+                <!-- Who actually handed the money over, which is often not the
+                     login typing this in hours later. -->
+                <input class="auth-input" type="text" id="purchase-payment-paid-by" maxlength="120" placeholder="e.g. Bilal" />
+              </div>
+              <div id="purchase-payment-reference-field" hidden>
+                <label class="input-label" for="purchase-payment-reference">Reference</label>
+                <input class="auth-input" type="text" id="purchase-payment-reference" maxlength="64" placeholder="Transaction id" />
+              </div>
+              <div>
+                <label class="input-label" for="purchase-payment-note">Note</label>
+                <input class="auth-input" type="text" id="purchase-payment-note" maxlength="255" placeholder="Optional" />
+              </div>
+            </div>
+
+            <button type="submit" class="auth-submit cashflow-btn" id="purchase-payment-submit">Record payment</button>
+          </form>
+
+          <div class="pos-ticket-head">
+            <h3 class="auth-title">Payment history</h3>
+            <p class="dashboard-range" id="purchase-payments-range">&mdash;</p>
+          </div>
+
+          <div class="admin-table-container">
+            <table class="admin-table sales-table">
+              <thead>
+                <tr>
+                  <th>When</th>
+                  <th class="sales-num">Amount</th>
+                  <th>Method</th>
+                  <th>Paid by</th>
+                  <th>Reference</th>
+                  <th>Note</th>
+                  <th class="sales-num">Balance after</th>
+                </tr>
+              </thead>
+              <tbody id="purchase-payments-body">
+                <tr><td colspan="7" class="admin-table-empty">Nothing paid on this invoice yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script type="module" src="js/purchases.js"></script>
+</body>
+</html>

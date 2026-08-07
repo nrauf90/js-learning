@@ -1,42 +1,39 @@
 import { apiGet, apiPost, getAuthToken } from './api.js';
 import { initShell } from './shell.js';
-
-const THEME_KEY = 'tax-calculator-theme';
+import { initTheme } from './theme.js';
 
 let plans = [];
-let providers = [];
+let currency = 'USD';
 let selectedPlan = 'monthly';
-let selectedProvider = 'jazzcash';
-
-function applyTheme(theme) {
-  const root = document.documentElement;
-  const toggle = document.getElementById('theme-toggle');
-  root.setAttribute('data-theme', theme);
-  if (!toggle) return;
-  toggle.setAttribute('aria-pressed', String(theme === 'light'));
-  toggle.setAttribute(
-    'aria-label',
-    theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'
-  );
-}
-
-function initTheme() {
-  const stored = localStorage.getItem(THEME_KEY);
-  if (stored === 'light' || stored === 'dark') {
-    applyTheme(stored);
-  } else {
-    applyTheme(window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-  }
-  document.getElementById('theme-toggle')?.addEventListener('click', () => {
-    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    applyTheme(next);
-    localStorage.setItem(THEME_KEY, next);
-  });
-}
+let subscription = null;
 
 function requireAuth() {
   if (getAuthToken()) return true;
   window.location.replace(`login.html?next=${encodeURIComponent('billing.html')}`);
+  return false;
+}
+
+/**
+ * Checkout, the Paddle portal and cancellation are platform-operator work now.
+ * A shop owner or staff member arriving here from a bookmark would be shown a
+ * purchase flow the API refuses, so send them somewhere useful instead. The
+ * server-side `admin` middleware is the real block; this only spares them the
+ * confusing screen.
+ */
+async function requireAdmin() {
+  let user = null;
+  try {
+    user = (await apiGet('/api/user')).user;
+  } catch {
+    // A 401 has already redirected to login inside apiFetch. Anything else
+    // leaves the page inert rather than guessing at a privilege we could not
+    // confirm.
+    return false;
+  }
+
+  if (user?.is_admin) return true;
+
+  window.location.replace('dashboard.html');
   return false;
 }
 
@@ -55,13 +52,24 @@ function clearAlert() {
   el.textContent = '';
 }
 
-function formatRs(amount) {
-  return `Rs ${Math.round(Number(amount) || 0).toLocaleString('en-PK')}`;
+function formatMoney(amount) {
+  const value = Number(amount) || 0;
+  try {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency,
+      // Whole-dollar prices read better without the trailing .00, but keep
+      // cents when a plan actually has them.
+      minimumFractionDigits: Number.isInteger(value) ? 0 : 2,
+    }).format(value);
+  } catch {
+    return `${currency} ${value}`;
+  }
 }
 
 function formatDate(iso) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-PK', {
+  return new Date(iso).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -70,13 +78,25 @@ function formatDate(iso) {
 
 function renderSubscription(sub, trial) {
   const el = document.getElementById('subscription-info');
+  subscription = sub;
+
   if (sub?.active) {
-    el.innerHTML = `
-    <strong>${sub.plan === 'yearly' ? 'Yearly' : 'Monthly'}</strong> plan —
-    ${sub.active ? 'Active' : sub.status}
-    · Renewal date: <strong>${formatDate(sub.ends_at)}</strong>`;
+    const planName = sub.plan === 'yearly' ? 'Yearly' : 'Monthly';
+    const ending = sub.cancel_at_period_end
+      ? `Cancels on <strong>${formatDate(sub.ends_at)}</strong>`
+      : `Renews on <strong>${formatDate(sub.renews_at || sub.ends_at)}</strong>`;
+    const dunning =
+      sub.status === 'past_due'
+        ? ' · <strong>Payment failed</strong> — update your card to avoid losing access.'
+        : '';
+
+    el.innerHTML = `<strong>${planName}</strong> plan — Active · ${ending}${dunning}`;
+    renderManageControls(sub);
     return;
   }
+
+  renderManageControls(null);
+
   if (trial?.active) {
     const days = trial.days_remaining ?? 0;
     el.innerHTML = `
@@ -85,11 +105,23 @@ function renderSubscription(sub, trial) {
     return;
   }
   if (trial?.expired) {
-    el.textContent =
-      'Your 7-day free trial has ended. Choose a plan below to keep using cash flow and reports.';
+    el.textContent = 'This account’s 7-day free trial has ended.';
     return;
   }
-  el.textContent = 'No active subscription. Choose a plan below to unlock cash flow and reports.';
+  el.textContent = 'No active subscription on this account.';
+}
+
+function renderManageControls(sub) {
+  const wrap = document.getElementById('manage-billing');
+  if (!wrap) return;
+
+  // Only Paddle-managed subscriptions have a hosted portal behind them. Rows
+  // created by local test mode have no external id and nothing to link to.
+  const managed = Boolean(sub?.active && sub?.managed);
+  wrap.hidden = !managed;
+
+  const cancelBtn = document.getElementById('cancel-btn');
+  if (cancelBtn) cancelBtn.hidden = !managed || Boolean(sub?.cancel_at_period_end);
 }
 
 function renderPlans() {
@@ -102,7 +134,7 @@ function renderPlans() {
       <label class="billing-plan-card${selectedPlan === plan.id ? ' selected' : ''}">
         <input type="radio" name="plan" value="${plan.id}" ${selectedPlan === plan.id ? 'checked' : ''} />
         <span class="billing-plan-name">${plan.name}</span>
-        <span class="billing-plan-price">${formatRs(plan.amount)}</span>
+        <span class="billing-plan-price">${formatMoney(plan.amount)}</span>
         <span class="billing-plan-desc">${plan.description}</span>
       </label>`
     )
@@ -117,34 +149,16 @@ function renderPlans() {
   });
 }
 
-function renderProviders() {
-  const container = document.getElementById('provider-options');
-  container.innerHTML = providers
-    .map(
-      (p) => `
-      <label class="billing-provider${selectedProvider === p.id ? ' selected' : ''}">
-        <input type="radio" name="provider" value="${p.id}" ${selectedProvider === p.id ? 'checked' : ''} />
-        ${p.label}
-      </label>`
-    )
-    .join('');
-
-  container.querySelectorAll('input[name="provider"]').forEach((input) => {
-    input.addEventListener('change', () => {
-      selectedProvider = input.value;
-      renderProviders();
-    });
-  });
-}
-
 function updateCheckoutButton() {
   const plan = plans.find((p) => p.id === selectedPlan);
   const btn = document.getElementById('checkout-btn');
   const note = document.getElementById('checkout-note');
   if (!plan || !btn) return;
   btn.disabled = false;
-  btn.textContent = `Pay ${formatRs(plan.amount)} with ${selectedProvider === 'jazzcash' ? 'JazzCash' : 'EasyPaisa'}`;
-  note.textContent = 'You will be redirected to complete payment. Sandbox mode completes locally when gateway keys are not configured.';
+  btn.textContent = `Subscribe — ${formatMoney(plan.amount)}/${plan.interval}`;
+  note.textContent =
+    'Checkout is handled by Paddle, our payment provider and merchant of record. ' +
+    'Applicable sales tax or VAT is calculated at checkout.';
 }
 
 async function loadSubscription() {
@@ -158,11 +172,12 @@ function renderAddonCard(addons) {
   if (!card) return;
 
   const plan = plans.find((p) => p.id === 'receipt_addon');
-  const price = plan ? formatRs(plan.amount) : 'Rs 500';
   const active = addons?.receipt?.active === true;
   const badge = card.querySelector('.billing-addon-badge');
 
-  card.querySelector('.billing-plan-price').textContent = `${price}/month`;
+  if (plan) {
+    card.querySelector('.billing-plan-price').textContent = `${formatMoney(plan.amount)}/month`;
+  }
   if (badge) {
     badge.textContent = active ? 'Active' : 'Coming soon';
     badge.classList.toggle('active', active);
@@ -172,45 +187,20 @@ function renderAddonCard(addons) {
 async function loadPlans() {
   const data = await apiGet('/api/billing/plans');
   plans = data.plans || [];
-  providers = data.providers || [];
+  currency = data.currency || 'USD';
   renderPlans();
-  renderProviders();
   updateCheckoutButton();
 }
 
-function submitGatewayForm(checkout, paymentId) {
-  const form = document.getElementById('gateway-form');
-  form.innerHTML = '';
-  form.method = checkout.method || 'POST';
-  form.action = checkout.action_url;
-  form.hidden = false;
-
-  for (const [key, value] of Object.entries(checkout.fields || {})) {
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = key;
-    input.value = value;
-    form.appendChild(input);
-  }
-
-  if (checkout.sandbox) {
-    completeSandbox(paymentId);
-    return;
-  }
-
-  form.submit();
-}
-
-async function completeSandbox(paymentId) {
+async function completeTestPayment(paymentId) {
   clearAlert();
   try {
     const data = await apiPost(`/api/billing/sandbox/complete/${paymentId}`, {});
     showAlert(data.message || 'Subscription activated.', 'success');
     renderSubscription(data.subscription, data.trial);
     renderAddonCard(data.addons);
-    await loadSubscription();
   } catch (err) {
-    showAlert(err.message || 'Sandbox payment failed');
+    showAlert(err.message || 'Test payment failed');
   }
 }
 
@@ -220,17 +210,66 @@ async function onCheckout() {
   btn.disabled = true;
 
   try {
-    const data = await apiPost('/api/billing/checkout', {
-      plan: selectedPlan,
-      provider: selectedProvider,
-    });
+    const data = await apiPost('/api/billing/checkout', { plan: selectedPlan });
 
-    submitGatewayForm(data.checkout, data.payment.id);
+    if (data.checkout?.sandbox) {
+      // Local test mode: no provider involved, completed via the
+      // authenticated endpoint rather than a hosted checkout.
+      await completeTestPayment(data.payment.id);
+      return;
+    }
+
+    if (!data.redirect_url) {
+      showAlert('Checkout could not be started. Please try again.');
+      return;
+    }
+
+    window.location.href = data.redirect_url;
   } catch (err) {
     showAlert(err.message || 'Checkout failed');
   } finally {
     btn.disabled = false;
     updateCheckoutButton();
+  }
+}
+
+async function onManageBilling() {
+  clearAlert();
+  const btn = document.getElementById('portal-btn');
+  btn.disabled = true;
+
+  try {
+    const data = await apiPost('/api/billing/portal', {});
+    if (!data.url) {
+      showAlert('Could not open the billing portal. Please try again.');
+      return;
+    }
+    // Portal links are single-use and short-lived, so this is always a fresh
+    // one — never cache or bookmark it.
+    window.location.href = data.url;
+  } catch (err) {
+    showAlert(err.message || 'Could not open the billing portal');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function onCancel() {
+  clearAlert();
+  const endsOn = formatDate(subscription?.ends_at);
+  if (!window.confirm(`Cancel your subscription? You keep access until ${endsOn}.`)) return;
+
+  const btn = document.getElementById('cancel-btn');
+  btn.disabled = true;
+
+  try {
+    const data = await apiPost('/api/billing/cancel', {});
+    showAlert(data.message || 'Cancellation scheduled.', 'success');
+    await loadSubscription();
+  } catch (err) {
+    showAlert(err.message || 'Could not cancel the subscription');
+  } finally {
+    btn.disabled = false;
   }
 }
 
@@ -240,6 +279,9 @@ function handleReturnParams() {
   if (!status) return;
 
   if (status === 'success') {
+    // Provider webhooks are the source of truth and can land after the
+    // browser gets redirected back, so promise "shortly" rather than
+    // claiming the subscription is already live.
     showAlert('Payment received. Your subscription will appear shortly.', 'success');
   } else if (status === 'failed') {
     showAlert('Payment was not completed. Please try again.');
@@ -252,10 +294,13 @@ async function boot() {
   initTheme();
   initShell({ current: 'billing' });
   if (!requireAuth()) return;
+  if (!(await requireAdmin())) return;
 
   handleReturnParams();
 
   document.getElementById('checkout-btn').addEventListener('click', onCheckout);
+  document.getElementById('portal-btn').addEventListener('click', onManageBilling);
+  document.getElementById('cancel-btn').addEventListener('click', onCancel);
 
   try {
     await loadPlans();
