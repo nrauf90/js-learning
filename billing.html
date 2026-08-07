@@ -21,7 +21,7 @@
         </button>
         <div class="topbar-heading">
           <h1>Billing</h1>
-          <p class="tagline">Secure checkout by Paddle</p>
+          <p class="tagline">Platform administrators only — secure checkout by Paddle</p>
         </div>
         <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">
           <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
@@ -34,6 +34,10 @@
 
       <section class="calculator-card" id="subscription-status">
         <h2 class="dashboard-title">Your subscription</h2>
+        <p class="billing-muted">
+          Shops do not buy for themselves. To activate or extend a shop's access, use
+          <a href="admin-subscriptions.html">Subscriptions</a> in the admin panel.
+        </p>
         <p id="subscription-info" class="billing-muted">Loading…</p>
         <div class="billing-manage" id="manage-billing" hidden>
           <button type="button" class="btn btn-secondary" id="portal-btn">Manage billing</button>
@@ -43,7 +47,7 @@
 
       <section class="calculator-card">
         <h2 class="dashboard-title">Choose a plan</h2>
-        <p class="billing-muted">Tax calculator stays free. New accounts get a <strong>7-day free trial</strong> for cash flow and reports.</p>
+        <p class="billing-muted">New accounts get a <strong>7-day free trial</strong> for cash flow and reports.</p>
         <div class="billing-plans" id="plan-cards"></div>
       </section>
 

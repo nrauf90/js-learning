@@ -21,7 +21,7 @@
         </button>
         <div class="topbar-heading">
           <h1>Reports</h1>
-          <p class="tagline">Income sources &amp; expense breakdowns</p>
+          <p class="tagline">Profit, cash position &amp; expense breakdowns</p>
         </div>
         <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">
           <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
@@ -38,6 +38,8 @@
             <button type="button" class="reports-mode-btn active" data-mode="weekly">Weekly</button>
             <button type="button" class="reports-mode-btn" data-mode="monthly">Monthly</button>
             <button type="button" class="reports-mode-btn" data-mode="yearly">Yearly</button>
+            <button type="button" class="reports-mode-btn" data-mode="profit">Profit</button>
+            <button type="button" class="reports-mode-btn" data-mode="cash">Cash position</button>
           </div>
 
           <div class="reports-picker" id="picker-weekly">
@@ -55,6 +57,16 @@
             <input class="auth-input cashflow-date" type="number" id="report-year" min="2000" max="2100" step="1" />
           </div>
 
+          <div class="reports-picker" id="picker-range" hidden>
+            <label class="input-label" for="range-from">From</label>
+            <input class="auth-input cashflow-date" type="date" id="range-from" />
+          </div>
+
+          <div class="reports-picker" id="picker-range-to" hidden>
+            <label class="input-label" for="range-to">To</label>
+            <input class="auth-input cashflow-date" type="date" id="range-to" />
+          </div>
+
           <div class="reports-actions">
             <button type="button" class="btn btn-primary btn-pdf" id="download-pdf">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 21h16"/></svg>
@@ -65,7 +77,7 @@
 
         <p class="reports-period" id="report-period">—</p>
 
-        <div class="dashboard-summary">
+        <div class="dashboard-summary" id="summary-ledger">
           <div class="dashboard-stat">
             <span class="dashboard-stat-label">Total income</span>
             <span class="dashboard-stat-value income" id="report-income">—</span>
@@ -79,9 +91,39 @@
             <span class="dashboard-stat-value" id="report-net">—</span>
           </div>
         </div>
+
+        <div class="dashboard-summary" id="summary-profit" hidden>
+          <div class="dashboard-stat">
+            <span class="dashboard-stat-label">Sales (net of refunds)</span>
+            <span class="dashboard-stat-value income" id="profit-sales">—</span>
+          </div>
+          <div class="dashboard-stat">
+            <span class="dashboard-stat-label">Gross profit</span>
+            <span class="dashboard-stat-value" id="profit-gross">—</span>
+          </div>
+          <div class="dashboard-stat dashboard-stat-highlight">
+            <span class="dashboard-stat-label">Net profit</span>
+            <span class="dashboard-stat-value" id="profit-net">—</span>
+          </div>
+        </div>
+
+        <div class="dashboard-summary" id="summary-cash" hidden>
+          <div class="dashboard-stat dashboard-stat-highlight">
+            <span class="dashboard-stat-label">Cash in drawer</span>
+            <span class="dashboard-stat-value" id="cash-drawer">—</span>
+          </div>
+          <div class="dashboard-stat">
+            <span class="dashboard-stat-label">Udhaar owed to you</span>
+            <span class="dashboard-stat-value expense" id="cash-receivable">—</span>
+          </div>
+          <div class="dashboard-stat">
+            <span class="dashboard-stat-label">Stock at cost</span>
+            <span class="dashboard-stat-value" id="cash-stock">—</span>
+          </div>
+        </div>
       </section>
 
-      <div class="reports-breakdown-grid">
+      <div class="reports-breakdown-grid" id="view-ledger">
         <section class="calculator-card reports-chart-card">
           <h2 class="dashboard-title">Income by source</h2>
           <div class="reports-chart-wrap">
@@ -98,6 +140,46 @@
           </div>
           <p class="dashboard-empty" id="expense-empty" hidden>No expenses in this period.</p>
           <ul class="reports-category-list" id="expense-list"></ul>
+        </section>
+      </div>
+
+      <div class="reports-breakdown-grid" id="view-profit" hidden>
+        <section class="calculator-card reports-chart-card">
+          <h2 class="dashboard-title">Profit &amp; loss</h2>
+          <ul class="reports-category-list" id="pnl-list"></ul>
+          <p class="auth-alert" id="profit-unknown" data-type="warning" hidden role="status"></p>
+        </section>
+
+        <section class="calculator-card reports-chart-card">
+          <h2 class="dashboard-title">Sales by category</h2>
+          <div class="reports-chart-wrap">
+            <canvas id="profit-category-chart" aria-label="Sales by category chart"></canvas>
+          </div>
+          <p class="dashboard-empty" id="profit-category-empty" hidden>No sales in this period.</p>
+          <ul class="reports-category-list" id="profit-category-list"></ul>
+        </section>
+
+        <section class="calculator-card reports-chart-card">
+          <h2 class="dashboard-title">Top sellers</h2>
+          <p class="dashboard-empty" id="profit-product-empty" hidden>No sales in this period.</p>
+          <ul class="reports-category-list" id="profit-product-list"></ul>
+        </section>
+      </div>
+
+      <div class="reports-breakdown-grid" id="view-cash" hidden>
+        <section class="calculator-card reports-chart-card">
+          <h2 class="dashboard-title">Where the money is</h2>
+          <ul class="reports-category-list" id="cash-position-list"></ul>
+          <p class="auth-alert" id="cash-unknown" data-type="warning" hidden role="status"></p>
+        </section>
+
+        <section class="calculator-card reports-chart-card">
+          <h2 class="dashboard-title">Takings by payment method</h2>
+          <div class="reports-chart-wrap">
+            <canvas id="cash-method-chart" aria-label="Takings by payment method chart"></canvas>
+          </div>
+          <p class="dashboard-empty" id="cash-method-empty" hidden>No takings in this period.</p>
+          <ul class="reports-category-list" id="cash-method-list"></ul>
         </section>
       </div>
       </main>

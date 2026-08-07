@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\EnsureSubscribed;
 use App\Models\Payment;
 use App\Models\Subscription;
 use App\Models\User;
@@ -42,11 +43,16 @@ class BillingController extends Controller
         ]);
     }
 
+    /**
+     * The one billing endpoint a shop still reaches. It answers "do I have
+     * access, and for how long" — and, when the answer is no, who to quote
+     * when asking the operator to renew.
+     */
     public function subscription(Request $request): JsonResponse
     {
-        $user = $request->user();
-
-        return response()->json($this->statePayload($user));
+        return response()->json(
+            $this->statePayload(EnsureSubscribed::payingAccount($request->user()))
+        );
     }
 
     public function checkout(Request $request): JsonResponse
@@ -173,9 +179,32 @@ class BillingController extends Controller
             'subscription' => $this->formatSubscription($this->subscriptions->currentSubscription($user)),
             'trial' => $this->subscriptions->trialStatus($user),
             'addons' => $this->subscriptions->addonStatuses($user),
+            'account' => $this->accountPayload($user),
         ];
 
         return $message === null ? $payload : ['message' => $message] + $payload;
+    }
+
+    /**
+     * What a lapsed shop quotes when it contacts the operator. Without this the
+     * only way to identify the account is /api/shop, which sits behind the very
+     * gate that has just locked them out.
+     *
+     * @return array<string, mixed>
+     */
+    private function accountPayload(User $user): array
+    {
+        $shop = $user->ownedShop()->first() ?? $user->shop()->first();
+
+        return [
+            'name' => $user->name,
+            'email' => $user->email,
+            'shop' => $shop ? [
+                'id' => $shop->id,
+                'name' => $shop->name,
+                'phone' => $shop->phone,
+            ] : null,
+        ];
     }
 
     /**

@@ -44,9 +44,11 @@ Daily cash-flow expense tracker with a **free** Pakistan tax calculator.
 | M32 | [Dashboard customization](./milestones/M32-dashboard-customization.md) | 7 | Not started |
 | M33 | [Offline / PWA support](./milestones/M33-offline-pwa.md) | 7 | Not started |
 | M34 | [Keyboard shortcuts](./milestones/M34-keyboard-shortcuts.md) | 7 | Not started |
+| M35 | [Kiryana pack — weighed goods, purchases, profit & khata](./milestones/M35-kiryana-pack.md) | 8 | Done |
 
 ## Agent handoff
 
+- **[`features/`](./features/)** — one doc per functional area: what each part of the app is and how it works *as it stands today* (milestones record when it was built)
 - **[`CONTEXT.md`](./CONTEXT.md)** — read first in any new session (status + next task)
 - **`.cursor/rules/task-completion.mdc`** — after each task: checkbox, modified files, QA notes
 - **`.cursor/rules/milestone-qa.mdc`** — after each milestone: `npm run qa:milestone -- Mx`

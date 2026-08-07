@@ -1,23 +1,11 @@
 import { test, expect } from '@playwright/test';
+import { API, registerAndToken, loginAdmin } from '../helpers/qa-auth.js';
 
-const API = process.env.QA_API_URL || 'http://127.0.0.1:8000';
-
-function uniqueEmail() {
-  return `qa_bill_${Date.now()}_${Math.floor(Math.random() * 1e6)}@example.com`;
-}
-
-async function registerAndToken(request) {
-  const email = uniqueEmail();
-  const res = await request.post(`${API}/api/register`, {
-    data: {
-      name: 'Billing QA',
-      email,
-      password: 'password123',
-      password_confirmation: 'password123',
-    },
-  });
-  expect(res.status()).toBe(201);
-  return { token: (await res.json()).token };
+function authHeaders(token) {
+  return {
+    Authorization: `Bearer ${token}`,
+    Accept: 'application/json',
+  };
 }
 
 test.describe('M6 — Billing', () => {
@@ -32,12 +20,41 @@ test.describe('M6 — Billing', () => {
     expect(body.plans.some((p) => p.id === 'yearly' && p.amount > 0)).toBeTruthy();
   });
 
-  test('sandbox checkout activates subscription via API', async ({ request }) => {
-    const { token } = await registerAndToken(request);
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/json',
-    };
+  test('shop account is refused checkout, portal and cancel', async ({ request }) => {
+    const { token } = await registerAndToken(request, 'qa_bill_shop');
+    const headers = authHeaders(token);
+
+    const checkout = await request.post(`${API}/api/billing/checkout`, {
+      headers,
+      data: { plan: 'monthly' },
+    });
+    expect(checkout.status()).toBe(403);
+
+    expect((await request.post(`${API}/api/billing/portal`, { headers })).status()).toBe(403);
+    expect((await request.post(`${API}/api/billing/cancel`, { headers })).status()).toBe(403);
+    // The sandbox completer can hand out access without a webhook, so it is
+    // gated too — id 1 is enough to prove the middleware fires first.
+    expect(
+      (await request.post(`${API}/api/billing/sandbox/complete/1`, { headers })).status()
+    ).toBe(403);
+  });
+
+  test('shop account can still read its own subscription state', async ({ request }) => {
+    const { email, token } = await registerAndToken(request, 'qa_bill_read');
+
+    const res = await request.get(`${API}/api/billing/subscription`, {
+      headers: authHeaders(token),
+    });
+    expect(res.ok()).toBeTruthy();
+    const body = await res.json();
+    expect(body.trial.active).toBeTruthy();
+    // The lapsed notice quotes these back to the shopkeeper.
+    expect(body.account.email).toBe(email);
+  });
+
+  test('admin can complete a sandbox checkout via API', async ({ request }) => {
+    const { token } = await loginAdmin(request);
+    const headers = authHeaders(token);
 
     const checkout = await request.post(`${API}/api/billing/checkout`, {
       headers,
@@ -53,10 +70,49 @@ test.describe('M6 — Billing', () => {
     );
     expect(complete.ok()).toBeTruthy();
     expect((await complete.json()).subscription.active).toBeTruthy();
+  });
 
-    const sub = await request.get(`${API}/api/billing/subscription`, { headers });
-    expect(sub.ok()).toBeTruthy();
-    expect((await sub.json()).subscription.plan).toBe('monthly');
+  test('admin can grant a shop its subscription without the shop buying it', async ({
+    request,
+  }) => {
+    const { email, token: shopToken } = await registerAndToken(request, 'qa_bill_grant');
+    const { token: adminToken } = await loginAdmin(request);
+
+    const grant = await request.post(`${API}/api/admin/subscriptions`, {
+      headers: authHeaders(adminToken),
+      data: { email, plan: 'monthly' },
+    });
+    expect(grant.status()).toBe(201);
+
+    const state = await request.get(`${API}/api/billing/subscription`, {
+      headers: authHeaders(shopToken),
+    });
+    const body = await state.json();
+    expect(body.subscription.active).toBeTruthy();
+    // Nothing at Paddle backs a hand-granted row, so no portal and no cancel.
+    expect(body.subscription.managed).toBeFalsy();
+  });
+
+  test('admin grants a subscription from the admin screen', async ({ page, request }) => {
+    // The screen that replaces self-serve checkout, driven the way an operator
+    // drives it — a shop with no subscription of its own gets one.
+    const { email } = await registerAndToken(request, 'qa_bill_ui_grant');
+    const { token } = await loginAdmin(request);
+
+    await page.addInitScript((t) => {
+      localStorage.setItem('cashflow_auth_token', t);
+    }, token);
+
+    await page.goto('/admin-subscriptions.html');
+
+    await page.fill('#grant-email', email);
+    await page.selectOption('#grant-plan', 'yearly');
+    await page.click('#grant-submit');
+
+    await expect(page.locator('#admin-alert')).toContainText(/Subscription active until/i, {
+      timeout: 15_000,
+    });
+    await expect(page.locator('#subs-body')).toContainText(email);
   });
 
   test('guest is redirected from billing page to login', async ({ page }) => {
@@ -66,8 +122,21 @@ test.describe('M6 — Billing', () => {
     await expect(page).toHaveURL(/\/login(\.html)?(\?|$)/, { timeout: 15_000 });
   });
 
-  test('logged-in user can complete sandbox checkout in UI', async ({ page, request }) => {
-    const { token } = await registerAndToken(request);
+  test('shop account landing on the billing page is sent away', async ({ page, request }) => {
+    const { token } = await registerAndToken(request, 'qa_bill_page');
+
+    await page.addInitScript((t) => {
+      localStorage.setItem('cashflow_auth_token', t);
+    }, token);
+
+    await page.goto('/billing.html');
+
+    await expect(page).toHaveURL(/\/dashboard(\.html)?(\?|$)/, { timeout: 15_000 });
+    await expect(page.locator('#checkout-btn')).toHaveCount(0);
+  });
+
+  test('admin can still complete a sandbox checkout in the UI', async ({ page, request }) => {
+    const { token } = await loginAdmin(request);
 
     await page.addInitScript((t) => {
       localStorage.setItem('cashflow_auth_token', t);

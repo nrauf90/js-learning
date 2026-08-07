@@ -9,12 +9,15 @@ const PAGES = {
   dashboard: { href: 'dashboard.html', label: 'Dashboard' },
   reports: { href: 'reports.html', label: 'Reports' },
   cashflow: { href: 'cashflow.html', label: 'Cash Flow' },
-  billing: { href: 'billing.html', label: 'Billing' },
+  // No billing entry: shops are opened and renewed by the platform admin, and
+  // the page turns a shop away. Removed here as well as from the app shell so
+  // the legacy top nav on the public pages cannot offer a door the sidebar has
+  // already closed.
   profile: { href: 'profile.html', label: 'Profile' },
 };
 
 /** Pages that only make sense once you have an account. */
-const AUTH_ONLY = new Set(['pos', 'products', 'dashboard', 'reports', 'cashflow', 'billing', 'profile']);
+const AUTH_ONLY = new Set(['pos', 'products', 'dashboard', 'reports', 'cashflow', 'profile']);
 
 function wireLogout(link) {
   link.textContent = 'Log out';

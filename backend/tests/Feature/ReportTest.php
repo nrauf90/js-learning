@@ -25,33 +25,33 @@ class ReportTest extends TestCase
     {
         $user = User::factory()->create();
         $this->subscribeUser($user);
-        $grocery = ExpenseCategory::where('slug', 'grocery')->firstOrFail();
-        $salary = ExpenseCategory::where('slug', 'salary')->firstOrFail();
+        $stock = ExpenseCategory::where('slug', 'stock-purchase')->firstOrFail();
+        $shopSales = ExpenseCategory::where('slug', 'sales')->firstOrFail();
 
         CashEntry::create([
             'user_id' => $user->id,
-            'category_id' => $grocery->id,
+            'category_id' => $stock->id,
             'type' => 'expense',
             'amount' => 1000,
             'entry_date' => '2026-07-28',
         ]);
         CashEntry::create([
             'user_id' => $user->id,
-            'category_id' => $grocery->id,
+            'category_id' => $stock->id,
             'type' => 'expense',
             'amount' => 500,
             'entry_date' => '2026-07-30',
         ]);
         CashEntry::create([
             'user_id' => $user->id,
-            'category_id' => $salary->id,
+            'category_id' => $shopSales->id,
             'type' => 'income',
             'amount' => 50000,
             'entry_date' => '2026-07-29',
         ]);
         CashEntry::create([
             'user_id' => $user->id,
-            'category_id' => $grocery->id,
+            'category_id' => $stock->id,
             'type' => 'expense',
             'amount' => 999,
             'entry_date' => '2026-08-04',
@@ -65,41 +65,41 @@ class ReportTest extends TestCase
             ->assertJsonPath('total_income', 50000)
             ->assertJsonPath('total_expense', 1500)
             ->assertJsonPath('net', 48500)
-            ->assertJsonFragment(['category' => 'Grocery', 'amount' => 1500])
-            ->assertJsonFragment(['category' => 'Salary', 'amount' => 50000]);
+            ->assertJsonFragment(['category' => 'Stock Purchase', 'amount' => 1500])
+            ->assertJsonFragment(['category' => 'Shop Sales', 'amount' => 50000]);
     }
 
     public function test_monthly_report_aggregates_calendar_month(): void
     {
         $user = User::factory()->create();
         $this->subscribeUser($user);
-        $petrol = ExpenseCategory::where('slug', 'petrol')->firstOrFail();
-        $freelance = ExpenseCategory::where('slug', 'freelance')->firstOrFail();
+        $rent = ExpenseCategory::where('slug', 'rent')->firstOrFail();
+        $otherIncome = ExpenseCategory::where('slug', 'other-income')->firstOrFail();
 
         CashEntry::create([
             'user_id' => $user->id,
-            'category_id' => $petrol->id,
+            'category_id' => $rent->id,
             'type' => 'expense',
             'amount' => 3000,
             'entry_date' => '2026-07-01',
         ]);
         CashEntry::create([
             'user_id' => $user->id,
-            'category_id' => $petrol->id,
+            'category_id' => $rent->id,
             'type' => 'expense',
             'amount' => 2000,
             'entry_date' => '2026-07-31',
         ]);
         CashEntry::create([
             'user_id' => $user->id,
-            'category_id' => $freelance->id,
+            'category_id' => $otherIncome->id,
             'type' => 'income',
             'amount' => 25000,
             'entry_date' => '2026-07-15',
         ]);
         CashEntry::create([
             'user_id' => $user->id,
-            'category_id' => $petrol->id,
+            'category_id' => $rent->id,
             'type' => 'expense',
             'amount' => 100,
             'entry_date' => '2026-08-01',
@@ -121,26 +121,26 @@ class ReportTest extends TestCase
     {
         $user = User::factory()->create();
         $this->subscribeUser($user);
-        $grocery = ExpenseCategory::where('slug', 'grocery')->firstOrFail();
-        $salary = ExpenseCategory::where('slug', 'salary')->firstOrFail();
+        $stock = ExpenseCategory::where('slug', 'stock-purchase')->firstOrFail();
+        $shopSales = ExpenseCategory::where('slug', 'sales')->firstOrFail();
 
         CashEntry::create([
             'user_id' => $user->id,
-            'category_id' => $salary->id,
+            'category_id' => $shopSales->id,
             'type' => 'income',
             'amount' => 120000,
             'entry_date' => '2026-01-15',
         ]);
         CashEntry::create([
             'user_id' => $user->id,
-            'category_id' => $grocery->id,
+            'category_id' => $stock->id,
             'type' => 'expense',
             'amount' => 4000,
             'entry_date' => '2026-12-20',
         ]);
         CashEntry::create([
             'user_id' => $user->id,
-            'category_id' => $salary->id,
+            'category_id' => $shopSales->id,
             'type' => 'income',
             'amount' => 50000,
             'entry_date' => '2025-12-31',
@@ -160,26 +160,26 @@ class ReportTest extends TestCase
     {
         $user = User::factory()->create();
         $this->subscribeUser($user);
-        $grocery = ExpenseCategory::where('slug', 'grocery')->firstOrFail();
-        $salary = ExpenseCategory::where('slug', 'salary')->firstOrFail();
+        $stock = ExpenseCategory::where('slug', 'stock-purchase')->firstOrFail();
+        $shopSales = ExpenseCategory::where('slug', 'sales')->firstOrFail();
 
         CashEntry::create([
             'user_id' => $user->id,
-            'category_id' => $grocery->id,
+            'category_id' => $stock->id,
             'type' => 'expense',
             'amount' => 200,
             'entry_date' => '2026-07-28',
         ]);
         CashEntry::create([
             'user_id' => $user->id,
-            'category_id' => $grocery->id,
+            'category_id' => $stock->id,
             'type' => 'expense',
             'amount' => 300,
             'entry_date' => '2026-07-28',
         ]);
         CashEntry::create([
             'user_id' => $user->id,
-            'category_id' => $salary->id,
+            'category_id' => $shopSales->id,
             'type' => 'income',
             'amount' => 1000,
             'entry_date' => '2026-07-29',

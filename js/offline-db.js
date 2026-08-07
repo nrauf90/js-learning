@@ -101,9 +101,15 @@ export async function adjustCachedStock(productId, delta) {
 
   if (!product || !product.track_stock) return;
 
-  product.stock_quantity += delta;
+  // Coerced rather than added to directly: stock is a decimal now, and the API
+  // serialises decimals as strings — `"1.5" += 0.25` would cache "1.50.25" and
+  // quietly make the count nonsense. Rounded to milligram precision so a run of
+  // offline weighed sales cannot drift the cached figure.
+  const next = Number(product.stock_quantity) + Number(delta);
+  product.stock_quantity = Math.round(next * 1000) / 1000;
   product.low_stock =
-    product.low_stock_threshold > 0 && product.stock_quantity <= product.low_stock_threshold;
+    Number(product.low_stock_threshold) > 0 &&
+    product.stock_quantity <= Number(product.low_stock_threshold);
   store.put(product);
 }
 

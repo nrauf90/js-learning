@@ -53,6 +53,37 @@ function todayISO() {
   return toISO(now);
 }
 
+/**
+ * The shop's current week, Monday to Sunday.
+ *
+ * Deliberately the same week `ReportController::weekly` uses, rather than "the
+ * last seven days": the dashboard and the weekly report get read side by side,
+ * and two different definitions of "this week" showing two different totals is
+ * how an owner learns to distrust both.
+ *
+ * Noon rather than midnight, like todayISO(), so a daylight-saving shift cannot
+ * roll the date back a day.
+ *
+ * @returns {{ start: string, end: string, startDate: Date }}
+ */
+function weekRangeISO() {
+  const start = new Date();
+  start.setHours(12, 0, 0, 0);
+  // getDay() calls Sunday 0, so Sunday belongs to the week that began six days
+  // earlier rather than starting a new one.
+  start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+
+  return { start: toISO(start), end: toISO(end), startDate: start };
+}
+
+/** `YYYY-MM-DD` sorts lexicographically, so the bounds need no date parsing. */
+function inWeek(iso, start, end) {
+  return typeof iso === 'string' && iso >= start && iso <= end;
+}
+
 function cssVar(name, fallback) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
 }
@@ -249,20 +280,28 @@ async function boot() {
     const hasAccess = billing.subscription?.active || billing.trial?.active;
 
     if (!hasAccess) {
+      // No buy button: shops are activated by the platform admin, so the only
+      // useful thing this screen can say is who to ask and what to quote.
+      const account = billing.account || {};
+      const quote = [account.shop?.name, account.email].filter(Boolean).join(' · ');
+
       document.getElementById('week-range').textContent = billing.trial?.expired
         ? 'Free trial ended'
-        : 'Subscription required';
-      document.getElementById('week-empty').hidden = false;
-      document.getElementById('week-empty').innerHTML = billing.trial?.expired
-        ? 'Your 7-day free trial has ended. <a href="billing.html">Subscribe to continue</a>'
-        : 'Subscribe to see your weekly summary. <a href="billing.html">View plans</a>';
+        : 'Subscription ended';
+      const empty = document.getElementById('week-empty');
+      empty.hidden = false;
+      empty.textContent =
+        `${billing.trial?.expired ? 'Your 7-day free trial has ended.' : 'Your subscription has ended.'} ` +
+        'Please contact the administrator to have it renewed.' +
+        (quote ? ` Quote: ${quote}` : '');
       return;
     }
 
     if (billing.trial?.active) {
       const days = billing.trial.days_remaining ?? 0;
       showAlert(
-        `Free trial: ${days} day${days === 1 ? '' : 's'} remaining. Subscribe anytime on Billing.`,
+        `Free trial: ${days} day${days === 1 ? '' : 's'} remaining. ` +
+          'Contact the administrator before it ends to keep access.',
         'success'
       );
     }

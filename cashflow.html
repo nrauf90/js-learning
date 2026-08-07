@@ -80,9 +80,12 @@
 
           <div id="receipt-upsell" class="receipt-upsell" hidden>
             <p class="receipt-upsell-label">Attach receipt (Premium)</p>
+            <!-- No self-serve link any more: add-ons are switched on by the
+                 platform admin, so pointing a shop at a checkout it cannot use
+                 would be a dead end dressed up as an action. -->
             <p class="receipt-upsell-text billing-muted">
               Receipt AI scans and enhances expense receipts.
-              <a href="billing.html#receipt-addon">Upgrade on Billing</a>
+              Contact the administrator to have it enabled for your shop.
             </p>
           </div>
           <div id="receipt-active" class="receipt-upsell receipt-active" hidden>
@@ -94,8 +97,11 @@
 
       <section class="calculator-card">
         <h2 class="auth-title">Entries</h2>
+        <p class="dashboard-range" id="entries-range">&mdash;</p>
         <div id="entries-empty" class="cashflow-empty">No entries for this day yet.</div>
         <ul id="entries-list" class="entries-list"></ul>
+
+        <div class="admin-pagination" id="entries-pagination"></div>
       </section>
       </main>
     </div>

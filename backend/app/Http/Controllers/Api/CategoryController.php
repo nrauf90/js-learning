@@ -15,7 +15,9 @@ class CategoryController extends Controller
             'kind' => ['nullable', 'in:income,expense'],
         ]);
 
-        $query = ExpenseCategory::query()->orderBy('name');
+        // Selectable only: this endpoint feeds the manual entry picker, and the
+        // day book's own categories must not be choosable by hand.
+        $query = ExpenseCategory::query()->selectable()->orderBy('name');
 
         if (! empty($validated['kind'])) {
             $query->where('kind', $validated['kind']);

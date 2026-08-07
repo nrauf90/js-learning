@@ -30,7 +30,12 @@ return [
 
     'exposed_headers' => [],
 
-    'max_age' => 0,
+    // Every call carries an `Authorization` header, which makes it a
+    // preflighted request. At 0 the browser may not cache the OPTIONS result,
+    // so each GET costs two round trips through the full framework boot rather
+    // than one — the single biggest avoidable cost on a page that fires three
+    // calls. 24h is the ceiling Chrome and Firefox both clamp to.
+    'max_age' => (int) env('CORS_MAX_AGE', 86400),
 
     'supports_credentials' => true,
 

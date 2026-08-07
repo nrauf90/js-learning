@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\CashEntry;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\Sale;
@@ -187,7 +186,7 @@ class PosTest extends TestCase
 
     /* --------------------------------------------------------------- sales */
 
-    public function test_a_sale_decrements_stock_and_posts_an_income_entry(): void
+    public function test_a_sale_decrements_stock_and_stays_out_of_the_cash_ledger(): void
     {
         $user = $this->seller();
         $product = $this->product($user, ['stock_quantity' => 10]);
@@ -201,17 +200,18 @@ class PosTest extends TestCase
             ->assertCreated()
             ->assertJsonPath('sale.subtotal', 240)
             ->assertJsonPath('sale.total', 240)
-            ->assertJsonPath('sale.change_due', 260);
+            ->assertJsonPath('sale.change_due', 260)
+            ->assertJsonPath('sale.payment_status', 'paid');
 
-        $this->assertSame(8, $product->fresh()->stock_quantity);
+        $this->assertEquals(8, $product->fresh()->stock_quantity);
         $this->assertMatchesRegularExpression('/^S-\d{6}$/', $response->json('sale.reference'));
 
+        // Individual sales no longer post into the cash ledger — the day book
+        // records the takings instead, so one sale is not counted twice.
         $sale = Sale::findOrFail($response->json('sale.id'));
-        $entry = CashEntry::findOrFail($sale->cash_entry_id);
 
-        $this->assertSame('income', $entry->type);
-        $this->assertSame('240.00', $entry->amount);
-        $this->assertSame('sales', $entry->category->slug);
+        $this->assertDatabaseCount('cash_entries', 0);
+        $this->assertNull($sale->cash_entry_id);
 
         $this->assertDatabaseHas('stock_movements', [
             'product_id' => $product->id,
@@ -239,7 +239,7 @@ class PosTest extends TestCase
             ->assertJsonCount(1, 'sale.items')
             ->assertJsonPath('sale.items.0.quantity', 3);
 
-        $this->assertSame(2, $product->fresh()->stock_quantity);
+        $this->assertEquals(2, $product->fresh()->stock_quantity);
     }
 
     public function test_a_sale_cannot_oversell_tracked_stock(): void
@@ -255,7 +255,7 @@ class PosTest extends TestCase
             ->assertJsonValidationErrors('items');
 
         // Nothing partially applied — the whole thing rolls back.
-        $this->assertSame(3, $product->fresh()->stock_quantity);
+        $this->assertEquals(3, $product->fresh()->stock_quantity);
         $this->assertDatabaseCount('sales', 0);
         $this->assertDatabaseCount('cash_entries', 0);
     }
@@ -275,7 +275,7 @@ class PosTest extends TestCase
             ])
             ->assertUnprocessable();
 
-        $this->assertSame(2, $product->fresh()->stock_quantity);
+        $this->assertEquals(2, $product->fresh()->stock_quantity);
     }
 
     public function test_an_untracked_product_sells_without_moving_stock(): void
@@ -289,7 +289,7 @@ class PosTest extends TestCase
             ])
             ->assertCreated();
 
-        $this->assertSame(0, $product->fresh()->stock_quantity);
+        $this->assertEquals(0, $product->fresh()->stock_quantity);
         $this->assertDatabaseCount('stock_movements', 0);
     }
 
@@ -355,8 +355,7 @@ class PosTest extends TestCase
         $user = $this->seller();
         $product = $this->product($user);
 
-        // cash_entries requires a positive amount, so a zero-total sale must
-        // still be recorded without trying to post one.
+        // A zero-total sale still moves stock and still gets a row of its own.
         $this->actingAs($user, 'sanctum')
             ->postJson('/api/sales', [
                 'items' => [['product_id' => $product->id, 'quantity' => 1]],
@@ -367,12 +366,12 @@ class PosTest extends TestCase
 
         $this->assertDatabaseCount('cash_entries', 0);
         $this->assertNull(Sale::firstOrFail()->cash_entry_id);
-        $this->assertSame(9, $product->fresh()->stock_quantity);
+        $this->assertEquals(9, $product->fresh()->stock_quantity);
     }
 
     /* ------------------------------------------------------------ refunds */
 
-    public function test_a_refund_restores_stock_and_removes_the_income_entry(): void
+    public function test_a_refund_restores_stock_and_touches_no_cash_entry(): void
     {
         $user = $this->seller();
         $product = $this->product($user, ['stock_quantity' => 10]);
@@ -383,15 +382,15 @@ class PosTest extends TestCase
             ])
             ->json('sale.id');
 
-        $this->assertSame(7, $product->fresh()->stock_quantity);
-        $this->assertDatabaseCount('cash_entries', 1);
+        $this->assertEquals(7, $product->fresh()->stock_quantity);
+        $this->assertDatabaseCount('cash_entries', 0);
 
         $this->actingAs($user, 'sanctum')
             ->postJson("/api/sales/{$saleId}/refund")
             ->assertOk()
             ->assertJsonPath('sale.status', 'refunded');
 
-        $this->assertSame(10, $product->fresh()->stock_quantity);
+        $this->assertEquals(10, $product->fresh()->stock_quantity);
         $this->assertDatabaseCount('cash_entries', 0);
         $this->assertNull(Sale::findOrFail($saleId)->cash_entry_id);
 
@@ -418,7 +417,7 @@ class PosTest extends TestCase
         $this->actingAs($user, 'sanctum')->postJson("/api/sales/{$saleId}/refund")->assertUnprocessable();
 
         // Stock restored exactly once.
-        $this->assertSame(10, $product->fresh()->stock_quantity);
+        $this->assertEquals(10, $product->fresh()->stock_quantity);
     }
 
     public function test_another_sellers_sale_cannot_be_viewed_or_refunded(): void
@@ -471,11 +470,14 @@ class PosTest extends TestCase
             ->postJson("/api/products/{$product->id}/stock", [
                 'quantity_delta' => -5,
                 'type' => 'adjustment',
+                // Stock coming off now has to say why (see WastageTest); the
+                // reason is what makes the count the only thing still wrong.
+                'reason' => 'count_correction',
             ])
             ->assertUnprocessable()
             ->assertJsonValidationErrors('quantity_delta');
 
-        $this->assertSame(3, $product->fresh()->stock_quantity);
+        $this->assertEquals(3, $product->fresh()->stock_quantity);
     }
 
     /* ------------------------------------------------------------ history */
@@ -572,8 +574,7 @@ class PosTest extends TestCase
 
         $this->assertSame($first->json('sale.id'), $second->json('sale.id'));
         $this->assertDatabaseCount('sales', 1);
-        $this->assertDatabaseCount('cash_entries', 1);
-        $this->assertSame(8, $product->fresh()->stock_quantity);
+        $this->assertEquals(8, $product->fresh()->stock_quantity);
     }
 
     public function test_an_offline_sale_keeps_the_time_it_was_rung_up(): void
@@ -594,8 +595,12 @@ class PosTest extends TestCase
         $sale = Sale::firstOrFail();
 
         $this->assertSame($soldAt->toDateTimeString(), $sale->sold_at->toDateTimeString());
-        // The ledger entry follows the sale, not the moment the queue drained.
-        $this->assertSame($soldAt->toDateString(), $sale->cashEntry->entry_date->toDateString());
+        // Reports read `sold_at`, so a queued sale lands on the day it was rung
+        // up rather than the day the till came back online.
+        $this->actingAs($user, 'sanctum')
+            ->getJson('/api/sales?date='.$soldAt->toDateString())
+            ->assertOk()
+            ->assertJsonCount(1, 'sales');
     }
 
     public function test_a_future_or_ancient_sold_at_is_rejected(): void
@@ -630,7 +635,7 @@ class PosTest extends TestCase
             ])
             ->assertCreated();
 
-        $this->assertSame(-2, $product->fresh()->stock_quantity);
+        $this->assertEquals(-2, $product->fresh()->stock_quantity);
     }
 
     public function test_an_online_sale_still_refuses_to_oversell(): void
@@ -646,12 +651,12 @@ class PosTest extends TestCase
             ])
             ->assertUnprocessable();
 
-        $this->assertSame(1, $product->fresh()->stock_quantity);
+        $this->assertEquals(1, $product->fresh()->stock_quantity);
     }
 
     /* ---------------------------------------------------- partial refunds */
 
-    public function test_a_partial_refund_returns_some_units_and_shrinks_the_income_entry(): void
+    public function test_a_partial_refund_returns_some_units_and_their_share_of_the_money(): void
     {
         $user = $this->seller();
         $product = $this->product($user, ['stock_quantity' => 10]);
@@ -674,11 +679,8 @@ class PosTest extends TestCase
             ->assertJsonPath('sale.items.0.refunded_quantity', 1)
             ->assertJsonPath('sale.items.0.refundable_quantity', 2);
 
-        $this->assertSame(8, $product->fresh()->stock_quantity);
-
-        // The entry shrinks rather than being deleted or offset — cash_entries
-        // is a positive-only column everywhere else in the app.
-        $this->assertSame('240.00', CashEntry::firstOrFail()->amount);
+        $this->assertEquals(8, $product->fresh()->stock_quantity);
+        $this->assertDatabaseCount('cash_entries', 0);
     }
 
     public function test_partial_refunds_accumulate_until_the_sale_is_fully_refunded(): void
@@ -701,7 +703,7 @@ class PosTest extends TestCase
         $refund()->assertOk()->assertJsonPath('sale.status', 'partially_refunded');
         $refund()->assertOk()->assertJsonPath('sale.status', 'refunded');
 
-        $this->assertSame(10, $product->fresh()->stock_quantity);
+        $this->assertEquals(10, $product->fresh()->stock_quantity);
         $this->assertDatabaseCount('cash_entries', 0);
         $this->assertNull(Sale::findOrFail($saleId)->cash_entry_id);
 
@@ -731,8 +733,6 @@ class PosTest extends TestCase
             ])
             ->assertOk()
             ->assertJsonPath('sale.refunded_amount', 100);
-
-        $this->assertSame('100.00', CashEntry::firstOrFail()->amount);
     }
 
     public function test_a_refund_cannot_return_more_units_than_were_sold(): void
@@ -755,7 +755,7 @@ class PosTest extends TestCase
             ->assertUnprocessable()
             ->assertJsonValidationErrors('items');
 
-        $this->assertSame(8, $product->fresh()->stock_quantity);
+        $this->assertEquals(8, $product->fresh()->stock_quantity);
         $this->assertSame('completed', Sale::findOrFail($saleId)->status);
     }
 
@@ -799,6 +799,6 @@ class PosTest extends TestCase
             ->pluck('balance_after')
             ->all();
 
-        $this->assertSame([6, 12], $balances);
+        $this->assertEquals([6, 12], $balances);
     }
 }

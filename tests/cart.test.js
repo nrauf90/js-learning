@@ -1,7 +1,14 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { changeDue, computeTotals, createCart, lineTotal, money } from '../js/cart.js';
+import {
+  changeDue,
+  computeTotals,
+  createCart,
+  lineTotal,
+  lineUnitLabel,
+  money,
+} from '../js/cart.js';
 
 const product = (over = {}) => ({
   id: 1,
@@ -9,6 +16,19 @@ const product = (over = {}) => ({
   price: 120,
   track_stock: true,
   stock_quantity: 10,
+  ...over,
+});
+
+/** Atta at Rs 250/kg: Rs 0.25 a gram, 20 kg on the shelf. */
+const weighed = (over = {}) => ({
+  id: 2,
+  name: 'Atta',
+  price: 0.25,
+  unit_type: 'weight',
+  base_unit: 'g',
+  price_unit: 'kg',
+  track_stock: true,
+  stock_quantity: 20_000,
   ...over,
 });
 
@@ -42,24 +62,66 @@ describe('computeTotals', () => {
     { unitPrice: 55.5, quantity: 1 },
   ];
 
-  it('sums the lines', () => {
-    assert.deepEqual(computeTotals(lines), { subtotal: 295.5, discount: 0, total: 295.5 });
+  it('sums the lines and settles in whole rupees', () => {
+    // Rs 295.50 is not payable — there is no coin for the half — so the ticket
+    // comes to Rs 296 and the half-rupee is named rather than swallowed.
+    assert.deepEqual(computeTotals(lines), {
+      subtotal: 295.5,
+      discount: 0,
+      exactTotal: 295.5,
+      rounding: 0.5,
+      total: 296,
+    });
   });
 
   it('applies a discount', () => {
-    assert.deepEqual(computeTotals(lines, 45.5), { subtotal: 295.5, discount: 45.5, total: 250 });
+    assert.deepEqual(computeTotals(lines, 45.5), {
+      subtotal: 295.5,
+      discount: 45.5,
+      exactTotal: 250,
+      rounding: 0,
+      total: 250,
+    });
   });
 
   it('never lets a discount push the total negative', () => {
-    assert.deepEqual(computeTotals(lines, 10_000), { subtotal: 295.5, discount: 295.5, total: 0 });
+    assert.deepEqual(computeTotals(lines, 10_000), {
+      subtotal: 295.5,
+      discount: 295.5,
+      exactTotal: 0,
+      rounding: 0,
+      total: 0,
+    });
   });
 
   it('ignores a negative discount', () => {
-    assert.equal(computeTotals(lines, -50).total, 295.5);
+    assert.equal(computeTotals(lines, -50).total, 296);
   });
 
   it('handles an empty ticket', () => {
-    assert.deepEqual(computeTotals([]), { subtotal: 0, discount: 0, total: 0 });
+    assert.deepEqual(computeTotals([]), {
+      subtotal: 0,
+      discount: 0,
+      exactTotal: 0,
+      rounding: 0,
+      total: 0,
+    });
+  });
+
+  it('rounds a weighed ticket down when the paisa fall below half', () => {
+    // 150 g of daal at Rs 250/kg is Rs 37.50; a third of a kilo is Rs 83.25.
+    const daal = [{ unitPrice: 0.25, quantity: 333 }];
+    const totals = computeTotals(daal);
+
+    assert.equal(totals.exactTotal, 83.25);
+    assert.equal(totals.total, 83);
+    assert.equal(totals.rounding, -0.25);
+  });
+
+  it('rounds half a rupee up, matching the server', () => {
+    // PHP's round() is half-away-from-zero and so is Math.round for positives.
+    // If these two ever disagree the screen and the receipt differ by a rupee.
+    assert.equal(computeTotals([{ unitPrice: 0.25, quantity: 250 }]).total, 63);
   });
 });
 
@@ -166,5 +228,144 @@ describe('createCart', () => {
     cart.add(product());
     cart.clear();
     assert.equal(cart.isEmpty(), true);
+  });
+});
+
+describe('lineUnitLabel', () => {
+  it('shows the weight and the quoted price for measured goods', () => {
+    assert.equal(
+      lineUnitLabel({ unitPrice: 0.25, quantity: 250, unitType: 'weight', priceUnit: 'kg' }),
+      '250 g @ Rs 250 / kg',
+    );
+    assert.equal(
+      lineUnitLabel({ unitPrice: 0.56, quantity: 1500, unitType: 'volume', priceUnit: 'l' }),
+      '1.5 L @ Rs 560 / L',
+    );
+  });
+
+  it('shows only the price for counted goods', () => {
+    assert.equal(lineUnitLabel({ unitPrice: 120, quantity: 3, unitType: 'each' }), 'Rs 120 each');
+    assert.equal(lineUnitLabel({ unitPrice: 120, quantity: 3 }), 'Rs 120 each');
+  });
+});
+
+describe('createCart — weighed goods', () => {
+  it('adds a pao of atta and prices it per gram', () => {
+    const cart = createCart();
+    assert.equal(cart.add(weighed(), 250).ok, true);
+
+    const [line] = cart.toArray();
+    assert.equal(line.quantity, 250);
+    assert.equal(line.lineTotal, 62.5);
+    assert.equal(lineUnitLabel(line), '250 g @ Rs 250 / kg');
+  });
+
+  it('carries the unit fields onto the line for the ticket to render', () => {
+    const cart = createCart();
+    cart.add(weighed(), 250);
+    cart.add(product());
+
+    const [atta, cola] = cart.toArray();
+    assert.equal(atta.unitType, 'weight');
+    assert.equal(atta.baseUnit, 'g');
+    assert.equal(atta.priceUnit, 'kg');
+    assert.deepEqual(
+      { unitType: cola.unitType, baseUnit: cola.baseUnit, priceUnit: cola.priceUnit },
+      { unitType: 'each', baseUnit: 'pc', priceUnit: 'pc' },
+    );
+  });
+
+  it('adds one scale step when the tile is tapped with no quantity', () => {
+    const cart = createCart();
+    cart.add(weighed());
+
+    assert.equal(cart.toArray()[0].quantity, 50);
+  });
+
+  it('keeps a fractional quantity instead of flooring it', () => {
+    const cart = createCart();
+    cart.add(weighed(), 250);
+
+    assert.equal(cart.setQuantity(2, 1.5).ok, true);
+    assert.equal(cart.toArray()[0].quantity, 1.5);
+
+    // Rs 50 of atta at Rs 165/kg lands on a figure with a tail.
+    assert.equal(cart.setQuantity(2, 303.0303).ok, true);
+    assert.equal(cart.toArray()[0].quantity, 303.03);
+  });
+
+  it('rounds a quantity to the gram', () => {
+    const cart = createCart();
+    cart.add(weighed(), 606.0606);
+
+    assert.equal(cart.toArray()[0].quantity, 606.061);
+  });
+
+  it('deletes the line when a quantity rounds away to nothing', () => {
+    const cart = createCart();
+    cart.add(weighed(), 250);
+
+    cart.setQuantity(2, 0.0004);
+    assert.equal(cart.isEmpty(), true);
+  });
+
+  it('sells the last kilo even when the recorded stock is a hair under it', () => {
+    const cart = createCart();
+    const result = cart.add(weighed({ stock_quantity: 999.9999 }), 1000);
+
+    assert.equal(result.ok, true);
+    assert.equal(cart.toArray()[0].quantity, 1000);
+  });
+
+  it('refuses more than the stock, in kilos rather than grams', () => {
+    const cart = createCart();
+    const result = cart.add(weighed({ stock_quantity: 1500 }), 2000);
+
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'Only 1.5 kg of Atta in stock.');
+    assert.equal(cart.isEmpty(), true);
+  });
+
+  it('words a setQuantity rejection the same way', () => {
+    const cart = createCart();
+    cart.add(weighed({ stock_quantity: 1500 }), 250);
+
+    const result = cart.setQuantity(2, 2000);
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'Only 1.5 kg of Atta in stock.');
+    assert.equal(cart.toArray()[0].quantity, 250);
+  });
+
+  it('counts a mixed ticket as items, not as grams', () => {
+    const cart = createCart();
+    cart.add(product(), 2);
+    cart.add(weighed(), 250);
+
+    assert.equal(cart.count(), 3);
+  });
+
+  it('sends float base quantities to the API', () => {
+    const cart = createCart();
+    cart.add(weighed(), 250);
+    cart.add(product(), 2);
+
+    assert.deepEqual(cart.toPayloadItems(), [
+      { product_id: 2, quantity: 250 },
+      { product_id: 1, quantity: 2 },
+    ]);
+  });
+
+  it('totals a mixed ticket', () => {
+    const cart = createCart();
+    cart.add(weighed(), 1500);
+    cart.add(product(), 2);
+
+    assert.deepEqual(computeTotals(cart.toArray()), {
+      subtotal: 615,
+      discount: 0,
+      exactTotal: 615,
+      rounding: 0,
+      total: 615,
+    });
   });
 });

@@ -78,22 +78,24 @@ class ReceiptAddonTest extends TestCase
     {
         config(['billing.sandbox' => true]);
 
-        $user = User::factory()->create();
-        $this->subscribeUser($user);
+        // The purchase surface is admin-only since self-serve billing closed;
+        // the add-on plumbing itself is unchanged.
+        $admin = User::factory()->admin()->create();
+        $this->subscribeUser($admin);
 
-        $checkout = $this->actingAs($user, 'sanctum')
+        $checkout = $this->actingAs($admin, 'sanctum')
             ->postJson('/api/billing/checkout', ['plan' => 'receipt_addon'])
             ->assertCreated();
 
         $paymentId = $checkout->json('payment.id');
 
-        $this->actingAs($user, 'sanctum')
+        $this->actingAs($admin, 'sanctum')
             ->postJson("/api/billing/sandbox/complete/{$paymentId}")
             ->assertOk()
             ->assertJsonPath('addons.receipt.active', true);
 
         $this->assertDatabaseHas('subscription_addons', [
-            'user_id' => $user->id,
+            'user_id' => $admin->id,
             'addon_key' => 'receipt',
             'status' => 'active',
         ]);

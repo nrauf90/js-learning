@@ -8,10 +8,14 @@ use App\Models\User;
 use App\Models\WebhookEvent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Testing\TestResponse;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Concerns\CreatesSubscribedUser;
 use Tests\TestCase;
 
 class BillingTest extends TestCase
 {
+    use CreatesSubscribedUser;
     use RefreshDatabase;
 
     private const WEBHOOK_SECRET = 'pdl_ntfset_test_secret';
@@ -41,7 +45,7 @@ class BillingTest extends TestCase
     /**
      * @param  array<string, mixed>  $event
      */
-    private function postWebhook(array $event, ?string $secret = null): \Illuminate\Testing\TestResponse
+    private function postWebhook(array $event, ?string $secret = null): TestResponse
     {
         $body = json_encode($event);
         $ts = (string) time();
@@ -106,18 +110,83 @@ class BillingTest extends TestCase
             ->assertUnauthorized();
     }
 
-    public function test_user_can_initiate_checkout_in_local_test_mode(): void
+    /**
+     * The whole point of the change: a shop can no longer buy, manage or cancel
+     * anything for itself, whoever is holding the till.
+     *
+     * @return array<string, array{string, string}>
+     */
+    public static function selfServeEndpoints(): array
+    {
+        return [
+            'checkout' => ['/api/billing/checkout', 'monthly'],
+            'portal' => ['/api/billing/portal', ''],
+            'cancel' => ['/api/billing/cancel', ''],
+        ];
+    }
+
+    #[DataProvider('selfServeEndpoints')]
+    public function test_shop_account_is_refused_the_self_serve_billing_surface(string $endpoint, string $plan): void
     {
         $user = User::factory()->create();
 
         $this->actingAs($user, 'sanctum')
+            ->postJson($endpoint, $plan === '' ? [] : ['plan' => $plan])
+            ->assertForbidden();
+
+        $this->assertDatabaseCount('payments', 0);
+        $this->assertDatabaseCount('subscriptions', 0);
+    }
+
+    public function test_shop_account_cannot_complete_a_sandbox_payment(): void
+    {
+        // Belt and braces: the sandbox completer is the one endpoint that can
+        // hand out access without a webhook, so it must be admin-only too.
+        $user = User::factory()->create();
+
+        $payment = Payment::create([
+            'user_id' => $user->id,
+            'provider' => 'manual',
+            'plan' => 'monthly',
+            'amount' => 5,
+            'currency' => 'USD',
+            'status' => 'pending',
+            'txn_ref' => 'CF-SHOPBLOCK',
+        ]);
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson("/api/billing/sandbox/complete/{$payment->id}")
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('payments', ['id' => $payment->id, 'status' => 'pending']);
+        $this->assertDatabaseCount('subscriptions', 0);
+    }
+
+    public function test_shop_account_can_still_read_its_own_subscription_state(): void
+    {
+        // The app needs this to know whether it has access and what to quote on
+        // the lapsed notice — closing it would blind every shop-facing screen.
+        $user = User::factory()->create();
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson('/api/billing/subscription')
+            ->assertOk()
+            ->assertJsonPath('trial.active', true)
+            ->assertJsonPath('account.email', $user->email);
+    }
+
+    public function test_admin_can_initiate_checkout_in_local_test_mode(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin, 'sanctum')
             ->postJson('/api/billing/checkout', ['plan' => 'monthly'])
             ->assertCreated()
             ->assertJsonPath('payment.plan', 'monthly')
             ->assertJsonPath('checkout.sandbox', true);
 
         $this->assertDatabaseHas('payments', [
-            'user_id' => $user->id,
+            'user_id' => $admin->id,
             'plan' => 'monthly',
             'status' => 'pending',
         ]);
@@ -125,13 +194,13 @@ class BillingTest extends TestCase
 
     public function test_local_test_completion_activates_subscription(): void
     {
-        $user = User::factory()->create();
+        $admin = User::factory()->admin()->create();
 
-        $paymentId = $this->actingAs($user, 'sanctum')
+        $paymentId = $this->actingAs($admin, 'sanctum')
             ->postJson('/api/billing/checkout', ['plan' => 'yearly'])
             ->json('payment.id');
 
-        $this->actingAs($user, 'sanctum')
+        $this->actingAs($admin, 'sanctum')
             ->postJson("/api/billing/sandbox/complete/{$paymentId}")
             ->assertOk()
             ->assertJsonPath('subscription.plan', 'yearly')
@@ -139,7 +208,7 @@ class BillingTest extends TestCase
 
         $this->assertDatabaseHas('payments', ['id' => $paymentId, 'status' => 'completed']);
 
-        $this->actingAs($user, 'sanctum')
+        $this->actingAs($admin, 'sanctum')
             ->getJson('/api/billing/subscription')
             ->assertOk()
             ->assertJsonPath('subscription.plan', 'yearly')
@@ -148,10 +217,10 @@ class BillingTest extends TestCase
 
     public function test_local_test_completion_is_unreachable_outside_sandbox(): void
     {
-        $user = User::factory()->create();
+        $admin = User::factory()->admin()->create();
 
         $payment = Payment::create([
-            'user_id' => $user->id,
+            'user_id' => $admin->id,
             'provider' => 'manual',
             'plan' => 'monthly',
             'amount' => 5,
@@ -162,7 +231,7 @@ class BillingTest extends TestCase
 
         $this->liveMode();
 
-        $this->actingAs($user, 'sanctum')
+        $this->actingAs($admin, 'sanctum')
             ->postJson("/api/billing/sandbox/complete/{$payment->id}")
             ->assertNotFound();
 
@@ -171,11 +240,77 @@ class BillingTest extends TestCase
 
     public function test_receipt_addon_requires_base_subscription(): void
     {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin, 'sanctum')
+            ->postJson('/api/billing/checkout', ['plan' => 'receipt_addon'])
+            ->assertUnprocessable();
+    }
+
+    public function test_admin_can_grant_a_new_shop_its_subscription(): void
+    {
+        // The path that replaces self-serve checkout end to end: onboard a shop,
+        // then give it access, without the shop touching billing at all.
+        $admin = User::factory()->admin()->create();
+
+        $owner = $this->actingAs($admin, 'sanctum')
+            ->postJson('/api/admin/shop-admins', [
+                'name' => 'Bilal Traders',
+                'email' => 'bilal@example.com',
+                'password' => 'password123',
+                'password_confirmation' => 'password123',
+                'shop_name' => 'Bilal Kiryana',
+            ])
+            ->assertCreated()
+            ->json('user');
+
+        $this->actingAs($admin, 'sanctum')
+            ->postJson('/api/admin/subscriptions', [
+                'user_id' => $owner['id'],
+                'plan' => 'monthly',
+            ])
+            ->assertCreated()
+            ->assertJsonPath('subscription.plan', 'monthly')
+            ->assertJsonPath('subscription.status', 'active');
+
+        $shopOwner = User::findOrFail($owner['id']);
+        $this->expireTrial($shopOwner);
+
+        $this->actingAs($shopOwner->fresh(), 'sanctum')
+            ->getJson('/api/billing/subscription')
+            ->assertOk()
+            ->assertJsonPath('subscription.active', true)
+            // Hand-granted rows have no Paddle side, so no portal or cancel.
+            ->assertJsonPath('subscription.managed', false)
+            ->assertJsonPath('account.shop.name', 'Bilal Kiryana');
+    }
+
+    public function test_admin_grant_extends_rather_than_restarts_an_existing_term(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $user = User::factory()->create();
+        $existing = $this->subscribeUser($user, 'monthly', now()->addDays(10));
+
+        $this->actingAs($admin, 'sanctum')
+            ->postJson('/api/admin/subscriptions', ['email' => $user->email, 'plan' => 'monthly'])
+            ->assertCreated();
+
+        $this->assertSame(1, Subscription::where('user_id', $user->id)->count());
+        $this->assertTrue(
+            $existing->fresh()->ends_at->greaterThan(now()->addMonth()),
+            'A grant on a live subscription must add to the days already there, not replace them.'
+        );
+    }
+
+    public function test_shop_account_cannot_grant_itself_a_subscription(): void
+    {
         $user = User::factory()->create();
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/billing/checkout', ['plan' => 'receipt_addon'])
-            ->assertUnprocessable();
+            ->postJson('/api/admin/subscriptions', ['user_id' => $user->id, 'plan' => 'yearly'])
+            ->assertForbidden();
+
+        $this->assertDatabaseCount('subscriptions', 0);
     }
 
     public function test_checkout_creates_a_paddle_transaction_and_returns_its_url(): void
@@ -192,20 +327,20 @@ class BillingTest extends TestCase
             ], 201),
         ]);
 
-        $user = User::factory()->create();
+        $admin = User::factory()->admin()->create();
 
-        $this->actingAs($user, 'sanctum')
+        $this->actingAs($admin, 'sanctum')
             ->postJson('/api/billing/checkout', ['plan' => 'monthly'])
             ->assertCreated()
             ->assertJsonPath('checkout.sandbox', false)
             ->assertJsonPath('redirect_url', 'https://pay.paddle.io/hsc_test?_ptxn=txn_test_1');
 
         $this->assertDatabaseHas('users', [
-            'id' => $user->id,
+            'id' => $admin->id,
             'paddle_customer_id' => 'ctm_test_1',
         ]);
         $this->assertDatabaseHas('payments', [
-            'user_id' => $user->id,
+            'user_id' => $admin->id,
             'provider' => 'paddle',
             'external_transaction_id' => 'txn_test_1',
             'status' => 'pending',
@@ -223,7 +358,7 @@ class BillingTest extends TestCase
             ], 201),
         ]);
 
-        $response = $this->actingAs(User::factory()->create(), 'sanctum')
+        $response = $this->actingAs(User::factory()->admin()->create(), 'sanctum')
             ->postJson('/api/billing/checkout', ['plan' => 'monthly'])
             ->assertCreated();
 
@@ -236,7 +371,7 @@ class BillingTest extends TestCase
 
         // Regression: with no credentials this used to reach the gateway and
         // die on a TypeError (HTTP 500). It must be a clean, actionable 503.
-        $this->actingAs(User::factory()->create(), 'sanctum')
+        $this->actingAs(User::factory()->admin()->create(), 'sanctum')
             ->postJson('/api/billing/checkout', ['plan' => 'monthly'])
             ->assertStatus(503)
             ->assertJsonPath('code', 'billing_provider_unavailable');
@@ -469,10 +604,10 @@ class BillingTest extends TestCase
         $this->liveMode();
         Http::fake(['*/subscriptions/*/cancel' => Http::response(['data' => []], 200)]);
 
-        $user = User::factory()->create();
-        $this->postWebhook($this->subscriptionEvent($user))->assertOk();
+        $admin = User::factory()->admin()->create();
+        $this->postWebhook($this->subscriptionEvent($admin))->assertOk();
 
-        $this->actingAs($user, 'sanctum')
+        $this->actingAs($admin, 'sanctum')
             ->postJson('/api/billing/cancel')
             ->assertOk();
 
@@ -487,7 +622,7 @@ class BillingTest extends TestCase
     {
         $this->liveMode();
 
-        $this->actingAs(User::factory()->create(), 'sanctum')
+        $this->actingAs(User::factory()->admin()->create(), 'sanctum')
             ->postJson('/api/billing/portal')
             ->assertNotFound();
     }
@@ -501,10 +636,10 @@ class BillingTest extends TestCase
             ], 201),
         ]);
 
-        $user = User::factory()->create();
-        $user->setPaddleCustomerId('ctm_portal_1');
+        $admin = User::factory()->admin()->create();
+        $admin->setPaddleCustomerId('ctm_portal_1');
 
-        $this->actingAs($user, 'sanctum')
+        $this->actingAs($admin, 'sanctum')
             ->postJson('/api/billing/portal')
             ->assertOk()
             ->assertJsonPath('url', 'https://customer-portal.paddle.com/x');

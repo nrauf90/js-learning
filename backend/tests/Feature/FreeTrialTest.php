@@ -50,6 +50,36 @@ class FreeTrialTest extends TestCase
             ->assertJsonPath('code', 'trial_expired');
     }
 
+    public function test_expired_trial_cannot_buy_its_own_way_out(): void
+    {
+        // The trial used to end at a checkout button. It now ends at a message
+        // asking the operator to activate the account, so the shop must not be
+        // able to reach the purchase surface at all.
+        $user = User::factory()->create();
+        $this->expireTrial($user);
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson('/api/billing/checkout', ['plan' => 'monthly'])
+            ->assertForbidden();
+
+        $this->assertDatabaseCount('payments', 0);
+    }
+
+    public function test_admin_grant_takes_a_shop_off_an_expired_trial(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $user = User::factory()->create();
+        $this->expireTrial($user);
+
+        $this->actingAs($admin, 'sanctum')
+            ->postJson('/api/admin/subscriptions', ['email' => $user->email, 'plan' => 'monthly'])
+            ->assertCreated();
+
+        $this->actingAs($user->fresh(), 'sanctum')
+            ->getJson('/api/cash-entries')
+            ->assertOk();
+    }
+
     public function test_subscribed_user_bypasses_trial_check_even_if_old_account(): void
     {
         $user = User::factory()->create(['created_at' => now()->subYear()]);

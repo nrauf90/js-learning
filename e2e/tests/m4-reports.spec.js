@@ -65,13 +65,17 @@ test.describe('M4 — Reports', () => {
     expect(cats.ok()).toBeTruthy();
     const categoryId = (await cats.json()).categories[0].id;
 
+    // Dated today, not pinned: reports.html opens on the CURRENT week, so a
+    // hardcoded date silently stops being in range once that week passes and
+    // the chart correctly renders empty. The API-level test above can pin its
+    // dates because it passes an explicit `start`.
     await request.post(`${API}/api/cash-entries`, {
       headers,
       data: {
         category_id: categoryId,
         type: 'expense',
         amount: 2500,
-        entry_date: '2026-07-30',
+        entry_date: new Date().toISOString().slice(0, 10),
       },
     });
 

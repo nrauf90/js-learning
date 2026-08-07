@@ -3,6 +3,13 @@ import { initShell } from './shell.js';
 import { initTheme } from './theme.js';
 
 const USER_KEY = 'cashflow_auth_user';
+const USER_FETCHED_KEY = 'cashflow_auth_user_at';
+
+/** Both writes here come straight from the API, so they refresh the shell's cache. */
+function cacheUser(user) {
+  localStorage.setItem(USER_KEY, JSON.stringify(user));
+  localStorage.setItem(USER_FETCHED_KEY, String(Date.now()));
+}
 
 function requireAuth() {
   if (getAuthToken()) return true;
@@ -41,7 +48,7 @@ async function loadUser() {
   if (!user) return;
   document.getElementById('profile-name').value = user.name || '';
   document.getElementById('profile-email').value = user.email || '';
-  localStorage.setItem(USER_KEY, JSON.stringify(user));
+  cacheUser(user);
 }
 
 function wireProfileForm() {
@@ -60,7 +67,7 @@ function wireProfileForm() {
     try {
       const data = await apiPut('/api/user/profile', { name });
       if (data?.user) {
-        localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+        cacheUser(data.user);
         initShell({ current: 'profile' });
       }
       showAlert('Profile updated.', 'success');

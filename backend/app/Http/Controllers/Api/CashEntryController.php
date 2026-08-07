@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\CashEntry;
 use App\Models\ExpenseCategory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -25,27 +26,27 @@ class CashEntryController extends Controller
             'per_page' => ['nullable', 'integer', 'min:1'],
         ]);
 
-        $query = CashEntry::query()
-            ->with('category:id,name,slug')
-            ->where('user_id', $request->user()->id)
-            ->orderByDesc('entry_date')
-            ->orderByDesc('id');
+        $base = CashEntry::query()->where('user_id', $request->user()->id);
 
         if (! empty($validated['date'])) {
-            $query->whereDate('entry_date', $validated['date']);
-
-            $entries = $query->get();
-
-            // A single day's entries are naturally bounded, so this path stays
-            // a plain (non-paginated) list — the shape cashflow.js expects.
-            return response()->json(['entries' => $entries->map(fn (CashEntry $e) => $this->payload($e))]);
+            $base->whereDate('entry_date', $validated['date']);
         }
 
         $perPage = min((int) ($validated['per_page'] ?? self::DEFAULT_PER_PAGE), self::MAX_PER_PAGE);
-        $paginator = $query->paginate($perPage, ['*'], 'page', $validated['page'] ?? 1);
+
+        $paginator = (clone $base)
+            ->with('category:id,name,slug')
+            ->orderByDesc('entry_date')
+            ->orderByDesc('id')
+            ->paginate($perPage, ['*'], 'page', $validated['page'] ?? 1);
 
         return response()->json([
             'entries' => collect($paginator->items())->map(fn (CashEntry $e) => $this->payload($e)),
+            // Summed over every matching row, not over the page: the day's
+            // income, expense and net are the figures the screen is opened for,
+            // and adding up only what fits on one page would quietly understate
+            // a busy day.
+            'totals' => $this->totals(clone $base),
             'meta' => [
                 'current_page' => $paginator->currentPage(),
                 'per_page' => $paginator->perPage(),
@@ -107,6 +108,26 @@ class CashEntryController extends Controller
         $cashEntry->delete();
 
         return response()->json(['message' => 'Deleted']);
+    }
+
+    /**
+     * @param  Builder<CashEntry>  $query
+     * @return array{income: float, expense: float, net: float}
+     */
+    private function totals(Builder $query): array
+    {
+        $sums = $query->selectRaw('type, SUM(amount) as total')
+            ->groupBy('type')
+            ->pluck('total', 'type');
+
+        $income = round((float) ($sums['income'] ?? 0), 2);
+        $expense = round((float) ($sums['expense'] ?? 0), 2);
+
+        return [
+            'income' => $income,
+            'expense' => $expense,
+            'net' => round($income - $expense, 2),
+        ];
     }
 
     /**

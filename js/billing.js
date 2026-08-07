@@ -13,6 +13,30 @@ function requireAuth() {
   return false;
 }
 
+/**
+ * Checkout, the Paddle portal and cancellation are platform-operator work now.
+ * A shop owner or staff member arriving here from a bookmark would be shown a
+ * purchase flow the API refuses, so send them somewhere useful instead. The
+ * server-side `admin` middleware is the real block; this only spares them the
+ * confusing screen.
+ */
+async function requireAdmin() {
+  let user = null;
+  try {
+    user = (await apiGet('/api/user')).user;
+  } catch {
+    // A 401 has already redirected to login inside apiFetch. Anything else
+    // leaves the page inert rather than guessing at a privilege we could not
+    // confirm.
+    return false;
+  }
+
+  if (user?.is_admin) return true;
+
+  window.location.replace('dashboard.html');
+  return false;
+}
+
 function showAlert(message, type = 'error') {
   const el = document.getElementById('billing-alert');
   if (!el) return;
@@ -81,11 +105,10 @@ function renderSubscription(sub, trial) {
     return;
   }
   if (trial?.expired) {
-    el.textContent =
-      'Your 7-day free trial has ended. Choose a plan below to keep using cash flow and reports.';
+    el.textContent = 'This account’s 7-day free trial has ended.';
     return;
   }
-  el.textContent = 'No active subscription. Choose a plan below to unlock cash flow and reports.';
+  el.textContent = 'No active subscription on this account.';
 }
 
 function renderManageControls(sub) {
@@ -271,6 +294,7 @@ async function boot() {
   initTheme();
   initShell({ current: 'billing' });
   if (!requireAuth()) return;
+  if (!(await requireAdmin())) return;
 
   handleReturnParams();
 

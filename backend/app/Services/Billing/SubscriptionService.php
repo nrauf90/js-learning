@@ -209,9 +209,15 @@ class SubscriptionService
         return now()->lt($this->trialEndsAt($user));
     }
 
+    /**
+     * Runs on every subscription-gated request via EnsureSubscribed, so the
+     * trial branch is inlined rather than delegated to isOnTrial() — that
+     * would re-run the identical currentSubscription() query a second time.
+     */
     public function hasAccess(User $user): bool
     {
-        return $this->currentSubscription($user) !== null || $this->isOnTrial($user);
+        return $this->currentSubscription($user) !== null
+            || now()->lt($this->trialEndsAt($user));
     }
 
     /**
@@ -219,8 +225,11 @@ class SubscriptionService
      */
     public function trialStatus(User $user): array
     {
+        // One lookup feeds both branches below; asking isOnTrial() and then
+        // currentSubscription() ran the same query twice.
+        $subscription = $this->currentSubscription($user);
         $endsAt = $this->trialEndsAt($user);
-        $active = $this->isOnTrial($user);
+        $active = $subscription === null && now()->lt($endsAt);
         $daysRemaining = 0;
 
         if ($active) {
@@ -230,8 +239,7 @@ class SubscriptionService
             );
         }
 
-        $expired = ! $active && $this->currentSubscription($user) === null
-            && now()->gte($endsAt);
+        $expired = $subscription === null && now()->gte($endsAt);
 
         return [
             'active' => $active,

@@ -59,7 +59,7 @@ test.describe('M3 — Daily cash flow', () => {
     await page.goto('/cashflow.html');
 
     await expect(page.getByRole('heading', { name: /Daily Cash Flow/i })).toBeVisible();
-    await expect(page.locator('#entry-category option')).toHaveCount(10, { timeout: 15_000 });
+    await expect(page.locator('#entry-category option')).toHaveCount(11, { timeout: 15_000 });
 
     await page.fill('#entry-amount', '1200');
     await page.fill('#entry-note', 'UI grocery');
@@ -79,13 +79,13 @@ test.describe('M3 — Daily cash flow', () => {
 
     await page.goto('/cashflow.html');
 
-    await expect(page.locator('#entry-category option')).toHaveCount(10, { timeout: 15_000 });
+    await expect(page.locator('#entry-category option')).toHaveCount(11, { timeout: 15_000 });
 
     await page.selectOption('#entry-type', 'income');
     await page.waitForResponse(
       (r) => r.url().includes('/api/categories') && r.url().includes('kind=income') && r.ok()
     );
-    await expect(page.locator('#entry-category option')).toHaveCount(5, { timeout: 15_000 });
+    await expect(page.locator('#entry-category option')).toHaveCount(2, { timeout: 15_000 });
 
     await page.fill('#entry-amount', '75000');
     await page.fill('#entry-note', 'UI salary');

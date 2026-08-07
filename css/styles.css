@@ -2549,6 +2549,26 @@ body::before {
   font-size: 1.3rem;
   letter-spacing: -0.02em;
   line-height: 1.25;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* The same glyph the sidebar uses for this page, repeated in the heading so a
+   screen opened from a bookmark still says what it is at a glance. Injected by
+   the shell rather than written into fifteen pages, which is how the earlier
+   per-page copies drifted apart in the first place. */
+.topbar-icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  width: 1.15em;
+  height: 1.15em;
+  color: var(--accent, #14b8a6);
+}
+
+.topbar-icon svg {
+  width: 100%;
+  height: 100%;
 }
 
 .topbar-heading .tagline {
@@ -3081,6 +3101,15 @@ body.sidebar-open .app-overlay {
   color: var(--text-muted);
 }
 
+/* `.admin-btn-sm` zeroes the font size so an icon-only button collapses to its
+   glyph. The pagers reuse that class but their buttons are words, so "Previous"
+   and "Next" rendered as blank circles on every paged screen — which is why the
+   pagination looked missing even where it was working. */
+.admin-pagination .admin-btn-sm {
+  padding: 0.5rem 0.85rem;
+  font-size: 0.875rem;
+}
+
 /* Admin Modal */
 .admin-modal {
   position: fixed;
@@ -3301,23 +3330,197 @@ body.sidebar-open .app-overlay {
    Point of sale
    ============================================================ */
 
-.pos-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(320px, 1fr);
-  gap: 1.25rem;
-  align-items: start;
+/* The till is a tool, not a page: it fills the viewport exactly once, carries
+   no app menu, and never scrolls as a whole. Each column is its own scroll
+   container so the ticket total and "Complete sale" are always on screen. */
+.pos-body {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
 }
 
-.pos-search {
-  margin-bottom: 1rem;
+.pos-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.pos-topbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+  padding: 0.7rem clamp(0.75rem, 2vw, 1.5rem);
+  border-bottom: 1px solid var(--glass-border);
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
+  backdrop-filter: blur(18px) saturate(1.25);
+  -webkit-backdrop-filter: blur(18px) saturate(1.25);
+}
+
+.pos-back {
+  gap: 0.4rem;
+  flex-shrink: 0;
+  padding: 0.55rem 1rem;
+  font-size: 0.9rem;
+}
+
+.pos-back svg {
+  width: 18px;
+  height: 18px;
+}
+
+.pos-topbar-heading {
+  min-width: 0;
+}
+
+.pos-topbar-heading h1 {
+  font-size: 1.2rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.pos-topbar-heading .tagline {
+  font-size: 0.8rem;
+  margin-top: 0;
+}
+
+.pos-alert {
+  flex-shrink: 0;
+  margin: 0.75rem clamp(0.75rem, 2vw, 1.5rem) 0;
 }
 
 .pos-day-summary {
   display: flex;
   flex-wrap: wrap;
   gap: 1.25rem;
-  margin-bottom: 1rem;
+  margin-left: auto;
   font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.pos-layout {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) minmax(300px, 360px);
+  gap: 1rem;
+  padding: 1rem clamp(0.75rem, 2vw, 1.5rem);
+}
+
+.pos-pane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px) saturate(1.25);
+  -webkit-backdrop-filter: blur(18px) saturate(1.25);
+}
+
+.pos-pane-head {
+  flex-shrink: 0;
+  padding: 0.85rem 1rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.pos-pane-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.9rem 1rem;
+}
+
+/* ---- Category rail ---- */
+
+.pos-rail-search {
+  padding: 0.5rem 0.7rem;
+  font-size: 0.9rem;
+}
+
+.pos-rail-scroll {
+  padding: 0.5rem;
+}
+
+.pos-rail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.pos-category-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+/* `display: flex` above outranks the browser's `[hidden] { display: none }`,
+   so hiding a filtered-out row has to be spelled out — the rail search and
+   the product search both work by flipping `hidden`, nothing else. */
+.pos-category-btn[hidden] {
+  display: none;
+}
+
+.pos-category-btn:hover {
+  background: var(--surface-2);
+}
+
+.pos-category-btn.is-active {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  font-weight: 600;
+}
+
+/* The image slot keeps its footprint whether the category has a picture or
+   not, so the rail will not reflow the day `image_url` starts arriving. */
+.pos-category-thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.pos-category-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pos-category-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.pos-rail-count {
+  margin-left: auto;
+  padding-left: 0.35rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
   color: var(--text-muted);
 }
 
@@ -3325,6 +3528,7 @@ body.sidebar-open .app-overlay {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 0.75rem;
+  align-content: start;
 }
 
 .pos-product {
@@ -3340,6 +3544,10 @@ body.sidebar-open .app-overlay {
   font-family: var(--font);
   cursor: pointer;
   transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.pos-product[hidden] {
+  display: none;
 }
 
 .pos-product:hover:not(:disabled) {
@@ -3380,6 +3588,21 @@ body.sidebar-open .app-overlay {
   gap: 1rem;
   margin-bottom: 0.75rem;
   flex-wrap: wrap;
+}
+
+/* At the till the heading *is* the pane header, so its trailing margin would
+   only double the padding. products.html keeps the original spacing. */
+.pos-pane-head.pos-ticket-head {
+  margin-bottom: 0;
+}
+
+/* Totals and payment are pinned below the scrolling line list: a long ticket
+   pushes lines out of view, never the button that takes the money. */
+.pos-ticket-foot {
+  flex-shrink: 0;
+  padding: 0.85rem 1rem 1rem;
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 55%, transparent);
 }
 
 .pos-lines {
@@ -3464,7 +3687,7 @@ body.sidebar-open .app-overlay {
 }
 
 .pos-totals {
-  margin: 1rem 0;
+  margin: 0 0 0.85rem;
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
@@ -3528,41 +3751,600 @@ body.sidebar-open .app-overlay {
   font-size: 0.85rem;
 }
 
-.pos-receipt {
-  margin-top: 1.25rem;
+/* ---- Receipt modal ----
+   The slip is a dialog rather than a panel under the till: it is the last step
+   of a sale, so it takes the screen until it is dismissed and the till behind
+   it is left exactly as it was. */
+
+.pos-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+/* `display: flex` is an author rule and the browser's `[hidden]` is not, so
+   without this the dialog would stay on screen while `hidden` is set — and the
+   e2e suite drives it entirely through that property. */
+.pos-modal[hidden] {
+  display: none;
+}
+
+.pos-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 12, 18, 0.6);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+.pos-modal-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 460px;
+  max-height: min(92vh, 960px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  animation: modalFadeIn 0.2s ease;
+}
+
+.pos-modal-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.pos-modal-close {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pos-modal-close:hover {
+  background: var(--surface-2);
+  color: var(--text);
 }
 
 .pos-receipt-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.75rem;
   flex-wrap: wrap;
-  margin-bottom: 0.75rem;
-}
-
-.pos-receipt-ref {
-  font-family: var(--mono);
-  color: var(--text-muted);
-  margin-bottom: 0.75rem;
-}
-
-.pos-receipt-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 0.75rem;
-}
-
-.pos-receipt-table th,
-.pos-receipt-table td {
-  padding: 0.4rem 0.5rem;
+  flex-shrink: 0;
+  padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--border);
-  text-align: left;
 }
 
-.pos-receipt-num {
-  text-align: right;
+.pos-receipt-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.pos-paper-label {
+  margin: 0;
+}
+
+.pos-paper-select {
+  width: auto;
+  min-width: 0;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+/* ---- Day book (opening float + closing count) ----
+   A topbar readout plus two dialogs, both built on the receipt modal's chrome
+   so the till has one dialog look. The gate deliberately carries no close
+   control: there is no markup to hide, so there is nothing here to style. */
+
+.pos-day-state {
+  padding: 0.15rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pos-day-state[data-state='open'] {
+  color: var(--new);
+  background: color-mix(in srgb, var(--new) 14%, transparent);
+  border-color: color-mix(in srgb, var(--new) 45%, transparent);
+}
+
+/* "Not opened" and "closed" both stop a sale, so they read the same — this is
+   a bar, not a status. */
+.pos-day-state[data-state='none'],
+.pos-day-state[data-state='closed'] {
+  color: var(--text);
+  background: color-mix(in srgb, var(--danger) 16%, transparent);
+  border-color: color-mix(in srgb, var(--danger) 50%, transparent);
+}
+
+.pos-day-btn {
+  flex-shrink: 0;
+}
+
+/* Any author rule that sets `display` outranks the browser's built-in
+   `[hidden] { display: none }`, so `el.hidden = true` silently fails to hide a
+   styled control. This bit the till's close-day button once and was patched
+   just for it; products.html's "Cancel edit" (`.auth-google`) has been stuck on
+   screen ever since for the same reason. Listed by the three classes that set
+   `display`, so the next one to grow a `hidden` toggle is already covered. */
+.btn[hidden],
+.auth-google[hidden],
+.admin-btn[hidden] {
+  display: none;
+}
+
+.pos-gate-card {
+  max-width: 420px;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.pos-gate-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.pos-gate-note {
+  margin: 0.35rem 0 1.1rem;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.pos-gate-error {
+  margin: 1rem 0 0;
+}
+
+.pos-gate-back {
+  width: 100%;
+  margin-top: 0.6rem;
+}
+
+/* ----------------------------------------------------------- weigh keypad */
+
+.pos-weigh-card {
+  max-width: 400px;
+  padding: 1.25rem;
+  overflow-y: auto;
+}
+
+.pos-weigh-product {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin: 0.2rem 0 0.9rem;
+}
+
+.pos-weigh-name {
+  font-weight: 600;
+}
+
+.pos-weigh-rate {
+  font-size: 0.85rem;
+  color: var(--text-muted);
   font-family: var(--mono);
+}
+
+/* Segmented control. Both ways of asking for loose goods are equally normal
+   over the counter, so neither is buried behind the other. */
+.pos-weigh-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.3rem;
+  padding: 0.25rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.pos-weigh-tab {
+  padding: 0.5rem;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.pos-weigh-tab.is-active {
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 12%);
+}
+
+/* Read across a counter at arm's length, so the figure is oversized and the
+   money it works out to sits directly under it. */
+.pos-weigh-readout {
+  margin: 0.9rem 0;
+  padding: 0.85rem 1rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.pos-weigh-entry {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.4rem;
+  font-family: var(--mono);
+}
+
+.pos-weigh-prefix {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+}
+
+.pos-weigh-typed {
+  font-size: 2.1rem;
+  font-weight: 700;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.pos-weigh-units {
+  display: flex;
+  gap: 0.2rem;
+}
+
+.pos-weigh-unit {
+  padding: 0.15rem 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.pos-weigh-unit.is-active {
+  background: var(--accent, #14b8a6);
+  border-color: transparent;
+  color: #fff;
+  font-weight: 600;
+}
+
+.pos-weigh-derived {
+  margin: 0.45rem 0 0;
+  min-height: 1.2em;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+/* "Pao", "Adha kg", "Rs 50" — the amounts actually called out at the counter,
+   so the common sale is one tap and no typing at all. */
+.pos-weigh-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.8rem;
+}
+
+.pos-weigh-chip {
+  flex: 1 1 auto;
+  min-width: 68px;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.pos-weigh-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+}
+
+/* Sized for a thumb on a phone propped by the till, not a mouse. */
+.pos-weigh-key {
+  min-height: 52px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.pos-weigh-key:active {
+  background: var(--border);
+}
+
+.pos-weigh-back {
+  font-size: 1.1rem;
+}
+
+#pos-weigh-add {
+  margin-top: 0.9rem;
+}
+
+#pos-weigh-add:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* The ticket's quantity control for loose goods: the weight itself, tapped to
+   reopen the keypad. A spinner that steps by one gram would be useless. */
+.pos-line-qty.is-measured {
+  justify-content: flex-end;
+}
+
+.pos-qty-weigh {
+  padding: 0.3rem 0.6rem;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* The figures the cashier is being asked to agree with: label left, money
+   right, monospace so the column lines up and a transposed digit shows. */
+.pos-day-figures {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0 0 1.1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+  font-size: 0.9rem;
+}
+
+.pos-day-figures > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.pos-day-figures dt {
+  color: var(--text-muted);
+}
+
+.pos-day-figures dd {
+  font-family: var(--mono);
+  white-space: nowrap;
+}
+
+.pos-day-figures .is-total {
+  margin-top: 0.35rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--border);
+  font-weight: 700;
+}
+
+.pos-day-figures .is-total dt {
+  color: var(--text);
+}
+
+/* Holds its line height while empty so typing a count does not shunt the
+   "Close day" button up and down under the cursor. */
+.pos-variance {
+  margin: 0.6rem 0 0;
+  min-height: 1.3em;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.pos-variance[data-state='balanced'] {
+  color: var(--new);
+}
+
+/* Over and short are both wrong, but only one of them is money gone. */
+.pos-variance[data-state='over'] {
+  color: var(--accent);
+}
+
+.pos-variance[data-state='short'] {
+  color: var(--danger);
+}
+
+/* ---- Thermal receipt slip ----
+   Sized to the roll, not to the screen: the same element is what the printer
+   gets, so the on-screen card is a true preview of the paper. It stays black
+   on white in either theme — a thermal head only burns dots, it cannot print
+   a dark background. */
+
+.receipt-slip {
+  --slip-width: 80mm;
+  --slip-pad: 4mm;
+
+  width: var(--slip-width);
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 4mm var(--slip-pad);
+  background: #fff;
+  color: #000;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.45;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+/* 58mm rolls print ~48mm wide, so the padding grows as the paper shrinks. */
+body[data-paper='58'] .receipt-slip {
+  --slip-width: 58mm;
+  --slip-pad: 5mm;
+  font-size: 10px;
+}
+
+.slip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+/* Labels hold their line so a narrow 58mm roll wraps the value instead of
+   breaking "Subtotal" across two lines. */
+.slip-row > span:first-child {
+  white-space: nowrap;
+}
+
+.slip-row > span:last-child {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.slip-rule {
+  border-top: 1px dashed #000;
+  margin: 1.5mm 0;
+}
+
+.slip-shop {
+  margin: 0;
+  font-size: 1.35em;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0.04em;
+  word-break: break-word;
+}
+
+.slip-sub {
+  margin: 0;
+  text-align: center;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.slip-col-head {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.slip-item {
+  margin-bottom: 1mm;
+  break-inside: avoid;
+}
+
+.slip-item-name {
+  word-break: break-word;
+}
+
+/* Qty, unit price and line total each get a column, so the customer can check
+   the arithmetic on the paper instead of taking the line total on trust. */
+.slip-item-calc {
+  display: grid;
+  grid-template-columns: 4ch minmax(0, 1fr) auto;
+  gap: 0 1mm;
+  padding-left: 2mm;
+}
+
+.slip-line {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.slip-unit {
+  white-space: nowrap;
+}
+
+/* Expiry earns its own colour rather than borrowing the low-stock red: goods
+   going off next week and goods already off are different jobs — one is a
+   "sell this first", the other is "take it off the shelf now". */
+.pos-expiry-badge {
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text);
+  background: color-mix(in srgb, var(--old) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--old) 45%, transparent);
+}
+
+.pos-expiry-badge.is-expired {
+  background: color-mix(in srgb, var(--danger) 16%, transparent);
+  border-color: color-mix(in srgb, var(--danger) 50%, transparent);
+}
+
+/* A weighed line replaces the qty/unit columns with one phrase ("250 g @ Rs
+   250 / kg"), indented to sit with the calc rows it shares a slip with. */
+.slip-item-measure {
+  padding-left: 2mm;
+}
+
+/* The one place a slip row is allowed to wrap: unlike a label, this phrase can
+   legitimately need two lines on a 58mm roll — "1.25 kg @ Rs 1,250 / kg" plus
+   the amount runs past the ~30 characters that paper gives. */
+.slip-item-measure > span:first-child {
+  white-space: normal;
+}
+
+.slip-total {
+  font-size: 1.25em;
+  font-weight: 700;
+}
+
+/* What the customer still owes. Bold because it is the line they will be
+   asked about next time, and a thermal head has no colour to lean on. */
+.slip-due {
+  font-weight: 700;
+}
+
+/* PAID / PART PAID / UNPAID. Boxed rather than coloured for the same reason —
+   on a one-bit printer a tint just dithers into grey mush. */
+.slip-status {
+  margin: 1mm 0 0;
+  padding: 1mm 0;
+  border: 1px solid #000;
+  text-align: center;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.slip-foot {
+  margin: 0;
+  text-align: center;
+}
+
+.slip-foot-small {
+  font-size: 0.85em;
 }
 
 /* ---- Products page ---- */
@@ -3677,9 +4459,68 @@ body.sidebar-open .app-overlay {
   color: var(--text-muted);
 }
 
+@media (max-width: 1180px) {
+  .pos-layout {
+    grid-template-columns: 168px minmax(0, 1fr) minmax(270px, 310px);
+    gap: 0.75rem;
+  }
+
+  .pos-category-thumb {
+    width: 32px;
+    height: 32px;
+  }
+
+  .pos-rail-count {
+    display: none;
+  }
+}
+
+/* Below three columns the viewport-height trick stops helping — a phone-sized
+   till scrolls the page and lets each pane size itself instead. */
 @media (max-width: 960px) {
+  .pos-body {
+    height: auto;
+    overflow: visible;
+  }
+
+  .pos-shell {
+    height: auto;
+  }
+
+  body.pos-modal-open {
+    overflow: hidden;
+  }
+
   .pos-layout {
     grid-template-columns: 1fr;
+  }
+
+  .pos-pane {
+    max-height: 70vh;
+  }
+
+  .pos-topbar {
+    flex-wrap: wrap;
+  }
+
+  .pos-topbar-heading {
+    flex: 1;
+  }
+
+  /* Reordered so the day's takings drop to a second row on their own and the
+     theme toggle stays beside the title instead of being pushed to a third.
+     "Close day" rides with it — the action belongs next to the state, and the
+     state is what wraps. */
+  .pos-topbar .theme-toggle,
+  .pos-day-btn {
+    order: 2;
+  }
+
+  .pos-day-summary {
+    order: 3;
+    width: 100%;
+    margin-left: 0;
+    gap: 1rem;
   }
 }
 
@@ -3703,11 +4544,914 @@ body.sidebar-open .app-overlay {
   }
 }
 
+/* The till roll gets the slip and nothing else — no shell, no card chrome, no
+   page margins. `@page { size: <roll>mm auto }` is written from js/pos.js,
+   since the width depends on which printer is attached. */
 @media print {
-  .app-sidebar,
-  .app-topbar,
-  .pos-layout,
-  .pos-receipt-head .btn {
+  .pos-shell,
+  .pos-modal-overlay,
+  .pos-receipt-head {
     display: none !important;
   }
+
+  html,
+  body.app-body {
+    margin: 0;
+    padding: 0;
+    height: auto;
+    overflow: visible;
+    background: #fff;
+  }
+
+  /* The dialog stops being a dialog on paper: it un-fixes, drops its chrome
+     and becomes the only thing on the roll. */
+  .pos-modal {
+    position: static;
+    display: block;
+    padding: 0;
+  }
+
+  .pos-modal-card {
+    display: block;
+    width: auto;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: none;
+    animation: none;
+  }
+
+  .pos-modal-body {
+    display: block;
+    overflow: visible;
+    padding: 0;
+  }
+
+  .receipt-slip {
+    width: var(--slip-width);
+    margin: 0;
+    padding: 3mm var(--slip-pad);
+    border: 0;
+    border-radius: 0;
+    /* A thermal head is one bit deep. Without this the browser hands it a
+       "dark grey" that dithers into a washed-out, barely legible receipt. */
+    color: #000;
+    background: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .slip-rule {
+    border-top-color: #000;
+  }
+}
+
+/* ── Shop & staff management (shop.html, admin-shops.html) ───────────────────
+   Appended as one block so the roles feature owns a single, findable section.
+   Everything else on these screens reuses the existing .calculator-card,
+   .admin-table and .form-field styles above. */
+
+.shop-form-grid {
+  display: grid;
+  gap: 0 1.25rem;
+  /* Two columns on a desk, one on a phone — no breakpoint needed, and a long
+     address field never gets squeezed into an unusable strip. */
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.shop-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.shop-hint {
+  margin-bottom: 1.25rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  max-width: 60ch;
+}
+
+/* The catalogue grant sits below the grid, spanning it, because it applies to
+   the whole account rather than to any one field. */
+.shop-grant {
+  margin-top: 0.25rem;
+}
+
+.shop-readonly-note {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* Permission cell in the staff table: the checkbox is the control, the label
+   next to it says what the current state means in plain words. */
+.staff-permission {
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.staff-permission input:checked ~ span {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ============================================================================
+   Catalogue pictures + activity report
+   Appended as one block because css/styles.css is shared: everything below
+   belongs to the image pickers on products.html and to activity.html.
+   ============================================================================ */
+
+/* ---- Image picker (product form + category form) ---- */
+
+.image-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.9rem;
+}
+
+.image-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.image-picker-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+/* The preview holds its footprint whether or not a picture is set, so choosing
+   one does not shove the rest of the form down the page. */
+.image-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 84px;
+  height: 84px;
+  overflow: hidden;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  background: var(--surface-2, rgba(127, 127, 127, 0.08));
+}
+
+.image-preview-sm {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+}
+
+.image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-empty {
+  padding: 0 0.3rem;
+  font-size: 0.68rem;
+  line-height: 1.2;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.image-input {
+  max-width: 100%;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.image-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* The category form is one flex row; the picker joins it rather than starting
+   a new line, and the name field keeps the flexible width. */
+.image-picker-inline {
+  gap: 0.5rem;
+}
+
+/* ---- Catalogue thumbnails ---- */
+
+.pos-catalog-pic,
+.pos-category-pic {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--surface-2, rgba(127, 127, 127, 0.08));
+}
+
+.pos-catalog-pic {
+  width: 44px;
+  height: 44px;
+}
+
+.pos-category-pic {
+  width: 32px;
+  height: 32px;
+}
+
+.pos-catalog-pic img,
+.pos-category-pic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pos-catalog-pic.is-empty,
+.pos-category-pic.is-empty {
+  border: 1px dashed var(--border);
+  background: none;
+}
+
+/* The catalogue row gained a thumbnail column ahead of the name. */
+.pos-catalog-row {
+  grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+}
+
+.pos-category.is-editing {
+  border-left: 2px solid var(--accent, #2f7d5b);
+  padding-left: 0.5rem;
+}
+
+/* ---- Activity report ---- */
+
+.activity-filters {
+  align-items: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.activity-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.activity-filter select,
+.activity-filter input {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.activity-table td {
+  vertical-align: top;
+}
+
+.activity-when {
+  white-space: nowrap;
+  font-size: 0.82rem;
+}
+
+.activity-muted {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.74rem;
+}
+
+.activity-changes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.activity-changes li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+}
+
+.activity-field {
+  color: var(--text-muted);
+}
+
+.activity-field::after {
+  content: ':';
+}
+
+/* Struck through rather than coloured: the old value has to stay readable in
+   both themes, and "this is what it was" is the only thing being said. */
+.activity-was {
+  color: var(--text-muted);
+  text-decoration: line-through;
+  overflow-wrap: anywhere;
+}
+
+.activity-now {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 720px) {
+  .image-preview {
+    width: 64px;
+    height: 64px;
+  }
+
+  .pos-catalog-pic {
+    width: 36px;
+    height: 36px;
+  }
+
+  .activity-filter {
+    flex: 1 1 140px;
+  }
+}
+
+@media (max-width: 640px) {
+  /* The base rules above collapse this row to two columns for a phone. With a
+     thumbnail in front that would push the name into the price's column, so
+     the picture takes a column of its own and spans the two wrapped lines. */
+  .pos-catalog-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .pos-catalog-pic {
+    grid-row: 1 / span 2;
+  }
+
+  .pos-category-form .image-picker-inline {
+    width: 100%;
+  }
+}
+
+/* `.btn` sets `display: inline-flex`, and an author rule outranks the browser's
+   `[hidden] { display: none }` — so the "Remove picture" buttons need telling
+   twice or they show up even when the JS has hidden them. */
+.image-picker .btn[hidden] {
+  display: none;
+}
+
+/* ── Sales history (sales.html) ─────────────────────────────────────────────
+   Appended as one block so the sales screen owns a single, findable section.
+   The list itself reuses .admin-table / .admin-badge / .admin-pagination and
+   the sale detail reuses the till's .pos-modal and .receipt-slip — the reprint
+   has to be the same slip, not a lookalike. Only what is genuinely new to this
+   screen lives here. */
+
+/* ---- Stat tiles ---- */
+
+.sales-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.85rem;
+  margin-top: 0.85rem;
+}
+
+.sales-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.9rem 1rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.sales-stat-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.sales-stat-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1.2;
+  /* Tabular so the five tiles line up their rupees instead of shimmying. */
+  font-variant-numeric: tabular-nums;
+}
+
+.sales-stat-profit {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+}
+
+.sales-stat-profit-label {
+  color: var(--text-muted);
+}
+
+.sales-stat-profit-value {
+  font-weight: 600;
+  color: var(--new);
+}
+
+.sales-stat-count {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* ---- Incomplete profit ----
+   A margin the API flagged `is_complete: false` is not the sale's real profit,
+   so it never renders as a plain number: the asterisk and the dotted underline
+   say "there is a caveat here" at a glance, the title attribute says what it
+   is, and .profit-note repeats it for screen readers, which never see a title. */
+
+.sales-profit.is-partial {
+  cursor: help;
+  border-bottom: 1px dotted currentColor;
+}
+
+.profit-flag {
+  margin-left: 0.1rem;
+  font-weight: 700;
+  color: var(--old);
+}
+
+.profit-note {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.sales-legend {
+  margin-top: 0.85rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* ---- Filters ---- */
+
+.sales-filters {
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+/* The period group and the range button sit on the text inputs' baseline, not
+   on the labels above them. */
+.sales-period,
+.sales-filters .btn {
+  margin-bottom: 1px;
+}
+
+/* ---- List ---- */
+
+.sales-row {
+  cursor: pointer;
+}
+
+/* Nine columns is three more than the admin tables this borrows from, so the
+   cells are tighter: at the default padding the status badge was pushed out of
+   the container and had to be scrolled to on a full-width desktop. */
+.sales-table th,
+.sales-table td {
+  padding: 0.7rem 0.6rem;
+}
+
+.sales-table .sales-num {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.sales-when {
+  white-space: nowrap;
+  font-size: 0.82rem;
+}
+
+/* The receipt number is the row's own control, so keyboard users reach the
+   sale without the table row having to pretend to be a button. */
+.sales-ref {
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.sales-ref:hover {
+  text-decoration: underline;
+}
+
+/* Money still owed is the one number on the row the owner has to act on. */
+.sales-table .is-due,
+.sale-facts .is-due {
+  color: var(--old);
+  font-weight: 600;
+}
+
+.sales-status {
+  white-space: nowrap;
+}
+
+.sales-refund-badge {
+  margin-left: 0.35rem;
+}
+
+/* ---- Sale detail ---- */
+
+/* Wider than the till's receipt dialog: this one carries the shop's own
+   figures and the payment form either side of the same 80mm slip. */
+.sale-detail-card {
+  max-width: 520px;
+}
+
+.sale-detail-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  align-items: center;
+}
+
+.sale-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.6rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.85rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.sale-fact dt {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.sale-fact dd {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.sale-fact-wide {
+  grid-column: 1 / -1;
+}
+
+.sale-fact-profit {
+  color: var(--new);
+}
+
+/* ---- Adjust payment ---- */
+
+.sale-payment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.95rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+/* `display: flex` is an author rule and the browser's `[hidden]` is not, so a
+   settled sale would still show the form without this. */
+.sale-payment-form[hidden] {
+  display: none;
+}
+
+.sale-payment-title {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.sale-payment-due {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.sale-payment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.6rem;
+}
+
+.sale-payment-form .auth-submit {
+  margin: 0;
+}
+
+/* Inside the dialog the alert is one item in a flex column, so the stacking
+   gap already spaces it — the global .auth-alert margin doubles up. */
+.sale-detail-inner .auth-alert {
+  width: 100%;
+  margin-bottom: 0;
+}
+
+/* The page behind the dialog must not scroll under it. */
+body.sales-modal-open {
+  overflow: hidden;
+}
+
+/* On a phone the wrapping flex row left the seven controls stranded at
+   different widths down the card, so the bar becomes an explicit two-column
+   grid: the period switch takes a full row, everything else pairs up. */
+@media (max-width: 720px) {
+  .sales-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+    align-items: end;
+  }
+
+  .sales-period {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin-bottom: 0;
+  }
+
+  .sales-period .reports-mode-btn {
+    flex: 1;
+    padding: 0.55rem 0.35rem;
+    font-size: 0.82rem;
+  }
+
+  .sales-filters .activity-filter input,
+  .sales-filters .activity-filter select {
+    width: 100%;
+  }
+
+  .sales-filters .btn {
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 0;
+  }
+}
+
+/* A reprint goes to the roll on its own: the shell is not part of the receipt,
+   and the dialog's own print rules (with the till's) turn it into the paper.
+   Scoped to the open dialog so Ctrl+P with no sale open still prints the page. */
+@media print {
+  body.sales-modal-open .app-layout {
+    display: none !important;
+  }
+}
+
+/* ---- Udhaar (credit) at the till ----
+   Its own button and its own dialog rather than another value in the payment
+   dropdown: letting the goods go without the money is a different act from
+   taking payment, and a select is one mis-tap away from doing it by accident. */
+
+.pos-actions {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.pos-credit {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Block flow, not the column flex `.pos-modal-card` sets: this dialog is taller
+   than the card can be, and as flex items every row shrinks to fit instead of
+   scrolling — which silently squeezed the customer hit list down to nothing
+   while it was still there to be clicked. The card scrolls; the rows keep their
+   height. */
+.pos-udhaar-card {
+  display: block;
+  max-width: 460px;
+}
+
+/* `.pos-day-figures` sets `display`, and an author rule outranks the browser's
+   `[hidden] { display: none }` — so the picked-customer panel stayed on screen,
+   empty, whenever nobody was picked. */
+.pos-day-figures[hidden] {
+  display: none;
+}
+
+/* Each label/input pair in this dialog is a separate question, and stacked with
+   no margin of their own they read as one run-on block. */
+.pos-udhaar-card .auth-input + .input-label {
+  margin-top: 1.1rem;
+}
+
+/* ---- Khata combobox ----
+   The matches float out of flow rather than sitting in the dialog's column.
+   In flow they did both of the wrong things: as a block they pushed the deposit
+   box and the save button off the bottom of a real shop's khata, and as a flex
+   item of `.pos-modal-card` they shrank to nothing while still counting as
+   visible, so a tap on a customer landed on whatever was underneath. Absolutely
+   positioned it can do neither — it has no say in the card's height and no
+   height of its own to give up. */
+
+.pos-combo {
+  position: relative;
+}
+
+.pos-combo-panel {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.3rem);
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  max-height: 216px;
+  overflow-y: auto;
+  padding: 0.3rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
+}
+
+/* `display: flex` above is an author rule and the browser's `[hidden]` is not. */
+.pos-combo-panel[hidden] {
+  display: none;
+}
+
+.pos-udhaar-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  flex-shrink: 0;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: none;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* Hover and the keyboard highlight are one look on purpose: a till driven half
+   by mouse and half by arrow keys must not show two different "this one". */
+.pos-udhaar-option:hover,
+.pos-udhaar-option.is-active {
+  border-color: var(--accent);
+  background: var(--surface-2);
+}
+
+.pos-udhaar-option-who {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.pos-udhaar-option-name,
+.pos-udhaar-option-phone {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pos-udhaar-option-phone {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.pos-udhaar-option-owed {
+  flex-shrink: 0;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* What the customer already owes, on the row where more credit is being given. */
+.pos-udhaar-option-owed.is-due {
+  color: var(--old);
+  font-weight: 600;
+}
+
+/* ---- The page that was picked ---- */
+
+.pos-udhaar-picked {
+  margin-bottom: 1.1rem;
+}
+
+.pos-udhaar-picked-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.pos-udhaar-picked-name {
+  font-size: 1.02rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.pos-udhaar-unpick {
+  flex-shrink: 0;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.pos-udhaar-unpick:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.pos-udhaar-picked-phone {
+  display: block;
+  margin-bottom: 0.6rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.pos-udhaar-picked .pos-day-figures {
+  margin-bottom: 0;
+}
+
+/* No `display` of its own, so the browser's `[hidden]` still puts the whole
+   new-page path away the moment an existing one is picked. */
+.pos-udhaar-new {
+  margin: 0.75rem 0 1.1rem;
+}
+
+.pos-udhaar-new-note {
+  margin: 0 0 1.1rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.pos-udhaar-figures {
+  margin-top: 1.1rem;
+}
+
+/* ---- Settled or owed, said above the slip ----
+   A cash sale with the "Amount received" box left empty still settles in full;
+   the cashier is told so here rather than left to infer it from a receipt that
+   looks the same either way. */
+
+.pos-receipt-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.pos-receipt-state {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.pos-receipt-state[data-state='paid'] {
+  color: var(--new);
+}
+
+.pos-receipt-state[data-state='partial'] {
+  color: var(--old);
+}
+
+.pos-receipt-state[data-state='pending'] {
+  color: var(--danger);
 }

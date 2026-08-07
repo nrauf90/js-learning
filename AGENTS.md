@@ -185,6 +185,7 @@ php artisan serve   # http://localhost:8000
 |------|---------|
 | [`docs/CONTEXT.md`](docs/CONTEXT.md) | **Agent handoff** — read this first every session |
 | [`docs/README.md`](docs/README.md) | Milestone index (M1–M11) |
+| [`docs/features/`](docs/features/) | **Feature reference** — one doc per functional area: what each part of the app is and how it works *as it stands today* |
 | [`docs/milestones/*.md`](docs/milestones/) | Milestone goals + exit criteria |
 | [`docs/tasks/*.md`](docs/tasks/) | Task checklists with completion logs |
 | [`docs/issues/`](docs/issues/) | QA bug reports from `npm run qa:milestone` |
@@ -265,18 +266,20 @@ Laravel PHPUnit tests for API endpoints.
 5. **Frontend `API_BASE_URL` default:** `http://localhost:8000`
 6. **Billing provider: Paddle** (merchant of record). Replaced JazzCash + EasyPaisa in M23. Webhooks are the only thing allowed to move subscription state; the post-checkout browser redirect is cosmetic.
 7. **Offline QA harness** — milestone gates use Playwright, not AI agents.
-8. **Stock only moves through an audited path** — sales, refunds, or the adjust endpoint. `PUT /api/products/{id}` deliberately ignores `stock_quantity`, so every change leaves a `stock_movements` row.
+8. **Stock only moves through an audited path** — sales, refunds, purchases (Stock In), or the adjust endpoint. `PUT /api/products/{id}` deliberately ignores `stock_quantity`, so every change leaves a `stock_movements` row.
+9. **Prices and stock are stored per canonical base unit** (`pc`/`g`/`ml` — see `backend/app/Support/Unit.php` and `js/units.js`). `price_unit` (kg, litre, dozen) is display and data-entry only. Added in M35.
 
 ## Current status
 
-**Milestones M1–M13 complete.** M14 in progress; M15–M34 scaffolded (app-wide improvement review backlog) but not started. See [`docs/CONTEXT.md`](docs/CONTEXT.md) for detailed status.
+**Milestones M1–M13 complete, plus M35 (kiryana pack).** M14 in progress; M15–M34 scaffolded (app-wide improvement review backlog) but not started. See [`docs/CONTEXT.md`](docs/CONTEXT.md) for detailed status.
 
 - **Branch:** `feature-2` (base: `main`)
-- **QA:** Passed M1–M13 (66 Playwright tests; 96 frontend unit tests; 75 backend PHPUnit tests)
+- **QA:** Passed M1–M35 (80 Playwright tests; 70 frontend unit tests; 365 backend PHPUnit tests / 1,702 assertions)
 - **Next:** M14 — performance & code-quality pass (see `docs/tasks/M14-tasks.md`)
 - **Note:** M11 (admin panel) was built outside this agent workflow and reviewed/fixed in a follow-up pass — see `docs/issues/M11/` for the bugs found (mass-assignment, missing `is_admin` in API payloads, wrong endpoints/field names, stored XSS).
 - **Note:** M12 closed the security findings from a full app-wide review (payment IPN signature bypass, Google OAuth token-in-URL, JazzCash password exposure, no token expiration, `is_admin` mass-assignment, admin payload leak, missing throttling, `billing.sandbox` default, missing input bounds) — see `docs/milestones/M12-security-hardening.md`.
 - **Note:** M13 fixed the dark-then-light flash on load — `css/styles.css` now defaults to light theme, and all pages share one `js/theme.js` module instead of 15 duplicated copies — see `docs/milestones/M13-theme-default-fix.md`.
+- **Note:** M35 (the kiryana pack) was built ahead of the M14–M34 backlog because it closes the gaps that blocked real shop use of the till: goods sold by weight and by rupee amount, purchases with weighted-average cost, profit/cash-position reports, customer khata (udhaar), wastage/expiry, whole-rupee settlement, and — after shop-owner testing — udhaar at the till, khata payment history and supplier invoice payments. Its most transferable lesson: the credit path had a complete API, service, policy and 28 passing tests, and was still **unreachable from `pos.html`**, which offered 3 of 7 payment methods and no customer field. A green backend suite says the API is right, not that anyone can reach it. See `docs/milestones/M35-kiryana-pack.md`.
 
 ## Troubleshooting
 

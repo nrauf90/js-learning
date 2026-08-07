@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 // M5 (tax calculator) was removed from the product; its spec file went with it.
-const MILESTONE_ORDER = ['M1', 'M2', 'M3', 'M4', 'M6', 'M7', 'M8', 'M9', 'M10', 'M11', 'M12', 'M13', 'M23'];
+const MILESTONE_ORDER = ['M1', 'M2', 'M3', 'M4', 'M6', 'M7', 'M8', 'M9', 'M10', 'M11', 'M12', 'M13', 'M23', 'M35'];
 
 /** Spec globs relative to e2e/tests — only include files that exist when running. */
 const SPEC_BY_MILESTONE = {
@@ -37,6 +37,7 @@ const SPEC_BY_MILESTONE = {
   M12: 'm12-*.spec.js',
   M13: 'm13-*.spec.js',
   M23: 'm23-*.spec.js',
+  M35: 'm35-*.spec.js',
 };
 
 const API_URL = process.env.QA_API_URL || 'http://127.0.0.1:8000';
@@ -115,11 +116,14 @@ function killTree(child) {
 
 function runPlaywright(milestone) {
   return new Promise((resolve) => {
+    // `shell: true` concatenates argv without escaping, so a checkout under a
+    // path containing spaces ("E:\Ciklum Latop Data\...") reached Playwright
+    // as two arguments and it looked for a config named "E:\Ciklum".
     const args = [
       'playwright',
       'test',
       '--config',
-      path.join(ROOT, 'e2e/playwright.config.js'),
+      JSON.stringify(path.join(ROOT, 'e2e/playwright.config.js')),
     ];
 
     const child = spawn('npx', args, {
@@ -152,8 +156,9 @@ async function main() {
   try {
     if (!(await isUp(`${API_URL}/api/health`))) {
       console.log('Starting API on :8000 …');
-      // Force local billing test mode: the harness subscribes users through
-      // /api/billing/checkout, which otherwise calls Paddle for real.
+      // Force local billing test mode: M6 drives the admin-only checkout,
+      // which otherwise calls Paddle for real. Shop fixtures are subscribed by
+      // an admin grant and do not need it.
       apiChild = startProcess(
         'php',
         ['backend/artisan', 'serve', '--port=8000', '--host=127.0.0.1'],

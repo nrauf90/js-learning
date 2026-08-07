@@ -116,7 +116,7 @@ class AdminPanelTest extends TestCase
         $admin = $this->admin();
         $user = User::factory()->create();
         $this->subscribeUser($user);
-        $category = ExpenseCategory::where('slug', 'grocery')->firstOrFail();
+        $category = ExpenseCategory::where('slug', 'stock-purchase')->firstOrFail();
         CashEntry::create([
             'user_id' => $user->id,
             'category_id' => $category->id,
@@ -229,7 +229,7 @@ class AdminPanelTest extends TestCase
         $admin = $this->admin();
         $user = User::factory()->create();
         $this->subscribeUser($user);
-        $category = ExpenseCategory::where('slug', 'grocery')->firstOrFail();
+        $category = ExpenseCategory::where('slug', 'stock-purchase')->firstOrFail();
         CashEntry::create([
             'user_id' => $user->id,
             'category_id' => $category->id,

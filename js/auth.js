@@ -3,6 +3,7 @@ import { initNav } from './nav.js';
 import { initTheme } from './theme.js';
 
 const USER_KEY = 'cashflow_auth_user';
+const USER_FETCHED_KEY = 'cashflow_auth_user_at';
 
 function showAlert(message, type = 'error') {
   const el = document.getElementById('auth-alert');
@@ -22,7 +23,10 @@ function clearAlert() {
 function saveSession(token, user) {
   setAuthToken(token);
   if (user) {
+    // Stamped so the app shell treats this as a fresh read and doesn't spend
+    // the first navigation after login re-fetching what we just received.
     localStorage.setItem(USER_KEY, JSON.stringify(user));
+    localStorage.setItem(USER_FETCHED_KEY, String(Date.now()));
   }
 }
 
@@ -131,6 +135,7 @@ export async function logout() {
   } finally {
     setAuthToken(null);
     localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(USER_FETCHED_KEY);
   }
 }
 
