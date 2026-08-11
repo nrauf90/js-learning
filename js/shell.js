@@ -213,8 +213,7 @@ export function initShell(options = {}) {
 
   sidebar.innerHTML = `
     <a class="sidebar-brand" href="dashboard.html">
-      <span class="sidebar-brand-mark">🇵🇰</span>
-      <span class="sidebar-brand-text">Cashflow<span class="sidebar-brand-dot">.</span></span>
+      <img class="sidebar-brand-img" src="logo.png" alt="PK Galla — Dukaan Sambhalo, Aasani Se" />
     </a>
 
     <nav class="sidebar-nav" aria-label="App">

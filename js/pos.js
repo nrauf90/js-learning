@@ -1731,7 +1731,7 @@ function storedUser() {
 }
 
 function shopName() {
-  return storedUser()?.name || 'Cashflow';
+  return storedUser()?.name || 'PK Galla';
 }
 
 /**

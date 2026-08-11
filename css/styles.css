@@ -5,40 +5,58 @@
  * :root[data-theme='dark'] is the explicit override, applied by js/theme.js
  * either from a stored user choice or prefers-color-scheme: dark.
  */
+/*
+ * Palette is sampled from logo.png: the "PK Galla" wordmark is blue
+ * (#005cef highlight over a #084194 body on a #052262 outline) and the flame
+ * swoosh + tagline pill are orange/gold (#fd6901 → #fdb801). Blue therefore
+ * leads as --accent (links, primary buttons, active state) and orange is the
+ * secondary --warm accent (glows, highlights, callouts). Greys are tinted
+ * toward the logo's navy rather than neutral so the two sit together.
+ */
 :root {
-  --bg: #f5f7fa;
+  --bg: #f4f7fb;
   --surface: #ffffff;
-  --surface-2: #eef2f7;
-  --border: #dde3ec;
-  --text: #101826;
-  --text-muted: #5b6b80;
-  --accent: #0d9488;
-  --accent-dim: #0f766e;
+  --surface-2: #eaf0f9;
+  --border: #d8e0ee;
+  --text: #0b1729;
+  --text-muted: #55667e;
+  --accent: #0a55d8;
+  --accent-dim: #0842a8;
   --accent-contrast: #ffffff;
+  --accent-glow: rgba(10, 85, 216, 0.2);
+  --warm: #f97b0d;
+  --warm-dim: #d95e02;
+  --warm-contrast: #2b1200;
+  --warm-glow: rgba(249, 123, 13, 0.22);
   --new: #15803d;
   --old: #b45309;
   --danger: #dc2626;
   --radius: 12px;
-  --shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+  --shadow: 0 4px 24px rgba(11, 23, 41, 0.09);
   --font: 'DM Sans', system-ui, sans-serif;
   --mono: 'JetBrains Mono', monospace;
   color-scheme: light;
 }
 
 :root[data-theme='dark'] {
-  --bg: #0f1419;
-  --surface: #1a2332;
-  --surface-2: #243044;
-  --border: #2d3f56;
-  --text: #e8edf4;
-  --text-muted: #8b9cb3;
-  --accent: #14b8a6;
-  --accent-dim: #0d9488;
-  --accent-contrast: #06221e;
+  --bg: #060a14;
+  --surface: #0d1626;
+  --surface-2: #16223a;
+  --border: #243350;
+  --text: #e9f0fb;
+  --text-muted: #94a6c2;
+  --accent: #3d9bff;
+  --accent-dim: #2a86f0;
+  --accent-contrast: #04122b;
+  --accent-glow: rgba(61, 155, 255, 0.26);
+  --warm: #ff9c2b;
+  --warm-dim: #f97316;
+  --warm-contrast: #2b1200;
+  --warm-glow: rgba(255, 156, 43, 0.24);
   --new: #22c55e;
-  --old: #f59e0b;
+  --old: #fdb801;
   --danger: #ef4444;
-  --shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+  --shadow: 0 6px 30px rgba(2, 6, 18, 0.6);
   color-scheme: dark;
 }
 
@@ -58,6 +76,15 @@ body {
   min-height: 100vh;
   overflow-x: clip;
   transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Auth pages get the logo's blue + flame-orange glow behind the card */
+.auth-page {
+  background:
+    radial-gradient(640px 420px at 12% -6%, var(--accent-glow), transparent 70%),
+    radial-gradient(560px 380px at 92% 108%, var(--warm-glow), transparent 70%),
+    var(--bg);
+  background-repeat: no-repeat;
 }
 
 .page {
@@ -132,14 +159,19 @@ body {
   display: block;
 }
 
-.logo-flag {
-  font-size: 2.5rem;
+/* The logo is a full lockup (mark + wordmark + tagline), so it stands alone in
+   the header — no text heading beside it. Height-driven so the 200x132 art
+   keeps its aspect ratio at every breakpoint. */
+.logo-img {
+  display: block;
+  height: 3.5rem;
+  width: auto;
+  flex-shrink: 0;
 }
 
-.header h1 {
-  font-size: 1.75rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+/* The wordmark's navy outline needs a little lift off a near-black page. */
+:root[data-theme='dark'] .logo-img {
+  filter: drop-shadow(0 2px 12px var(--accent-glow));
 }
 
 .tagline {
@@ -287,7 +319,7 @@ body {
 
 .regime-tab.active {
   border-color: var(--accent);
-  background: rgba(20, 184, 166, 0.08);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
 .regime-tab.active[data-regime="old"] {
@@ -379,7 +411,7 @@ body {
 
 .result-card.highlight {
   border-color: var(--accent);
-  background: rgba(20, 184, 166, 0.06);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
 }
 
 .result-label {
@@ -483,7 +515,7 @@ body {
 .diff-panel {
   margin-top: 1.25rem;
   padding: 1rem 1.25rem;
-  background: rgba(20, 184, 166, 0.1);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
   border: 1px solid var(--accent-dim);
   border-radius: var(--radius);
   color: var(--accent);
@@ -767,10 +799,6 @@ body {
 
 /* Responsive */
 @media (max-width: 600px) {
-  .header h1 {
-    font-size: 1.35rem;
-  }
-
   .income-input {
     font-size: 1.2rem;
   }
@@ -893,6 +921,11 @@ body {
   color: var(--accent);
 }
 
+.auth-footer a:hover,
+.auth-subtitle a:hover {
+  color: var(--accent-dim);
+}
+
 .auth-form .input-label {
   margin-top: 0.85rem;
 }
@@ -929,9 +962,10 @@ body {
 }
 
 .auth-submit {
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dim) 100%);
   color: var(--accent-contrast);
   border: none;
+  box-shadow: 0 4px 18px color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
 .auth-submit:disabled {
@@ -1330,7 +1364,7 @@ body {
   inset: 0;
   background:
     radial-gradient(ellipse 80% 60% at 20% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%),
-    radial-gradient(ellipse 60% 50% at 90% 20%, color-mix(in srgb, #6366f1 18%, transparent), transparent 65%),
+    radial-gradient(ellipse 60% 50% at 90% 20%, color-mix(in srgb, var(--warm) 18%, transparent), transparent 65%),
     linear-gradient(180deg, color-mix(in srgb, var(--surface) 80%, var(--bg)), var(--bg));
   border-bottom: 1px solid var(--border);
   pointer-events: none;
@@ -1361,9 +1395,14 @@ body {
   border-radius: 999px;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  /* Echoes the orange tagline pill in the logo. */
+  color: var(--warm-dim);
+  background: color-mix(in srgb, var(--warm) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warm) 38%, transparent);
+}
+
+:root[data-theme='dark'] .hero-badge {
+  color: var(--warm);
 }
 
 .hero-title {
@@ -1676,6 +1715,18 @@ body {
   margin: 0 auto;
 }
 
+/* The header is the logo alone now, so legal pages carry their own h1. */
+.legal-title {
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.2rem;
+}
+
+.legal-content .legal-updated {
+  font-size: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
 .legal-content h2 {
   font-size: 1.1rem;
   margin: 1.75rem 0 0.75rem;
@@ -1964,12 +2015,8 @@ body {
     display: flex;
   }
 
-  .logo-flag {
-    font-size: 2rem;
-  }
-
-  .header h1 {
-    font-size: 1.25rem;
+  .logo-img {
+    height: 2.9rem;
   }
 
   .tagline {
@@ -2199,8 +2246,8 @@ body {
     padding-right: 0.85rem;
   }
 
-  .header h1 {
-    font-size: 1.1rem;
+  .logo-img {
+    height: 2.6rem;
   }
 
   .result-grid {
@@ -2269,7 +2316,7 @@ body::before {
   pointer-events: none;
   background:
     radial-gradient(600px 420px at 12% -8%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%),
-    radial-gradient(720px 480px at 105% 12%, color-mix(in srgb, #6366f1 12%, transparent), transparent 70%),
+    radial-gradient(720px 480px at 105% 12%, color-mix(in srgb, var(--warm) 12%, transparent), transparent 70%),
     radial-gradient(520px 420px at 50% 118%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 70%);
 }
 
@@ -2369,19 +2416,14 @@ body::before {
   color: var(--text);
 }
 
-.sidebar-brand-mark {
-  font-size: 1.5rem;
-  line-height: 1;
+.sidebar-brand-img {
+  display: block;
+  height: 2.7rem;
+  width: auto;
 }
 
-.sidebar-brand-text {
-  font-size: 1.2rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.sidebar-brand-dot {
-  color: var(--accent);
+:root[data-theme='dark'] .sidebar-brand-img {
+  filter: drop-shadow(0 2px 10px var(--accent-glow));
 }
 
 .sidebar-nav {
@@ -2472,7 +2514,7 @@ body::before {
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--accent-contrast);
-  background: linear-gradient(135deg, var(--accent), #6366f1);
+  background: linear-gradient(135deg, var(--accent), var(--accent-dim));
 }
 
 .sidebar-user-meta {
@@ -2563,7 +2605,7 @@ body::before {
   display: inline-flex;
   width: 1.15em;
   height: 1.15em;
-  color: var(--accent, #14b8a6);
+  color: var(--accent);
 }
 
 .topbar-icon svg {
@@ -2804,7 +2846,7 @@ body.sidebar-open .app-overlay {
 }
 
 .admin-stat-icon-primary {
-  background: rgba(20, 184, 166, 0.15);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
   color: var(--accent);
 }
 
@@ -4031,9 +4073,9 @@ body.sidebar-open .app-overlay {
 }
 
 .pos-weigh-unit.is-active {
-  background: var(--accent, #14b8a6);
+  background: var(--accent);
   border-color: transparent;
-  color: #fff;
+  color: var(--accent-contrast);
   font-weight: 600;
 }
 

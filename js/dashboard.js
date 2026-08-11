@@ -95,7 +95,7 @@ function renderCharts(days, byDay) {
   const gridColor = 'rgba(139, 156, 179, 0.14)';
   const incomeColor = cssVar('--new', '#22c55e');
   const expenseColor = cssVar('--danger', '#ef4444');
-  const accent = cssVar('--accent', '#14b8a6');
+  const accent = cssVar('--accent', '#0a55d8');
 
   const labels = days.map(shortDay);
   const incomeData = days.map((iso) => (byDay.get(iso) || { income: 0 }).income);
