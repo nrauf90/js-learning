@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Debug-only cleartext permission.
+
+  Android blocks plain HTTP from API 28 onward, so a debug build talking to a
+  dev server on http://10.0.2.2:8000 fails before the request leaves the device.
+  Nothing surfaces in the Laravel log and the app just reports a network error,
+  which is exactly how it presented: "Server se raabta nahi ho saka".
+
+  Note this is NOT what `allowMixedContent` in capacitor.config.json does — that
+  governs mixed content inside the webview, not Android's own network policy.
+
+  This file lives in src/debug/, so the manifest merger applies it only to debug
+  builds. A release APK inherits none of it and stays HTTPS-only, which is what
+  we want: a bearer token over plain HTTP on shop wifi is readable by anyone on
+  that network.
+
+  Hosts are listed individually rather than using cleartextTrafficPermitted on a
+  base-config, so even a debug build cannot silently talk plaintext to a real
+  server someone typos into config.js.
+-->
+<network-security-config>
+  <domain-config cleartextTrafficPermitted="true">
+    <!-- The Android emulator's alias for the host machine's loopback. -->
+    <domain includeSubdomains="false">10.0.2.2</domain>
+    <!-- The device itself, for anything served on-device. -->
+    <domain includeSubdomains="false">localhost</domain>
+    <domain includeSubdomains="false">127.0.0.1</domain>
+  </domain-config>
+</network-security-config>

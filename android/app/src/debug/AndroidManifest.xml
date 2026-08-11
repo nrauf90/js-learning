@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Debug-only manifest overlay.
+
+  The manifest merger folds this into the debug build only, so the release APK
+  never references the cleartext config next to it. Keeping the attribute here
+  rather than in the main manifest is the whole point: adding
+  `usesCleartextTraffic="true"` to the main one is the common shortcut, and it
+  ships a release build that will happily send bearer tokens over plain HTTP.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <application android:networkSecurityConfig="@xml/network_security_config" />
+</manifest>
