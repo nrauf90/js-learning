@@ -8,7 +8,8 @@
  */
 
 import { apiPost, getAuthToken, setAuthToken } from './api.js';
-import { currentTheme, hideNativeSplash, syncStatusBar } from './native.js';
+import { hideNativeSplash } from './native.js';
+import { initTheme } from './theme.js';
 
 const USER_KEY = 'cashflow_auth_user';
 const USER_FETCHED_KEY = 'cashflow_auth_user_at';
@@ -19,6 +20,7 @@ const submit = document.getElementById('login-submit');
 const alertBox = document.getElementById('auth-alert');
 const emailInput = document.getElementById('email');
 const passwordInput = document.getElementById('password');
+const passwordToggle = document.getElementById('password-toggle');
 
 function showAlert(message) {
   alertBox.hidden = false;
@@ -35,7 +37,27 @@ function clearAlert() {
 function setBusy(busy) {
   submit.disabled = busy;
   submit.dataset.busy = String(busy);
+  /* data-busy drives the spinner visually; aria-busy is what tells a screen
+     reader that the button is working rather than simply unresponsive. */
+  submit.setAttribute('aria-busy', String(busy));
 }
+
+/**
+ * Show/hide the password.
+ *
+ * Focus is restored and the caret put back at the end, because changing an
+ * input's `type` drops focus in every browser — without this the keyboard
+ * closes on each tap and the shopkeeper has to tap back into the field.
+ */
+passwordToggle?.addEventListener('click', () => {
+  const showing = passwordInput.type === 'text';
+  passwordInput.type = showing ? 'password' : 'text';
+  passwordToggle.setAttribute('aria-pressed', String(!showing));
+  passwordToggle.setAttribute('aria-label', showing ? 'Password dikhayein' : 'Password chhupayein');
+  passwordInput.focus();
+  const end = passwordInput.value.length;
+  passwordInput.setSelectionRange(end, end);
+});
 
 /**
  * Laravel returns `{ errors: { field: [msg] } }` on a 422 and a bare `message`
@@ -51,8 +73,10 @@ function errorText(err) {
   if (body?.message) return body.message;
   /* A failed fetch has no body at all — on a phone that is nearly always the
      connection rather than the credentials, and saying so avoids sending the
-     shopkeeper off to reset a password that was never wrong. */
-  return 'Could not reach the server. Check your connection and try again.';
+     shopkeeper off to reset a password that was never wrong. Said in the
+     product's own voice, because this is the one message a user hits when they
+     are already frustrated. */
+  return 'Server se raabta nahi ho saka. Apna internet check karke dobara koshish karein.';
 }
 
 function saveSession(token, user) {
@@ -73,7 +97,9 @@ form.addEventListener('submit', async (event) => {
   const password = passwordInput.value;
 
   if (!email || !password) {
-    showAlert('Enter your email and password.');
+    showAlert('Email aur password dono likhein.');
+    /* Focus the field that is actually empty, so the keyboard opens on the one
+       needing input rather than making the user hunt for it. */
     (email ? passwordInput : emailInput).setAttribute('aria-invalid', 'true');
     (email ? passwordInput : emailInput).focus();
     return;
@@ -100,8 +126,11 @@ form.addEventListener('submit', async (event) => {
 if (getAuthToken()) {
   window.location.replace(HOME);
 } else {
-  syncStatusBar(currentTheme());
+  initTheme();
   /* Covers the direct-load case: boot.js normally hides the splash before it
      routes, but this page can also be opened as the first document. */
   hideNativeSplash();
+  /* Not autofocused: on a phone that throws the keyboard up over the card the
+     instant the screen appears, hiding the logo and half the form before the
+     user has decided what they are looking at. */
 }

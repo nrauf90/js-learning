@@ -239,7 +239,66 @@ proper.
 
 ---
 
-## 11. Open questions
+## 11. Mobile UX standard — applies to every screen, not just the till
+
+The bar every mobile screen has to clear. The splash, login and home screens
+already meet it; this is what "user friendly and easy to access" means in
+practice, so it can be checked rather than argued about.
+
+### Reach and targets
+- **Interactive targets ≥ 44×44px**, primary actions ≥ 48px high. Verified by
+  measurement, not by eye — greasy fingers register wider and lower than they look.
+- **Primary actions in the bottom half.** The thumb arc on a one-handed phone is
+  the bottom ~60%; anything critical in a top corner is a two-handed action.
+- **Never autofocus a field on load.** The keyboard springs up over the content
+  before the user has seen the screen.
+
+### Input
+- **Inputs at ≥ 16px font-size.** Below that, iOS zooms the whole page on focus
+  and the user is left pinching back out on every field.
+- **Set `inputmode`, `autocomplete`, `autocapitalize` and `enterkeyhint`.** These
+  decide which keyboard appears and what its action key says — the cheapest
+  usability win available on mobile.
+- **Passwords get a show/hide toggle**, and toggling must restore focus and caret
+  position, or the keyboard closes on every tap.
+
+### Feedback
+- **`aria-busy` alongside any visual busy state.** A spinner communicates nothing
+  to a screen reader; without it the button reads as simply unresponsive.
+- **Errors in a `role="alert"` container** so they are announced, not just drawn.
+- **Focus rings via `:focus-visible`, never `:focus`.** A plain `:focus` ring also
+  fires on touch and reads as a stuck selection.
+
+### Language
+- **Roman Urdu for labels, buttons and error messages.** English is fine for
+  longer explanatory copy, but the moment a shopkeeper is stuck — a failed login,
+  a refused sale — the message must be in the voice the rest of the product uses.
+  Mixed-language UI is the fastest way to make an app feel foreign.
+
+### Theme and environment
+- **Both themes, always**, and a manual toggle on every screen. A street-facing
+  counter is in direct sun by day and under one bulb at night; following the OS
+  is not sufficient.
+- **Theme applied before first paint** by a blocking script, or dark-mode users
+  get a white flash on every screen.
+- **The native status bar must be told separately** — it is painted by the OS and
+  will otherwise keep the previous theme's colour.
+
+### Motion
+- **No animation on task paths.** It costs battery and delays the next tap.
+  Decoration is for the landing page.
+- **Everything animated sits behind `prefers-reduced-motion`.**
+
+### How to check it
+`.tmp` audit scripts are not kept in the repo, but the checks are worth
+re-running whenever a screen is added: measure every interactive element's box,
+compute contrast against the nearest painted ancestor, tab through and assert a
+visible ring, and confirm one `h1` per screen. Note that a naive contrast check
+reports a **false failure on gradient buttons** — `getComputedStyle` returns
+`transparent` for a `background-image`, so the walker finds the card behind it
+and compares white text against a white surface.
+
+## 12. Open questions
 
 - **Does the shop want the phone as the main till, or as a second terminal**
   alongside a laptop? A second terminal needs much less — mostly khata lookup

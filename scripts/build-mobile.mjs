@@ -38,6 +38,7 @@ const FILES = [
   ['mobile/js/config.js', 'js/config.js'],
   ['mobile/js/theme-boot.js', 'js/theme-boot.js'],
   ['mobile/js/native.js', 'js/native.js'],
+  ['mobile/js/theme.js', 'js/theme.js'],
   ['mobile/js/boot.js', 'js/boot.js'],
   ['mobile/js/login.js', 'js/login.js'],
   ['mobile/js/home.js', 'js/home.js'],

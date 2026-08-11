@@ -1,12 +1,20 @@
 /**
  * Motion layer: GSAP + ScrollTrigger (scroll-triggered animations) and
- * Lenis (smooth scroll). Libraries load from CDN; every step degrades
- * gracefully — if a script fails, the page stays fully usable and visible.
+ * Lenis (smooth scroll). Libraries are vendored under vendor/ rather than
+ * pulled from a CDN — see vendor/README.md for why and how to update them.
+ * Every step still degrades gracefully — if a script fails, the page stays
+ * fully usable and visible.
+ *
+ * These paths are document-relative, not module-relative: loadScript appends a
+ * <script> to document.head, so the browser resolves them against the page URL.
+ * index.html is the only page that loads this module and it sits at the repo
+ * root, so `vendor/...` is correct. Moving it into a subdirectory would break
+ * these three paths without breaking the `./motion.js` import that reaches them.
  */
 
-const GSAP_SRC = 'https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js';
-const SCROLLTRIGGER_SRC = 'https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js';
-const LENIS_SRC = 'https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js';
+const GSAP_SRC = 'vendor/gsap.min.js';
+const SCROLLTRIGGER_SRC = 'vendor/ScrollTrigger.min.js';
+const LENIS_SRC = 'vendor/lenis.min.js';
 
 function loadScript(src) {
   return new Promise((resolve, reject) => {

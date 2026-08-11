@@ -7,7 +7,8 @@
  */
 
 import { apiGet, apiPost, getAuthToken, setAuthToken } from './api.js';
-import { currentTheme, hideNativeSplash, syncStatusBar } from './native.js';
+import { hideNativeSplash } from './native.js';
+import { initTheme } from './theme.js';
 
 const USER_KEY = 'cashflow_auth_user';
 const USER_FETCHED_KEY = 'cashflow_auth_user_at';
@@ -34,18 +35,18 @@ function clearSession() {
 if (!getAuthToken()) {
   window.location.replace(LOGIN);
 } else {
-  syncStatusBar(currentTheme());
+  initTheme();
   hideNativeSplash();
 
   /* Show the cached name immediately so the screen is never blank, then
      confirm against the API — a token can be revoked or expired (Sanctum
      expires them at 30 days) while the cache still looks valid. */
   const cached = cachedUser();
-  if (cached?.name) greeting.textContent = `Welcome back, ${cached.name}.`;
+  if (cached?.name) greeting.textContent = `Khush aamdeed, ${cached.name}.`;
 
   apiGet('/api/user')
     .then((user) => {
-      if (user?.name) greeting.textContent = `Welcome back, ${user.name}.`;
+      if (user?.name) greeting.textContent = `Khush aamdeed, ${user.name}.`;
       localStorage.setItem(USER_KEY, JSON.stringify(user));
       localStorage.setItem(USER_FETCHED_KEY, String(Date.now()));
     })
@@ -59,7 +60,7 @@ if (!getAuthToken()) {
          what is stale rather than throwing the user back to a login screen
          they cannot complete without a connection. */
       alertBox.hidden = false;
-      alertBox.textContent = 'Could not reach the server — showing saved details.';
+      alertBox.textContent = 'Server se raabta nahi hua — mehfooz tafseelat dikha rahe hain.';
     });
 
   logoutBtn.addEventListener('click', async () => {

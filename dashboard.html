@@ -91,7 +91,10 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Vendored, not CDN — see vendor/README.md. Third-party script tags are
+       executed with full page privileges, so serving them from our own origin
+       keeps the auth token in localStorage out of reach of a CDN compromise. -->
+  <script src="vendor/chart.umd.js"></script>
   <script type="module" src="js/dashboard.js"></script>
 </body>
 </html>
