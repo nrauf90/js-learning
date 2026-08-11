@@ -66,9 +66,9 @@ export function receiptDateTime(iso) {
 
 function storedShopName() {
   try {
-    return JSON.parse(localStorage.getItem(USER_KEY) || 'null')?.name || 'Cashflow';
+    return JSON.parse(localStorage.getItem(USER_KEY) || 'null')?.name || 'PK Galla';
   } catch {
-    return 'Cashflow';
+    return 'PK Galla';
   }
 }
 
