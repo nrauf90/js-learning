@@ -246,10 +246,11 @@ pattern already used at `css/styles.css:2662`.
 Performance: animate `transform` and `opacity` only.
 
 **Degradation is already correct — keep it that way.** GSAP, ScrollTrigger and
-Lenis load from CDN, and the reveals use `gsap.from()`, so GSAP itself sets the
-hidden start state and animates to the element's natural one. Nothing in
-`css/styles.css` hides `[data-reveal]`. If the CDN is blocked, no animation runs
-and **all content stays visible**.
+Lenis are **served from our own origin** out of `vendor/` (see `vendor/README.md`
+for why they left the CDN), and the reveals use `gsap.from()`, so GSAP itself
+sets the hidden start state and animates to the element's natural one. Nothing in
+`css/styles.css` hides `[data-reveal]`. If a script fails to load for any reason,
+no animation runs and **all content stays visible**.
 
 That property is easy to destroy by accident: adding `opacity: 0` to
 `[data-reveal]` in CSS — the obvious way to stop the pre-animation flash — makes
@@ -293,8 +294,9 @@ Beyond the source brief's checklist:
 - [ ] No Tailwind, React or Framer Motion added
 - [ ] New colours are tokens, not inline hex
 - [ ] `prefers-reduced-motion` honoured by CSS animations as well as GSAP
-- [ ] Content still readable with the CDN blocked (no CSS-level `opacity: 0` on
-      `[data-reveal]` — see §5)
+- [ ] Content still readable if a script fails to load (no CSS-level `opacity: 0`
+      on `[data-reveal]` — see §5)
+- [ ] No new off-origin `<script src>`; third-party libraries go in `vendor/`
 - [ ] The ~2px sub-380px overflow is gone
 - [ ] Roman Urdu labels intact and correctly spelled
 - [ ] `npm run lint` clean, `npm test` green, `npm run qa:m1` passing
