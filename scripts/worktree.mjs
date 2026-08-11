@@ -29,10 +29,26 @@ import { ROOT } from './agent-env.mjs';
 
 const WORKTREE_DIR = path.join(ROOT, '.worktrees');
 
-/* Linked rather than copied: node_modules is hundreds of megabytes and
-   backend/vendor is not much better. A junction on Windows needs no admin
-   rights, unlike a directory symlink. */
-const LINKED = ['node_modules', path.join('backend', 'vendor')];
+/*
+ * Dependencies are INSTALLED per worktree, never linked.
+ *
+ * Linking node_modules and backend/vendor with a Windows junction looks
+ * attractive — it is instant and saves hundreds of megabytes — and it is a trap
+ * that destroys the main checkout. `git worktree remove`, `rm -rf` and Explorer
+ * all recurse *through* a junction and delete the target's contents, so tearing
+ * down one worktree empties the dependencies of every checkout that shares
+ * them. This was not hypothetical: it happened while building this script, and
+ * both node_modules/ and backend/vendor/ had to be reinstalled from scratch.
+ *
+ * A safe version would have to unlink before every possible deletion path,
+ * which is not something a tool can guarantee for a directory a human can drag
+ * to the recycle bin. Installing costs a couple of minutes once, and nothing
+ * a worktree does can then reach outside itself.
+ */
+const INSTALLS = [
+  { label: 'npm install', cmd: 'npm', args: ['install', '--no-audit', '--no-fund'], cwd: '.' },
+  { label: 'composer install', cmd: 'composer', args: ['install', '--no-interaction', '--quiet'], cwd: 'backend' },
+];
 
 /* Copied, because each checkout must be able to diverge: an agent that migrates
    its database or edits its .env must not touch anyone else's. */
@@ -67,11 +83,23 @@ function nextFreeSlot() {
   return slot;
 }
 
-function link(from, to) {
-  if (fs.existsSync(to)) return 'exists';
-  fs.mkdirSync(path.dirname(to), { recursive: true });
-  fs.symlinkSync(from, to, process.platform === 'win32' ? 'junction' : 'dir');
-  return 'linked';
+function run({ label, cmd, args, cwd }, dest) {
+  const at = path.join(dest, cwd);
+  process.stdout.write(`  ${label} … `);
+  try {
+    execFileSync(cmd, args, {
+      cwd: at,
+      stdio: 'pipe',
+      shell: process.platform === 'win32',
+    });
+    console.log('done');
+  } catch (err) {
+    /* Not fatal: the worktree still exists and the agent can install by hand.
+       Failing the whole creation over a slow registry would be worse. */
+    console.log('FAILED');
+    console.log(`    ${String(err.stderr || err.message).trim().split('\n')[0]}`);
+    console.log(`    run it yourself in ${at}`);
+  }
 }
 
 function cmdNew(name) {
@@ -91,15 +119,8 @@ function cmdNew(name) {
      merged, not from whatever this checkout happens to have uncommitted. */
   git(['worktree', 'add', '-b', branch, dest, 'main']);
 
-  for (const rel of LINKED) {
-    const from = path.join(ROOT, rel);
-    if (!fs.existsSync(from)) {
-      console.log(`  ! ${rel} missing in the main checkout — skipped`);
-      continue;
-    }
-    console.log(`  ${link(from, path.join(dest, rel))} ${rel}`);
-  }
-
+  /* Config and data first, so a failed install still leaves a checkout the
+     agent can finish setting up by hand. */
   for (const rel of [...COPIED, ...COPIED_IF_PRESENT]) {
     const from = path.join(ROOT, rel);
     if (!fs.existsSync(from)) {
@@ -127,6 +148,10 @@ function cmdNew(name) {
     path.join(dest, '.agent.json'),
     `${JSON.stringify({ name, slot, branch, createdFrom: 'main' }, null, 2)}\n`
   );
+
+  console.log('\nInstalling dependencies (a couple of minutes — see the note in this script\n' +
+    'about why these are not shared with the main checkout):');
+  for (const step of INSTALLS) run(step, dest);
 
   console.log(`\nReady. Point the agent at:\n  ${dest}\n`);
   console.log('Its ports:');
@@ -198,7 +223,23 @@ function cmdRemove(name) {
      for --force, which would also discard real work. */
   fs.rmSync(path.join(dest, '.agent.json'), { force: true });
 
-  git(['worktree', 'remove', dest]);
+  try {
+    git(['worktree', 'remove', dest]);
+  } catch (err) {
+    /* On Windows a still-running dev server keeps its working directory open
+       and the delete fails with a bare "Permission denied", which says nothing
+       about what to do. The checks above already proved there is no unmerged
+       work, so the only thing standing in the way is a live process. */
+    if (/permission denied|resource busy|being used/i.test(String(err.message))) {
+      console.error(`Cannot remove "${name}" — something is still running inside it.`);
+      console.error('Stop its servers (npm start / dev:api) and try again.');
+      console.error(`\nIf nothing is running, on Windows the shell's own working directory`);
+      console.error(`can hold it: cd somewhere else first.\n\n  ${dest}`);
+      process.exit(1);
+    }
+    throw err;
+  }
+
   try {
     git(['branch', '-d', branch]);
   } catch {

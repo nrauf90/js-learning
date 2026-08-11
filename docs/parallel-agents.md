@@ -24,7 +24,7 @@ not the real risk here.
 | Dev database | **Yes**, once provisioned | `DB_CONNECTION=sqlite`, and `backend/database/database.sqlite` is gitignored — so it is a per-checkout file, not a shared server |
 | Backend unit tests | **Yes**, always | `phpunit.xml` sets `DB_DATABASE=:memory:` — nothing on disk to share |
 | **Ports 3000 / 3100 / 8000** | **No** | The real collision. Two agents starting servers means the second fails to bind — or worse, silently uses the first's |
-| `node_modules`, `backend/vendor` | Shared by design | Linked, not copied. Hundreds of megabytes, and identical across worktrees |
+| `node_modules`, `backend/vendor` | **Yes** — installed per worktree | Deliberately not shared; see the warning below |
 | `backend/.env` | Copied per worktree | Each agent must be able to change it without touching anyone else's |
 
 So the danger is **not** agents overwriting files. It is two agents quietly
@@ -110,22 +110,41 @@ merge first; there is no `--force`.
 project needs to run are gitignored, so a bare worktree cannot install, migrate,
 serve or test:
 
-- `node_modules/` — linked from the main checkout (junction on Windows, no admin needed)
-- `backend/vendor/` — linked the same way
 - `backend/.env` — copied, with `APP_URL` rewritten to this slot's API port
 - `backend/database/database.sqlite` — copied, so the agent starts with working data
+- `node_modules/` and `backend/vendor/` — **installed**, which is why creation
+  takes a couple of minutes
 
 Plus the slot assignment and `.agent.json`.
+
+### Why dependencies are installed and not linked
+
+Linking them with a Windows junction is instant and saves hundreds of megabytes.
+It is also a trap that destroys the main checkout, and it is worth knowing why
+so nobody "optimises" it back:
+
+`git worktree remove`, `rm -rf` and Explorer all recurse **through** a junction
+and delete the *target's* contents. So tearing down one worktree empties the
+dependencies of every checkout sharing them.
+
+This is not theoretical — it happened while this tooling was being written.
+Removing a test worktree emptied `node_modules/` and `backend/vendor/` in the
+main checkout, and both had to be reinstalled from scratch. A "safe" version
+would have to unlink before every possible deletion path, which no tool can
+guarantee for a directory a human can drag to the recycle bin.
+
+Two minutes on creation buys the guarantee that nothing a worktree does can
+reach outside itself.
 
 ---
 
 ## Limits
 
-- **The linked `node_modules` is shared.** An agent that runs `npm install` for a
-  new dependency changes it for **every** checkout. That is usually what you
-  want (they should agree on dependencies), but it means a version bump in one
-  worktree silently reaches the others. Install deliberately, and re-run the
-  other agents' tests afterwards.
+- **Creation takes a couple of minutes** because dependencies are installed, not
+  linked. That is the deliberate trade described above.
+- **Dependencies do not propagate.** An agent that adds a package has it only in
+  its own worktree; the change reaches everyone else through `package.json` when
+  the branch merges, and the other checkouts then need `npm install`.
 - **The database is copied, not shared** — so an agent that migrates or seeds is
   working on its own data. Nothing propagates back; that is intended, but do not
   expect to see another agent's test records.
@@ -134,3 +153,7 @@ Plus the slot assignment and `.agent.json`.
 - **Native mobile builds** (`android/`, `ios/`) are tracked, so each worktree has
   its own copy. Two agents running `cap sync` do not conflict, but both will
   produce diffs in those directories.
+- **Stop the servers before removing a worktree.** On Windows a running
+  `npm start` or `dev:api` holds its working directory open and the delete fails
+  with a bare "Permission denied". `wt rm` detects that case and says so, but it
+  cannot kill somebody else's process for them.
