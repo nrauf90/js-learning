@@ -160,8 +160,9 @@ body {
 }
 
 /* The logo is a full lockup (mark + wordmark + tagline), so it stands alone in
-   the header — no text heading beside it. Height-driven so the 200x132 art
-   keeps its aspect ratio at every breakpoint. */
+   the header — no text heading beside it. Height-driven with `width: auto` so
+   the art keeps its aspect ratio at every breakpoint; the lockup is a wide
+   3.18:1 (277x87), so a width-driven rule would crush it vertically. */
 .logo-img {
   display: block;
   height: 3.5rem;

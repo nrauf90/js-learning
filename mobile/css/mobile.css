@@ -1,0 +1,357 @@
+/*
+ * PK Galla — mobile app styles.
+ *
+ * Deliberately self-contained rather than importing css/styles.css: that sheet
+ * is ~4,000 lines built around a desktop sidebar shell, and a phone pays for
+ * every one of them on first paint. The design tokens below are the same values
+ * the web app uses (sampled from the logo — see the palette note in
+ * css/styles.css), so the two stay in step visually without sharing a file.
+ *
+ * Light is the unattributed default and dark is the explicit override, matching
+ * the web app's M13 fix: painting dark first causes a flash on load.
+ */
+
+:root {
+  --bg: #f4f7fb;
+  --surface: #ffffff;
+  --surface-2: #eaf0f9;
+  --border: #d8e0ee;
+  --text: #0b1729;
+  --text-muted: #55667e;
+  --accent: #0a55d8;
+  --accent-dim: #0842a8;
+  --accent-contrast: #ffffff;
+  --accent-glow: rgba(10, 85, 216, 0.2);
+  --warm: #f97b0d;
+  --warm-glow: rgba(249, 123, 13, 0.22);
+  --danger: #dc2626;
+  --radius: 14px;
+  --shadow: 0 4px 24px rgba(11, 23, 41, 0.09);
+  --font: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
+
+  /* The brand navy the native splash is painted in. Kept here too so the web
+     layer can match it exactly while the splash is still being hidden. */
+  --splash-bg: #071a3d;
+
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg: #060a14;
+  --surface: #0d1626;
+  --surface-2: #16223a;
+  --border: #243350;
+  --text: #e9f0fb;
+  --text-muted: #94a6c2;
+  --accent: #3d9bff;
+  --accent-dim: #2a86f0;
+  --accent-contrast: #04122b;
+  --accent-glow: rgba(61, 155, 255, 0.26);
+  --warm: #ff9c2b;
+  --warm-glow: rgba(255, 156, 43, 0.24);
+  --danger: #ef4444;
+  --shadow: 0 6px 30px rgba(2, 6, 18, 0.6);
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  /* A native app must not rubber-band the whole document — it reads as broken. */
+  overscroll-behavior-y: none;
+}
+
+/* ------------------------------------------------------------------ splash */
+
+/*
+ * The in-app splash. The *native* splash (Capacitor's) covers the gap before
+ * the webview has painted; this one covers the gap after that, while boot.js
+ * decides whether there is a session. Painting the same navy means the handoff
+ * between the two is invisible.
+ */
+.m-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: var(--splash-bg);
+  transition: opacity 0.25s ease;
+}
+
+.m-splash[hidden] {
+  display: none;
+}
+
+.m-splash.is-leaving {
+  opacity: 0;
+}
+
+.m-splash-logo {
+  width: min(58vw, 260px);
+  height: auto;
+  display: block;
+}
+
+/* --------------------------------------------------------------- auth page */
+
+/*
+ * The brief: content vertically centred, logo at the top of the form.
+ *
+ * `100dvh` rather than `100vh` — on mobile browsers `vh` is locked to the
+ * viewport with the URL bar hidden, so a `100vh` box is taller than the screen
+ * and "centred" content sits low, cut off at the bottom. `dvh` tracks the
+ * live viewport. The `100vh` line before it is the fallback for older webviews.
+ */
+.m-auth {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  /* Notches and home indicators: content must not sit under either. */
+  padding-top: max(1.5rem, env(safe-area-inset-top));
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  padding-left: max(1.5rem, env(safe-area-inset-left));
+  padding-right: max(1.5rem, env(safe-area-inset-right));
+  background:
+    radial-gradient(620px 420px at 12% -8%, var(--accent-glow), transparent 70%),
+    radial-gradient(540px 380px at 92% 108%, var(--warm-glow), transparent 70%),
+    var(--bg);
+  background-repeat: no-repeat;
+}
+
+.m-auth-inner {
+  width: 100%;
+  max-width: 420px;
+  /* Centring is the default, but a short screen with the keyboard up must be
+     able to scroll rather than clip the submit button off the bottom. */
+  margin: auto;
+}
+
+.m-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 2rem 1.5rem;
+}
+
+/* The logo sits at the top of the form, inside the card. */
+.m-logo {
+  display: block;
+  width: auto;
+  height: 4.5rem;
+  margin: 0 auto 1.5rem;
+  max-width: 80%;
+  object-fit: contain;
+}
+
+:root[data-theme='dark'] .m-logo {
+  filter: drop-shadow(0 2px 12px var(--accent-glow));
+}
+
+.m-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+
+.m-subtitle {
+  margin: 0 0 1.5rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* ------------------------------------------------------------------ fields */
+
+.m-field {
+  margin-bottom: 1rem;
+}
+
+.m-label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.m-input {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  font-family: inherit;
+  /*
+   * 16px minimum. iOS Safari zooms the whole page in when a focused input's
+   * font-size is below 16px, and the user is then left pinching back out on
+   * every field.
+   */
+  font-size: 1rem;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.m-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.m-input[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
+/* --------------------------------------------------------------- controls */
+
+.m-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  /* 48px min: below roughly this, thumbs start missing. */
+  min-height: 48px;
+  padding: 0.9rem 1rem;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.08s ease, opacity 0.15s ease;
+}
+
+.m-btn:active {
+  transform: scale(0.985);
+}
+
+.m-btn-primary {
+  margin-top: 0.5rem;
+  color: var(--accent-contrast);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dim) 100%);
+  box-shadow: 0 4px 18px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.m-btn-secondary {
+  color: var(--text);
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+.m-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* The label swaps to a spinner rather than the button changing size, which
+   would shift everything under it mid-tap. */
+.m-btn[data-busy='true'] .m-btn-label {
+  visibility: hidden;
+}
+
+.m-btn[data-busy='true']::after {
+  content: '';
+  position: absolute;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: m-spin 0.6s linear infinite;
+}
+
+.m-btn-primary {
+  position: relative;
+}
+
+@keyframes m-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .m-btn[data-busy='true']::after {
+    animation-duration: 2s;
+  }
+
+  .m-splash {
+    transition: none;
+  }
+}
+
+/* ------------------------------------------------------------------ alerts */
+
+.m-alert {
+  margin-bottom: 1rem;
+  padding: 0.8rem 1rem;
+  font-size: 0.875rem;
+  border-radius: 10px;
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
+}
+
+.m-alert[hidden] {
+  display: none;
+}
+
+/* ------------------------------------------------------------------ footer */
+
+.m-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.m-divider::before,
+.m-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.m-footer {
+  margin: 1.25rem 0 0;
+  font-size: 0.875rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.m-footer a,
+.m-link {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.m-footer a:active,
+.m-link:active {
+  text-decoration: underline;
+}

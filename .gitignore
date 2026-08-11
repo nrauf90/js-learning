@@ -3,6 +3,22 @@ package-lock.json
 distc
 pnpm-lock.yaml
 
+# Capacitor mobile
+# www/ is assembled by scripts/build-mobile.mjs from mobile/ + js/api.js.
+# Committing it would mean every source edit shows up twice in a diff, and the
+# copy would go stale the moment someone edited it directly.
+www/
+# The native projects themselves ARE committed — they carry signing config,
+# permissions and icons that cannot be regenerated from capacitor.config.json.
+# Their build output is not; Capacitor writes its own .gitignore inside each.
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+ios/App/Pods/
+ios/App/build/
+ios/App/App/public/
+
 # Laravel backend
 backend/vendor/
 backend/.env

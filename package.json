@@ -1,7 +1,7 @@
 {
-  "name": "cashflow-pos",
+  "name": "PK Galla Online",
   "version": "1.0.0",
-  "description": "Point of sale and daily cash flow tracking for small businesses",
+  "description": "Point of sale and khata tracking for small businesses",
   "type": "module",
   "scripts": {
     "test": "node --test \"tests/**/*.test.js\"",
@@ -9,6 +9,12 @@
     "dev:api": "cd backend/public && php -d opcache.enable_cli=1 -d opcache.memory_consumption=192 -d opcache.max_accelerated_files=20000 -d opcache.revalidate_freq=0 -S 127.0.0.1:8000 ../server.php",
     "dev:api:plain": "php backend/artisan serve --host=127.0.0.1 --port=8000",
     "lint": "node scripts/lint-js.mjs",
+    "mobile:build": "node scripts/build-mobile.mjs",
+    "mobile:serve": "npm run mobile:build && npx --yes serve -l 3100 www",
+    "mobile:sync": "npm run mobile:build && npx cap sync",
+    "mobile:assets": "npx capacitor-assets generate --assetPath brand --splashBackgroundColor #071a3d --splashBackgroundColorDark #071a3d --iconBackgroundColor #071a3d --iconBackgroundColorDark #071a3d",
+    "mobile:android": "npm run mobile:sync && npx cap open android",
+    "mobile:ios": "npm run mobile:sync && npx cap open ios",
     "qa:milestone": "node scripts/qa-milestone.mjs",
     "qa:m1": "node scripts/qa-milestone.mjs M1",
     "qa:m2": "node scripts/qa-milestone.mjs M2",
@@ -35,6 +41,17 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.0",
     "@playwright/test": "^1.62.0"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
+    "@capacitor/ios": "^8.5.0",
+    "@capacitor/keyboard": "^8.0.5",
+    "@capacitor/preferences": "^8.0.1",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.3"
   }
 }

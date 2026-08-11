@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- viewport-fit=cover is what makes env(safe-area-inset-*) resolve to real
+       numbers on a notched device; without it the insets are all zero. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>PK Galla</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <meta name="theme-color" content="#071a3d" />
+  <link rel="stylesheet" href="css/mobile.css" />
+  <!-- Paints the theme before first paint, so a dark-mode user never sees a
+       white flash. Same reasoning as the web app's M13 fix. -->
+  <script src="js/config.js"></script>
+  <script src="js/theme-boot.js"></script>
+</head>
+<body>
+  <div class="m-splash" id="splash">
+    <img class="m-splash-logo" src="assets/logo.png" alt="PK Galla" />
+  </div>
+
+  <script type="module" src="js/boot.js"></script>
+</body>
+</html>

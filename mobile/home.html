@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>PK Galla</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <meta name="theme-color" content="#f4f7fb" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#060a14" media="(prefers-color-scheme: dark)" />
+  <link rel="stylesheet" href="css/mobile.css" />
+  <script src="js/config.js"></script>
+  <script src="js/theme-boot.js"></script>
+</head>
+<body>
+  <!--
+    Placeholder. It exists so the splash → login → signed-in flow can be run
+    end to end on a real device before any till screen is built, and so login.js
+    has a real destination rather than redirecting to itself.
+  -->
+  <main class="m-auth">
+    <div class="m-auth-inner">
+      <section class="m-card">
+        <img class="m-logo" src="assets/logo.png" alt="PK Galla" />
+
+        <h1 class="m-title">Signed in</h1>
+        <p class="m-subtitle" id="home-greeting">Loading your account…</p>
+
+        <div class="m-alert" id="home-alert" hidden role="alert"></div>
+
+        <button type="button" class="m-btn m-btn-secondary" id="logout">
+          <span class="m-btn-label">Log out</span>
+        </button>
+
+        <p class="m-footer">The till and khata screens land here next.</p>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="js/home.js"></script>
+</body>
+</html>

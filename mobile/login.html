@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Log in | PK Galla</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <meta name="theme-color" content="#f4f7fb" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#060a14" media="(prefers-color-scheme: dark)" />
+  <link rel="stylesheet" href="css/mobile.css" />
+  <script src="js/config.js"></script>
+  <script src="js/theme-boot.js"></script>
+</head>
+<body>
+  <!-- Vertically centred: .m-auth is a full-height flex box with the card as a
+       centred item. The logo is the first child of the card, above the form. -->
+  <main class="m-auth">
+    <div class="m-auth-inner">
+      <section class="m-card">
+        <img class="m-logo" src="assets/logo.png" alt="PK Galla — Dukaan Sambhalo, Aasani Se" />
+
+        <h1 class="m-title">Log in</h1>
+        <p class="m-subtitle">Apni dukaan ka hisaab, ek jagah.</p>
+
+        <div class="m-alert" id="auth-alert" hidden role="alert"></div>
+
+        <form id="login-form" novalidate>
+          <div class="m-field">
+            <label class="m-label" for="email">Email</label>
+            <input
+              class="m-input"
+              type="email"
+              id="email"
+              name="email"
+              required
+              autocomplete="email"
+              inputmode="email"
+              autocapitalize="none"
+              autocorrect="off"
+              spellcheck="false"
+              enterkeyhint="next"
+            />
+          </div>
+
+          <div class="m-field">
+            <label class="m-label" for="password">Password</label>
+            <input
+              class="m-input"
+              type="password"
+              id="password"
+              name="password"
+              required
+              autocomplete="current-password"
+              enterkeyhint="go"
+            />
+          </div>
+
+          <button type="submit" class="m-btn m-btn-primary" id="login-submit">
+            <span class="m-btn-label">Log in</span>
+          </button>
+        </form>
+
+        <!-- No signup link yet: only the splash and login screens are in scope,
+             and a link to a screen that does not exist is worse than none.
+             Shops are activated by the platform admin anyway (see
+             docs/features/dashboard.md), so self-signup on mobile is a product
+             decision rather than a missing page. -->
+        <p class="m-footer">Ask your shop admin if you need an account.</p>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="js/login.js"></script>
+</body>
+</html>

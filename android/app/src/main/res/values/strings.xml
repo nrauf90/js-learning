@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PK Galla</string>
+    <string name="title_activity_main">PK Galla</string>
+    <string name="package_name">com.pkgalla.app</string>
+    <string name="custom_url_scheme">com.pkgalla.app</string>
+</resources>

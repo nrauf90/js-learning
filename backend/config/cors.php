@@ -19,9 +19,26 @@ return [
 
     'allowed_methods' => ['*'],
 
+    /*
+     | The Capacitor origins are in the default deliberately. A native build is
+     | not a "site" with an address — the webview serves the bundled files from
+     | `https://localhost` (the scheme set in capacitor.config.json), and iOS
+     | uses `capacitor://localhost` if that scheme is ever changed back. Neither
+     | is reachable by anyone who is not already running the app on the device,
+     | so allowing them costs nothing and omitting them means the mobile app
+     | cannot reach the API at all — with no error beyond a browser-level CORS
+     | block that never appears in the Laravel log.
+     |
+     | Port 3100 is the `npm run mobile:serve` preview of those same files.
+     */
     'allowed_origins' => array_values(array_filter(array_map(
         'trim',
-        explode(',', env('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000'))
+        explode(',', env(
+            'CORS_ALLOWED_ORIGINS',
+            'http://localhost:3000,http://127.0.0.1:3000,' .
+            'http://localhost:3100,http://127.0.0.1:3100,' .
+            'https://localhost,capacitor://localhost'
+        ))
     ))),
 
     'allowed_origins_patterns' => [],
