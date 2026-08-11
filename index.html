@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PK Galla — Point of Sale &amp; Daily Cash Flow for Small Businesses</title>
-  <meta name="description" content="Ring up sales, track stock, and see your daily cash flow in one place. Built for small shops and counters in Pakistan." />
+  <title>PK Galla — Point of Sale &amp; Khata for Kiryana Shops</title>
+  <meta name="description" content="Sell by weight, track udhaar, and know exactly how much you made today. A point of sale and khata built for Pakistani kiryana shops. 7-day free trial." />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="PK Galla" />
-  <meta property="og:title" content="PK Galla — Point of Sale &amp; Daily Cash Flow for Small Businesses" />
-  <meta property="og:description" content="Ring up sales, track stock, and see your daily cash flow in one place. Built for small shops and counters in Pakistan." />
+  <meta property="og:title" content="PK Galla — Point of Sale &amp; Khata for Kiryana Shops" />
+  <meta property="og:description" content="Sell by weight, track udhaar, and know exactly how much you made today. Built for Pakistani kiryana shops." />
   <!-- TODO: replace with a purpose-built 1200x630 social card; logo.png is
        277x87 and will render as a small thumbnail rather than a wide banner. -->
   <meta property="og:image" content="logo.png" />
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="PK Galla — Point of Sale &amp; Daily Cash Flow for Small Businesses" />
-  <meta name="twitter:description" content="Ring up sales, track stock, and see your daily cash flow in one place. Built for small shops and counters in Pakistan." />
+  <meta name="twitter:title" content="PK Galla — Point of Sale &amp; Khata for Kiryana Shops" />
+  <meta name="twitter:description" content="Sell by weight, track udhaar, and know exactly how much you made today. Built for Pakistani kiryana shops." />
   <meta name="twitter:image" content="logo.png" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#f4f7fb" media="(prefers-color-scheme: light)" />
@@ -25,124 +25,463 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
   <div class="page page-landing">
-    <header class="header header-landing">
+    <header class="header header-landing" id="site-header">
       <div class="header-inner">
         <a class="logo logo-link" href="index.html">
-          <img class="logo-img" src="logo.png" alt="PK Galla — Dukaan Sambhalo, Aasani Se" />
+          <img class="logo-img" src="logo.png" alt="PK Galla — Dukaan Sambhalo, Aasani Se" width="277" height="87" />
         </a>
         <div class="header-actions">
           <nav class="site-nav" aria-label="Main"></nav>
+          <a class="btn btn-primary btn-sm nav-cta" href="signup.html">Get started</a>
           <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">
-            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
-            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
           </button>
         </div>
       </div>
     </header>
 
-    <main>
+    <main id="main">
+      <!-- ─────────────────────────────────────────────────────────── hero -->
       <section class="hero" id="top">
         <div class="hero-bg" aria-hidden="true"></div>
+        <div class="hero-grid" aria-hidden="true"></div>
+
         <div class="hero-inner">
           <div class="hero-copy">
-            <p class="hero-badge">Built for Pakistan 🇵🇰</p>
-            <h1 class="hero-title">Ring up sales.<br />Watch your stock and cash.</h1>
+            <p class="hero-badge">Kiryana shops ke liye · Built for Pakistan</p>
+            <h1 class="hero-title">
+              Dukaan sambhalo,<br /><span class="hero-title-accent">aasani se.</span>
+            </h1>
             <p class="hero-lead">
-              PK Galla is a point of sale for small shops and counters. Sell in a few taps, keep stock
-              accurate automatically, and see every sale land in your daily cash flow.
+              A point of sale and khata built for the way a kiryana shop actually works. Sell loose
+              goods by weight or by rupee, keep udhaar straight, and know exactly
+              <em>kitna bacha</em> — every single day.
             </p>
             <div class="hero-cta">
-              <a class="btn btn-primary" href="signup.html">Start free</a>
+              <a class="btn btn-primary" href="signup.html">Start free trial</a>
               <a class="btn btn-secondary" href="#how-it-works">See how it works</a>
             </div>
             <ul class="hero-stats">
-              <li><strong>7-day</strong> free trial</li>
-              <li><strong>Live</strong> stock counts</li>
-              <li><strong>One</strong> daily ledger</li>
+              <li><strong>7 din</strong> free trial</li>
+              <li><strong>Pao se bori</strong> tak</li>
+              <li><strong>Udhaar</strong> ka poora hisaab</li>
             </ul>
           </div>
 
-          <aside class="hero-widget calculator-card" aria-label="What a sale looks like">
-            <h3 class="hero-widget-title">A sale, start to finish</h3>
-            <p class="hero-widget-note">Scan or tap · take payment · stock updates itself</p>
+          <!-- The sale loop. Each row lights in sequence via CSS so the flow
+               reads as a cycle rather than a static list. -->
+          <aside class="hero-flow-card" aria-label="What happens when you ring up a sale">
+            <div class="flow-card-head">
+              <span class="flow-card-dot" aria-hidden="true"></span>
+              <h2 class="flow-card-title">Ek sale, shuru se aakhir tak</h2>
+            </div>
 
-            <ol class="hero-flow">
-              <li><span class="hero-flow-step">1</span> Search or scan an item onto the ticket</li>
-              <li><span class="hero-flow-step">2</span> Take cash or card and hand over change</li>
-              <li><span class="hero-flow-step">3</span> Stock drops, the sale posts to today's income</li>
+            <ol class="flow-list">
+              <li class="flow-item" style="--i: 0">
+                <span class="flow-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+                </span>
+                <span class="flow-body">
+                  <strong>Item ticket par</strong>
+                  <span>Scan karo ya taul lo — 250 g daal, Rs 62.50</span>
+                </span>
+              </li>
+              <li class="flow-item" style="--i: 1">
+                <span class="flow-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 11h20"/></svg>
+                </span>
+                <span class="flow-body">
+                  <strong>Paisa ya udhaar</strong>
+                  <span>Cash, card, wallet — ya khaate par</span>
+                </span>
+              </li>
+              <li class="flow-item" style="--i: 2">
+                <span class="flow-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 12l9 4 9-4M3 17l9 4 9-4"/></svg>
+                </span>
+                <span class="flow-body">
+                  <strong>Stock khud kam</strong>
+                  <span>Har movement ka running balance</span>
+                </span>
+              </li>
+              <li class="flow-item" style="--i: 3">
+                <span class="flow-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>
+                </span>
+                <span class="flow-body">
+                  <strong>Din band, hisaab saaf</strong>
+                  <span>Drawer count, variance, aur kitna bacha</span>
+                </span>
+              </li>
             </ol>
-
-            <a class="hero-widget-link" href="signup.html">Open your first till →</a>
           </aside>
         </div>
       </section>
 
-      <section class="landing-section" id="about">
+      <!-- ─────────────────────────────────────────────── the till / weight -->
+      <section class="landing-section" id="features">
         <div class="section-header" data-reveal>
-          <p class="section-eyebrow">About us</p>
-          <h2 class="section-title">A till that keeps your books honest</h2>
+          <p class="section-eyebrow">Counter par</p>
+          <h2 class="section-title">Taul ke becho, ya paise ke</h2>
+          <p class="section-lead">
+            Aadhi dukaan kilo mein bikti hai, packet mein nahi. So the keypad works in both
+            directions — and the money always comes out exact.
+          </p>
         </div>
-        <div class="about-grid" data-reveal data-reveal-stagger>
-          <p>
-            PK Galla started from a simple idea: most small shops run the counter in one place and the
-            accounts in another, so the two never quite agree at the end of the day.
-          </p>
-          <p>
-            So we built one app for both. Every sale you ring up moves stock and posts straight into your
-            daily income — no double entry, no reconciling a drawer against a notebook.
-          </p>
-          <p>
-            Your data stays on your account, and the whole thing runs in a browser on whatever you already
-            have at the counter — a phone, a tablet, or an old laptop.
-          </p>
+
+        <div class="split-grid" data-reveal data-reveal-stagger>
+          <!-- Direction A: weight in, rupees out -->
+          <article class="demo-card">
+            <header class="demo-card-head">
+              <span class="demo-tag">Taul se</span>
+              <h3 class="demo-title">Ek pao daal</h3>
+            </header>
+            <div class="demo-calc">
+              <div class="demo-row">
+                <span class="demo-label">Customer maanga</span>
+                <span class="demo-value mono">250 g</span>
+              </div>
+              <div class="demo-arrow" aria-hidden="true">↓</div>
+              <div class="demo-row demo-row-result">
+                <span class="demo-label">Ticket par</span>
+                <span class="demo-value mono demo-value-strong">Rs 62.50</span>
+              </div>
+            </div>
+            <p class="demo-note">Rs 250 / kg par tola gaya</p>
+          </article>
+
+          <!-- Direction B: rupees in, weight out -->
+          <article class="demo-card">
+            <header class="demo-card-head">
+              <span class="demo-tag demo-tag-warm">Paise se</span>
+              <h3 class="demo-title">Pachaas ka daal</h3>
+            </header>
+            <div class="demo-calc">
+              <div class="demo-row">
+                <span class="demo-label">Customer maanga</span>
+                <span class="demo-value mono">Rs 50</span>
+              </div>
+              <div class="demo-arrow" aria-hidden="true">↓</div>
+              <div class="demo-row demo-row-result">
+                <span class="demo-label">Taulo</span>
+                <span class="demo-value mono demo-value-strong">200 g</span>
+              </div>
+            </div>
+            <p class="demo-note">Paisa exact rehta hai, wazan adjust hota hai</p>
+          </article>
+        </div>
+
+        <ul class="mini-facts" data-reveal data-reveal-stagger>
+          <li class="mini-fact">
+            <h3>Pao, adha, bori</h3>
+            <p>Quick keys for the weights a counter actually calls out — pao, adha kg, 3 pao, kilo, 2 kg, 5 kg.</p>
+          </li>
+          <li class="mini-fact">
+            <h3>Poore rupay mein</h3>
+            <p>Paisa coins don't circulate, so the total rounds to the rupee and the remainder is recorded honestly.</p>
+          </li>
+          <li class="mini-fact">
+            <h3>Namak ho ya ghee</h3>
+            <p>Prices are held per gram, so a cheap-per-gram item never loses paisa to rounding on the way in.</p>
+          </li>
+        </ul>
+      </section>
+
+      <!-- ───────────────────────────────────────────────────────── khata -->
+      <section class="landing-section landing-section-alt" id="khata">
+        <div class="split-grid split-grid-copy">
+          <div class="split-copy" data-reveal>
+            <p class="section-eyebrow">Khata</p>
+            <h2 class="section-title">Udhaar, bina notebook ke</h2>
+            <p class="section-lead">
+              Maal pehle jaata hai, paisa baad mein aata hai. PK Galla keeps the notebook for you —
+              who owes what, how long it has been sitting, and what happens when they walk in with
+              cash in hand.
+            </p>
+            <ul class="check-list">
+              <li>Kaun kitna deta hai, ek nazar mein</li>
+              <li>30 / 60 / 90 din ki aging — purana udhaar chhupta nahi</li>
+              <li>Credit limit cross ho to sale rok deta hai, figures ke saath</li>
+              <li>Paisa aaya to sabse purane ticket se adjust hota hai</li>
+              <li>Kis ne liya — the name of whoever physically took the cash</li>
+            </ul>
+          </div>
+
+          <!-- A khata page, as the shopkeeper reads it. -->
+          <div class="mock-panel" data-reveal aria-label="Example khata list">
+            <div class="mock-head">
+              <span class="mock-title">Kaun kitna deta hai</span>
+              <span class="mock-total mono">Rs 41,850</span>
+            </div>
+            <ul class="mock-list">
+              <li class="mock-row">
+                <span class="mock-avatar" aria-hidden="true">AR</span>
+                <span class="mock-body">
+                  <strong>Ali Raza</strong>
+                  <span class="mock-sub">0300-1234567</span>
+                </span>
+                <span class="mock-figures">
+                  <span class="mono mock-amount">Rs 5,700</span>
+                  <span class="mock-age mock-age-old">61–90 din</span>
+                </span>
+              </li>
+              <li class="mock-row">
+                <span class="mock-avatar" aria-hidden="true">BS</span>
+                <span class="mock-body">
+                  <strong>Bilal Sahib</strong>
+                  <span class="mock-sub">0321-9876543</span>
+                </span>
+                <span class="mock-figures">
+                  <span class="mono mock-amount">Rs 2,140</span>
+                  <span class="mock-age">0–30 din</span>
+                </span>
+              </li>
+              <li class="mock-row">
+                <span class="mock-avatar" aria-hidden="true">NK</span>
+                <span class="mock-body">
+                  <strong>Nadia Khan</strong>
+                  <span class="mock-sub">Limit Rs 6,000</span>
+                </span>
+                <span class="mock-figures">
+                  <span class="mono mock-amount">Rs 5,900</span>
+                  <span class="mock-age mock-age-warn">Limit ke qareeb</span>
+                </span>
+              </li>
+            </ul>
+            <p class="mock-foot">
+              Har figure sale se nikalta hai — koi stored balance nahi, so it cannot drift.
+            </p>
+          </div>
         </div>
       </section>
 
+      <!-- ───────────────────────────────────────────── stock &amp; profit -->
+      <section class="landing-section" id="profit">
+        <div class="split-grid split-grid-copy split-grid-reverse">
+          <!-- An honest profit statement, including what it does not know. -->
+          <div class="mock-panel" data-reveal aria-label="Example profit statement">
+            <div class="mock-head">
+              <span class="mock-title">Aaj kitna kamaya?</span>
+              <span class="mock-pill">Aaj</span>
+            </div>
+            <dl class="pnl">
+              <div class="pnl-row">
+                <dt>Sales (refunds ke baad)</dt>
+                <dd class="mono">Rs 48,320</dd>
+              </div>
+              <div class="pnl-row">
+                <dt>Cost of goods sold</dt>
+                <dd class="mono">− Rs 36,910</dd>
+              </div>
+              <div class="pnl-row pnl-row-sub">
+                <dt>Gross profit <span class="pnl-hint">22.1% margin</span></dt>
+                <dd class="mono">Rs 10,680</dd>
+              </div>
+              <div class="pnl-row">
+                <dt>Wastage <span class="pnl-hint">kharab hua maal</span></dt>
+                <dd class="mono">− Rs 730</dd>
+              </div>
+              <div class="pnl-row">
+                <dt>Kharcha</dt>
+                <dd class="mono">− Rs 1,250</dd>
+              </div>
+              <div class="pnl-row pnl-row-total">
+                <dt>Net profit</dt>
+                <dd class="mono">Rs 8,700</dd>
+              </div>
+            </dl>
+            <p class="mock-warn">
+              <strong>Rs 1,420</strong> ka maal bina cost ke bika — iska margin abhi maloom nahi.
+            </p>
+          </div>
+
+          <div class="split-copy" data-reveal>
+            <p class="section-eyebrow">Stock aur munafa</p>
+            <h2 class="section-title">Jo pata nahi, wo bhi batata hai</h2>
+            <p class="section-lead">
+              Most tills report an unrecorded cost as pure profit. That is how a shop ends up
+              trusting a number that was never true. PK Galla reports it as
+              <strong>unknown</strong> — separately, and out loud.
+            </p>
+            <ul class="check-list">
+              <li>Har stock movement audited, running balance ke saath</li>
+              <li>Wastage typed by cause — kharab, expire, toota, chori</li>
+              <li>Recount wastage mein nahi ginta, kyunke maal tha hi nahi</li>
+              <li>Cost weighted average se chalti hai, har delivery par</li>
+              <li>Kaam ke waqt bhi — reports, khata aur till ek hi hisaab padhte hain</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ────────────────────────────────────────────────── how it works -->
       <section class="landing-section landing-section-alt" id="how-it-works">
         <div class="section-header" data-reveal>
-          <p class="section-eyebrow">How it works</p>
-          <h2 class="section-title">Three steps to clarity</h2>
+          <p class="section-eyebrow">Shuru kaise karein</p>
+          <h2 class="section-title">Chaar qadam, bas</h2>
         </div>
-        <ol class="steps-grid" data-reveal data-reveal-stagger>
+
+        <ol class="steps-rail" data-reveal data-reveal-stagger>
           <li class="step-card">
-            <span class="step-num">1</span>
-            <h3>Add your products</h3>
-            <p>Name, price and opening stock. Give each one a barcode or SKU if you scan at the counter.</p>
+            <span class="step-num">01</span>
+            <h3>Maal daalo</h3>
+            <p>Naam, rate aur opening stock. Kilo mein bikta hai to kilo mein likho — baaki app sambhal leta hai.</p>
           </li>
           <li class="step-card">
-            <span class="step-num">2</span>
-            <h3>Sell at the till</h3>
-            <p>Search or scan onto the ticket, take cash or card, and PK Galla works out the change.</p>
+            <span class="step-num">02</span>
+            <h3>Din kholo</h3>
+            <p>Golak mein jo hai wo likho. Bina din khole sale nahi hoti, taake raat ka hisaab mile.</p>
           </li>
           <li class="step-card">
-            <span class="step-num">3</span>
-            <h3>Review your day</h3>
-            <p>Stock drops as you sell, sales post to your income, and the dashboard totals the week.</p>
+            <span class="step-num">03</span>
+            <h3>Becho</h3>
+            <p>Scan, taul ya rupay — cash lo ya khaate par daalo. Stock aur khata khud update.</p>
+          </li>
+          <li class="step-card">
+            <span class="step-num">04</span>
+            <h3>Din band karo</h3>
+            <p>Golak gino. App batata hai kitna hona chahiye tha, aur farq kitna hai.</p>
           </li>
         </ol>
       </section>
 
+      <!-- ────────────────────────────────────────────────────────── proof -->
+      <section class="landing-section" id="trust">
+        <div class="section-header" data-reveal>
+          <p class="section-eyebrow">Bharosa</p>
+          <h2 class="section-title">Hisaab wahi jo sach ho</h2>
+          <p class="section-lead">
+            No inflated claims here — just how the app is actually put together.
+          </p>
+        </div>
+
+        <ul class="feature-grid" data-reveal data-reveal-stagger>
+          <li class="feature-card">
+            <span class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6l7-3z"/></svg>
+            </span>
+            <h3>Har dukaan alag</h3>
+            <p>Every query is scoped to the shop that owns the data. Do dukaanon ka hisaab kabhi nahi milta.</p>
+          </li>
+          <li class="feature-card">
+            <span class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v5l3 2"/><circle cx="12" cy="12" r="9"/></svg>
+            </span>
+            <h3>Stock ka poora record</h3>
+            <p>Count sirf chaar raston se badalta hai, aur har baar ek row likhi jaati hai — kya hila, kyun, aur baad mein kitna bacha.</p>
+          </li>
+          <li class="feature-card">
+            <span class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M8 15h4"/></svg>
+            </span>
+            <h3>Golak milta hai</h3>
+            <p>Subah float, raat ko ginti. Expected aur actual ka farq wahin dikh jaata hai, baad mein nahi.</p>
+          </li>
+          <li class="feature-card">
+            <span class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 11a4 4 0 10-8 0 4 4 0 008 0z"/><path d="M4 20c1.5-3 4.5-4.5 8-4.5s6.5 1.5 8 4.5"/></svg>
+            </span>
+            <h3>Staff ke apne login</h3>
+            <p>Munshi aur malik ke alag rights. Catalogue kaun badal sakta hai, ye aap tay karte hain.</p>
+          </li>
+          <li class="feature-card">
+            <span class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 20h16"/></svg>
+            </span>
+            <h3>Aap ka data, aap ka</h3>
+            <p>Reports PDF mein nikal lein jab chahein. Kuch bhi app ke andar phansa nahi rehta.</p>
+          </li>
+          <li class="feature-card">
+            <span class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16v10H4z"/><path d="M8 20h8M12 16v4"/></svg>
+            </span>
+            <h3>Jo pehle se hai, usi par</h3>
+            <p>Phone, tablet ya purana laptop — browser chahiye bas. Naya hardware kharidne ki zaroorat nahi.</p>
+          </li>
+        </ul>
+      </section>
+
+      <!-- ──────────────────────────────────────────────────────── pricing -->
+      <section class="landing-section landing-section-alt" id="pricing">
+        <div class="section-header" data-reveal>
+          <p class="section-eyebrow">Kharcha</p>
+          <h2 class="section-title">Saat din muft, phir seedha hisaab</h2>
+          <p class="section-lead">
+            Pehle chala kar dekhein. Card ki zaroorat nahi, aur trial khatam hone par kuch
+            khud-ba-khud charge nahi hota.
+          </p>
+        </div>
+
+        <div class="pricing-grid" data-reveal data-reveal-stagger>
+          <article class="price-card">
+            <h3 class="price-name">Trial</h3>
+            <p class="price-figure"><span class="price-amount">7</span> <span class="price-unit">din</span></p>
+            <p class="price-note">Poora app, bina kisi rukawat ke.</p>
+            <ul class="price-list">
+              <li>Saare features khule</li>
+              <li>Card nahi chahiye</li>
+              <li>Apna asli maal daal kar dekhein</li>
+            </ul>
+            <a class="btn btn-primary btn-block" href="signup.html">Trial shuru karein</a>
+          </article>
+
+          <article class="price-card price-card-feature">
+            <span class="price-flag">Subscription</span>
+            <h3 class="price-name">Chalti dukaan</h3>
+            <p class="price-figure"><span class="price-amount">Mahana</span> <span class="price-unit">ya salana</span></p>
+            <p class="price-note">Trial ke baad, jab aap tayyar hon.</p>
+            <ul class="price-list">
+              <li>POS, khata, stock aur reports</li>
+              <li>Staff logins</li>
+              <li>Salana plan mahane se sasta</li>
+            </ul>
+            <a class="btn btn-primary btn-block" href="#contact">Rate poochhein</a>
+            <!-- Honest about the currency rather than surprising a PKR-thinking
+                 shopkeeper at checkout — Paddle cannot charge PKR. -->
+            <p class="price-fineprint">Billing USD mein hoti hai (Paddle ke zariye). Shop admin activate karta hai.</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ────────────────────────────────────────────────────── final CTA -->
+      <section class="cta-band" id="get-started">
+        <div class="cta-inner" data-reveal>
+          <h2 class="cta-title">Aaj se hisaab shuru karein.</h2>
+          <p class="cta-lead">
+            Saat din muft chala kar dekhein — apni dukaan, apna maal, apna khata.
+          </p>
+          <div class="cta-buttons">
+            <a class="btn btn-primary" href="signup.html">Trial shuru karein</a>
+            <a class="btn btn-secondary" href="#contact">Baat karein</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ──────────────────────────────────────────────────────── contact -->
       <section class="landing-section" id="contact">
         <div class="section-header" data-reveal>
-          <p class="section-eyebrow">Contact us</p>
-          <h2 class="section-title">Questions or feedback?</h2>
-          <p class="section-lead">We’d love to hear from you — whether it’s a bug, a feature idea, or something your counter needs.</p>
+          <p class="section-eyebrow">Raabta</p>
+          <h2 class="section-title">Koi sawaal ya mashwara?</h2>
+          <p class="section-lead">Bug ho, nayi feature ka khayal ho, ya counter ki koi zaroorat — likh bhejein.</p>
         </div>
         <div class="contact-grid" data-reveal data-reveal-stagger>
           <div class="contact-info">
-            <p><strong>Email</strong><br /><a href="mailto:support@cashflow.app">support@cashflow.app</a></p>
-            <p><strong>Response time</strong><br />Usually within 2 business days</p>
+            <p><strong>Email</strong><br /><a href="mailto:support@pkgalla.com">support@pkgalla.com</a></p>
+            <p><strong>Jawab</strong><br />Aam taur par 2 business din mein</p>
           </div>
-          <form class="contact-form" id="contact-form" action="mailto:support@cashflow.app" method="get">
-            <label class="input-label" for="contact-name">Name</label>
-            <input class="auth-input" type="text" id="contact-name" name="subject" placeholder="Your name" required />
+          <form class="contact-form" id="contact-form" action="mailto:support@pkgalla.com" method="get">
+            <label class="input-label" for="contact-name">Naam</label>
+            <input class="auth-input" type="text" id="contact-name" name="subject" placeholder="Aap ka naam" required />
 
-            <label class="input-label" for="contact-message">Message</label>
-            <textarea class="auth-input contact-textarea" id="contact-message" name="body" rows="4" placeholder="How can we help?" required></textarea>
+            <label class="input-label" for="contact-message">Paighaam</label>
+            <textarea class="auth-input contact-textarea" id="contact-message" name="body" rows="4" placeholder="Hum kis tarah madad karein?" required></textarea>
 
-            <button type="submit" class="btn btn-primary">Send message</button>
-            <p class="contact-form-note">Opens your email app with a pre-filled message.</p>
+            <button type="submit" class="btn btn-primary">Bhejein</button>
+            <p class="contact-form-note">Aap ki email app khul jayegi, paighaam pehle se likha hua.</p>
           </form>
         </div>
       </section>
@@ -154,7 +493,7 @@
           <a href="terms.html">Terms &amp; Conditions</a>
         </p>
         <p class="disclaimer-text">
-          © 2026 PK Galla.
+          © 2026 PK Galla. Dukaan Sambhalo, Aasani Se.
         </p>
       </footer>
     </main>

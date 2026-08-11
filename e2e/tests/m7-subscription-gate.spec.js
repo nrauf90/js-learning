@@ -72,7 +72,7 @@ test.describe('M7 — Subscription gating', () => {
 
   test('landing page stays public without login', async ({ page }) => {
     await page.goto('/index.html');
-    await expect(page.getByRole('heading', { name: /Ring up sales/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Dukaan sambhalo/i })).toBeVisible();
     await expect(page).not.toHaveURL(/login|billing/);
   });
 });

@@ -83,7 +83,16 @@ function ensureNavToggle(headerActions) {
 }
 
 /**
- * @param {{ current?: 'home' | 'pos' | 'products' | 'dashboard' | 'reports' | 'cashflow' | 'billing' | 'profile' }} [options]
+ * @param {{
+ *   current?: 'home' | 'pos' | 'products' | 'dashboard' | 'reports' | 'cashflow' | 'billing' | 'profile',
+ *   sections?: Array<{ href: string, label: string }>,
+ * }} [options]
+ *
+ * `sections` prepends in-page anchors, for the marketing pages. They are shown
+ * only to logged-out visitors: once you have an account the nav's job is to get
+ * you to the till, not back to the sales copy. Lenis handles the smooth scroll
+ * and the existing toggle handler closes the mobile drawer on click, so nothing
+ * extra is wired here.
  */
 export function initNav(options = {}) {
   const nav = document.querySelector('.site-nav');
@@ -97,8 +106,20 @@ export function initNav(options = {}) {
 
   nav.innerHTML = '';
 
+  if (!loggedIn) {
+    for (const section of options.sections || []) {
+      const a = document.createElement('a');
+      a.href = section.href;
+      a.textContent = section.label;
+      a.addEventListener('click', () => closeMobileNav(headerActions, toggle));
+      nav.appendChild(a);
+    }
+  }
+
   for (const [key, page] of Object.entries(PAGES)) {
     if (AUTH_ONLY.has(key) && !loggedIn) continue;
+    // The marketing anchors already point back to the top of this page.
+    if (key === 'home' && !loggedIn && (options.sections || []).length) continue;
 
     const a = document.createElement('a');
     a.href = page.href;

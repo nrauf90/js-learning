@@ -87,11 +87,27 @@ body {
   background-repeat: no-repeat;
 }
 
+/*
+ * --page-pad is the single source of truth for the gutter. Full-bleed sections
+ * (the hero, the landing footer, the CTA band) cancel it with a negative margin
+ * of exactly the same size, so the two can never disagree.
+ *
+ * They used to: the gutter narrowed to 1rem at 767px and 0.85rem at 480px while
+ * the negative margins stayed at a hard-coded -1.25rem, which made those
+ * sections wider than the viewport and scrolled the whole page sideways by a
+ * few pixels on a phone.
+ */
 .page {
+  --page-pad: 1.25rem;
   max-width: 960px;
   margin: 0 auto;
-  padding: 0 max(1.25rem, env(safe-area-inset-left, 0px)) 3rem
-    max(1.25rem, env(safe-area-inset-right, 0px));
+  padding: 0 max(var(--page-pad), env(safe-area-inset-left, 0px)) 3rem
+    max(var(--page-pad), env(safe-area-inset-right, 0px));
+}
+
+/* Cancels the gutter to sit edge-to-edge, whatever the gutter currently is. */
+.full-bleed {
+  margin-inline: calc(-1 * var(--page-pad));
 }
 
 /* Header */
@@ -1038,7 +1054,10 @@ body {
 }
 
 .site-nav a:hover,
-.site-nav a[aria-current='page'] {
+.site-nav a[aria-current='page'],
+/* Scroll-spy marks the section in view with aria-current="true" — "page" would
+   be wrong, since these anchors do not leave the page. */
+.site-nav a[aria-current='true'] {
   color: var(--accent);
 }
 
@@ -1351,12 +1370,47 @@ body {
   border-bottom: none;
   margin-bottom: 0;
   padding-bottom: 1rem;
+  /* Sticky rather than fixed: it keeps its place in the flow, so nothing has to
+     be padded down to compensate and the hero's top spacing stays honest. */
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding-top: 1rem;
+  /* Transparent over the hero, which carries its own gradient; the frosted
+     background only appears once .is-stuck is set (see js/home.js). */
+  background: transparent;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    backdrop-filter 0.3s ease;
+}
+
+/*
+ * Once scrolled, the header becomes a floating frosted bar rather than a
+ * full-width one. That is a deliberate choice, not a compromise: the header
+ * lives inside .page (max-width 1120px), so a full-bleed background would leave
+ * transparent strips on either side at wider viewports with content sliding
+ * visibly under them. Insetting it makes the shape intentional.
+ */
+.header-landing.is-stuck {
+  padding: 0.6rem 1rem;
+  margin-top: 0.6rem;
+  border-radius: 14px;
+  background: var(--glass-strong);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 30px color-mix(in srgb, var(--text) 10%, transparent);
+}
+
+/* The lockup is the tallest thing in the bar, so shrinking it is what actually
+   makes the stuck header compact. */
+.header-landing.is-stuck .logo-img {
+  height: 2.6rem;
 }
 
 .hero {
   position: relative;
-  margin: 0 -1.25rem 3rem;
-  padding: 2.5rem 1.25rem 3.5rem;
+  margin: 0 calc(-1 * var(--page-pad)) 3rem;
+  padding: 2.5rem var(--page-pad) 3.5rem;
   overflow: hidden;
 }
 
@@ -1549,8 +1603,8 @@ body {
 
 .landing-section-alt {
   padding: 2.5rem 1.5rem;
-  margin-left: -1.25rem;
-  margin-right: -1.25rem;
+  margin-left: calc(-1 * var(--page-pad));
+  margin-right: calc(-1 * var(--page-pad));
   background: color-mix(in srgb, var(--surface) 60%, var(--bg));
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
@@ -1691,8 +1745,8 @@ body {
 }
 
 .site-footer-landing {
-  margin: 0 -1.25rem;
-  padding: 2rem 1.25rem 0;
+  margin: 0 calc(-1 * var(--page-pad));
+  padding: 2rem var(--page-pad) 0;
 }
 
 .site-footer-links {
@@ -1960,9 +2014,9 @@ body {
 
 /* ── Mobile & tablet responsiveness ── */
 @media (max-width: 767px) {
+  /* Moves the gutter and every full-bleed section's negative margin together. */
   .page {
-    padding-left: 1rem;
-    padding-right: 1rem;
+    --page-pad: 1rem;
   }
 
   .header {
@@ -2042,10 +2096,12 @@ body {
     margin-bottom: 1rem;
   }
 
+  /* Margins are not restated here — .hero cancels --page-pad, which this
+     breakpoint has already narrowed. Restating them as a fixed -1rem is what
+     used to scroll the page sideways below 480px, where the gutter is 0.85rem
+     but the margin stayed at 1rem. */
   .hero {
-    margin-left: -1rem;
-    margin-right: -1rem;
-    padding: 1.75rem 1rem 2.5rem;
+    padding: 1.75rem var(--page-pad) 2.5rem;
   }
 
   .hero-cta {
@@ -2062,15 +2118,11 @@ body {
   }
 
   .landing-section-alt {
-    margin-left: -1rem;
-    margin-right: -1rem;
-    padding: 1.75rem 1rem;
+    padding: 1.75rem var(--page-pad);
   }
 
-  .site-footer-landing {
-    margin-left: -1rem;
-    margin-right: -1rem;
-  }
+  /* .site-footer-landing needed a margin override here only to restate the
+     same full-bleed; --page-pad now carries it. */
 
   .cashflow-toolbar,
   .reports-toolbar,
@@ -2243,8 +2295,7 @@ body {
 
 @media (max-width: 480px) {
   .page {
-    padding-left: 0.85rem;
-    padding-right: 0.85rem;
+    --page-pad: 0.85rem;
   }
 
   .logo-img {
@@ -5497,4 +5548,888 @@ body.sales-modal-open {
 
 .pos-receipt-state[data-state='pending'] {
   color: var(--danger);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Landing page — marketing components
+
+   Built on the existing tokens (--accent / --warm / --surface / --glass /
+   --ease-spring) so both themes resolve without a second palette. Anything
+   animated here is transform/opacity only, and every keyframe animation sits
+   inside a prefers-reduced-motion guard.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Visible only once focused — keyboard users get past the nav without tabbing
+   through every link on the page. */
+.skip-link {
+  position: absolute;
+  left: 0.5rem;
+  top: -3rem;
+  z-index: 100;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 0.18s ease;
+}
+
+.skip-link:focus {
+  top: 0.5rem;
+}
+
+/* Tabular figures: prices, weights and balances line up in a column. */
+.mono {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.btn-sm {
+  padding: 0.5rem 0.95rem;
+  font-size: 0.875rem;
+}
+
+.btn-block {
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+
+/* ─────────────────────────────────────────────────────────────── hero ── */
+
+/* A faint grid, masked so it fades out before it reaches the copy — otherwise
+   it competes with the headline instead of sitting behind it. */
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, var(--border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+  background-size: 56px 56px;
+  opacity: 0.35;
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 20%, transparent 75%);
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 20%, transparent 75%);
+  pointer-events: none;
+}
+
+:root[data-theme='dark'] .hero-grid {
+  opacity: 0.5;
+}
+
+.hero-title-accent {
+  background: linear-gradient(115deg, var(--accent), var(--warm));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-lead em {
+  font-style: italic;
+  color: var(--text);
+}
+
+.hero-flow-card {
+  position: relative;
+  padding: 1.5rem;
+  background: var(--glass-strong);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow: var(--shadow);
+}
+
+.flow-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+}
+
+.flow-card-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--new);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--new) 20%, transparent);
+  flex-shrink: 0;
+}
+
+.flow-card-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.flow-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.flow-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.7rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid transparent;
+}
+
+/* The connector between steps, drawn down from the icon's centre line. */
+.flow-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: calc(0.75rem + 17px);
+  top: calc(50% + 17px);
+  width: 1px;
+  height: calc(100% - 34px + 0.4rem);
+  background: linear-gradient(to bottom, var(--border), transparent);
+}
+
+.flow-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.flow-icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.flow-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.flow-body strong {
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.flow-body span {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* Each row lights in turn, so the list reads as a repeating cycle rather than
+   four static bullets. Guarded — this is decoration, not information. */
+@media (prefers-reduced-motion: no-preference) {
+  .flow-item {
+    animation: flow-pulse 6s ease-in-out infinite;
+    animation-delay: calc(var(--i) * 1.5s);
+  }
+
+  @keyframes flow-pulse {
+    0%, 70%, 100% {
+      background: transparent;
+      border-color: transparent;
+    }
+    12%, 30% {
+      background: color-mix(in srgb, var(--accent) 7%, transparent);
+      border-color: color-mix(in srgb, var(--accent) 20%, transparent);
+    }
+  }
+}
+
+/* ──────────────────────────────────────────────────── section layout ── */
+
+.split-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 860px) {
+  .split-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .split-grid-copy {
+    gap: 3rem;
+    align-items: center;
+  }
+
+  /* Copy stays first in the DOM — correct for a screen reader and correct when
+     the grid collapses on mobile — while showing second at desktop widths. */
+  .split-grid-reverse > *:first-child {
+    order: 2;
+  }
+}
+
+.split-copy .section-title {
+  margin-bottom: 0.75rem;
+}
+
+.check-list {
+  list-style: none;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.check-list li {
+  position: relative;
+  padding-left: 1.75rem;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.check-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.36em;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--new) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--new) 40%, transparent);
+}
+
+.check-list li::after {
+  content: '';
+  position: absolute;
+  left: 0.32rem;
+  top: 0.62em;
+  width: 0.32rem;
+  height: 0.16rem;
+  border-left: 2px solid var(--new);
+  border-bottom: 2px solid var(--new);
+  transform: rotate(-45deg);
+}
+
+/* ──────────────────────────────────────── weighed-goods demo cards ── */
+
+.demo-card {
+  padding: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: transform 0.3s var(--ease-spring), border-color 0.25s ease;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .demo-card:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  }
+}
+
+.demo-card-head {
+  margin-bottom: 1.25rem;
+}
+
+.demo-tag {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.demo-tag-warm {
+  color: var(--warm-dim);
+  background: color-mix(in srgb, var(--warm) 14%, transparent);
+}
+
+:root[data-theme='dark'] .demo-tag-warm {
+  color: var(--warm);
+}
+
+.demo-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.demo-calc {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.demo-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+
+.demo-row-result {
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.demo-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.demo-value {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.demo-value-strong {
+  font-size: 1.35rem;
+  color: var(--accent);
+}
+
+.demo-arrow {
+  text-align: center;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.demo-note {
+  margin: 0.9rem 0 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.mini-facts {
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 720px) {
+  .mini-facts {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.mini-fact {
+  padding: 1.1rem 1.2rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.mini-fact h3 {
+  margin: 0 0 0.4rem;
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.mini-fact p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+/* ─────────────────────────────────────────────── mock app panels ── */
+
+.mock-panel {
+  padding: 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 2px);
+  box-shadow: var(--shadow);
+}
+
+.mock-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.9rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.mock-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.mock-total {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.mock-pill {
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-2);
+}
+
+.mock-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mock-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.mock-row:last-child {
+  border-bottom: none;
+}
+
+.mock-avatar {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent-contrast);
+  background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+}
+
+.mock-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.mock-body strong {
+  font-size: 0.92rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mock-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.mock-figures {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.mock-amount {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.mock-age {
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text-muted);
+  background: var(--surface-2);
+}
+
+.mock-age-old {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+}
+
+.mock-age-warn {
+  color: var(--warm-dim);
+  background: color-mix(in srgb, var(--warm) 14%, transparent);
+}
+
+:root[data-theme='dark'] .mock-age-warn {
+  color: var(--warm);
+}
+
+.mock-foot,
+.mock-warn {
+  margin: 0.9rem 0 0;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.mock-warn {
+  color: var(--warm-dim);
+}
+
+:root[data-theme='dark'] .mock-warn {
+  color: var(--warm);
+}
+
+.pnl {
+  margin: 0;
+}
+
+.pnl-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.pnl-row:last-child {
+  border-bottom: none;
+}
+
+.pnl-row dt {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.pnl-row dd {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pnl-row-sub dt,
+.pnl-row-total dt {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.pnl-row-total {
+  margin-top: 0.3rem;
+  padding-top: 0.8rem;
+  border-top: 2px solid var(--border);
+}
+
+.pnl-row-total dd {
+  font-size: 1.15rem;
+  color: var(--new);
+}
+
+.pnl-hint {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+/* ──────────────────────────────────────────────────── steps rail ── */
+
+.steps-rail {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 720px) {
+  .steps-rail {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1000px) {
+  .steps-rail {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ──────────────────────────────────────────────────── feature grid ── */
+
+.feature-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .feature-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1000px) {
+  .feature-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.feature-card {
+  padding: 1.4rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: transform 0.3s var(--ease-spring), border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .feature-card:hover {
+    transform: translateY(-4px);
+    border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
+    box-shadow: var(--shadow);
+  }
+}
+
+.feature-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 0.9rem;
+  border-radius: 11px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 11%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.feature-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.feature-card h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1.02rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.feature-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* ────────────────────────────────────────────────────── pricing ── */
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+@media (min-width: 720px) {
+  .pricing-grid {
+    grid-template-columns: repeat(2, 1fr);
+    align-items: start;
+  }
+}
+
+.price-card {
+  position: relative;
+  padding: 1.75rem 1.5rem;
+  border-radius: calc(var(--radius) + 4px);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.price-card-feature {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  box-shadow: 0 8px 34px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.price-flag {
+  position: absolute;
+  top: -0.7rem;
+  left: 1.5rem;
+  padding: 0.22rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-contrast);
+  background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+}
+
+.price-name {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.price-figure {
+  margin: 0 0 0.4rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.price-amount {
+  font-size: 2.1rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.price-unit {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.price-note {
+  margin: 0 0 1.1rem;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.price-list {
+  list-style: none;
+  margin: 0 0 1.4rem;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.price-list li {
+  position: relative;
+  padding-left: 1.4rem;
+  font-size: 0.9rem;
+}
+
+.price-list li::before {
+  content: '';
+  position: absolute;
+  left: 0.15rem;
+  top: 0.5em;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.price-fineprint {
+  margin: 0.9rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* ────────────────────────────────────────────────────── CTA band ── */
+
+.cta-band {
+  position: relative;
+  margin: 0 calc(-1 * var(--page-pad)) 3rem;
+  padding: 3.5rem var(--page-pad);
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 60% 80% at 15% 0%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 70%),
+    radial-gradient(ellipse 50% 70% at 88% 100%, color-mix(in srgb, var(--warm) 16%, transparent), transparent 70%),
+    var(--surface-2);
+  border-block: 1px solid var(--border);
+  text-align: center;
+}
+
+.cta-inner {
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+.cta-title {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.6rem, 4.5vw, 2.4rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.cta-lead {
+  margin: 0 0 1.75rem;
+  font-size: 1.02rem;
+  color: var(--text-muted);
+}
+
+.cta-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+/* ──────────────────────────────────────────── landing responsive ── */
+
+@media (max-width: 767px) {
+  /* The header CTA duplicates the hero's primary button, which is still on
+     screen at the top; on a phone the hamburger already carries the nav. */
+  .nav-cta {
+    display: none;
+  }
+
+  .hero-flow-card {
+    padding: 1.15rem;
+  }
+
+  .cta-band {
+    padding: 2.5rem var(--page-pad);
+  }
+}
+
+@media (max-width: 480px) {
+  .mock-row {
+    gap: 0.6rem;
+  }
+
+  .mock-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.72rem;
+  }
+
+  /* Long Roman Urdu age labels would otherwise push the row wider than the
+     panel and scroll the whole page sideways. */
+  .mock-age {
+    font-size: 0.66rem;
+    padding: 0.1rem 0.4rem;
+  }
+
+  .demo-row {
+    padding: 0.65rem 0.75rem;
+  }
+
+  .price-card {
+    padding: 1.5rem 1.25rem;
+  }
 }
