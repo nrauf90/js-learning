@@ -1097,3 +1097,196 @@ body.sheet-open {
 .pay-change[hidden] {
   display: none;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   The "More" menu — everything not on the four bottom tabs, role-filtered
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.m-page {
+  padding: max(0.75rem, env(safe-area-inset-top)) 1rem 1.25rem;
+}
+
+.m-page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.m-page-title {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* ───────────────────────────────────────────────────────── user card ── */
+
+.m-usercard {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.9rem 1rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.m-avatar {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent-contrast);
+  background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+}
+
+.m-usermeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.m-usermeta strong {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.m-usermeta span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The role is the reason some sections below are present and others are not,
+   so it is stated rather than left to be inferred from the menu's shape. */
+.m-rolechip {
+  align-self: flex-start;
+  margin-top: 0.15rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem !important;
+  font-weight: 600;
+  color: var(--accent) !important;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.m-rolechip[hidden] {
+  display: none;
+}
+
+/* ────────────────────────────────────────────────────────── sections ── */
+
+.m-menu-section {
+  margin-bottom: 1.25rem;
+}
+
+.m-menu-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.m-menu-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.m-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  /* 60px: these are tapped one-handed while the other hand is busy. */
+  min-height: 60px;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.m-menu-list li:last-child .m-menu-item {
+  border-bottom: none;
+}
+
+.m-menu-item:active:not(.is-soon) {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.m-menu-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.m-menu-body strong {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.m-menu-body span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.m-menu-chev {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+/* Not-yet-built entries stay listed but are plainly inert — hiding them would
+   make the product look emptier than it is, and linking them would 404. */
+.m-menu-item.is-soon {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.m-menu-soon,
+.m-tab-soon {
+  flex-shrink: 0;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--warm-dim);
+  background: color-mix(in srgb, var(--warm) 14%, transparent);
+}
+
+:root[data-theme='dark'] .m-menu-soon,
+:root[data-theme='dark'] .m-tab-soon {
+  color: var(--warm);
+}
+
+/* On the tab bar the badge sits under the label rather than beside it — there
+   is no horizontal room in a quarter-width tab. */
+.m-tab-soon {
+  font-size: 0.55rem;
+  padding: 0 0.3rem;
+  line-height: 1.5;
+}
+
+.m-logout {
+  margin-top: 0.5rem;
+}

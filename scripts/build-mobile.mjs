@@ -31,7 +31,7 @@ const out = path.join(root, 'www');
 const FILES = [
   ['mobile/index.html', 'index.html'],
   ['mobile/login.html', 'login.html'],
-  ['mobile/home.html', 'home.html'],
+  ['mobile/more.html', 'more.html'],
   ['mobile/sell.html', 'sell.html'],
 
   ['mobile/css/mobile.css', 'css/mobile.css'],
@@ -43,7 +43,7 @@ const FILES = [
   ['mobile/js/shell.js', 'js/shell.js'],
   ['mobile/js/boot.js', 'js/boot.js'],
   ['mobile/js/login.js', 'js/login.js'],
-  ['mobile/js/home.js', 'js/home.js'],
+  ['mobile/js/more.js', 'js/more.js'],
   ['mobile/js/sell.js', 'js/sell.js'],
 
   ['js/api.js', 'js/api.js'],

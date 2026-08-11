@@ -44,7 +44,7 @@ const TABS = [
   },
   {
     id: 'more',
-    href: 'home.html',
+    href: 'more.html',
     label: 'More',
     ready: true,
     icon: '<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
@@ -71,7 +71,10 @@ function renderTabs(current) {
 
     el.innerHTML =
       `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">${tab.icon}</svg>` +
-      `<span>${tab.label}</span>`;
+      `<span>${tab.label}</span>` +
+      /* A tab that simply does not respond reads as a broken app. Saying "Soon"
+         on its face turns a dead control into a visible roadmap. */
+      (tab.ready ? '' : '<span class="m-tab-soon">Soon</span>');
     nav.appendChild(el);
   }
 

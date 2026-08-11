@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>More | PK Galla</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <meta name="theme-color" content="#f4f7fb" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#060a14" media="(prefers-color-scheme: dark)" />
+  <link rel="stylesheet" href="css/mobile.css" />
+  <script src="js/config.js"></script>
+  <script src="js/theme-boot.js"></script>
+</head>
+<body class="m-app">
+  <main class="m-page">
+    <header class="m-page-head">
+      <h1 class="m-page-title">More</h1>
+      <button type="button" class="till-status-theme" id="theme-toggle" aria-label="Change theme" aria-pressed="false">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </header>
+
+    <!-- Who is signed in, and as what. Role matters here: it decides which of
+         the sections below are listed at all. -->
+    <section class="m-usercard" id="m-usercard">
+      <span class="m-avatar" id="m-avatar" aria-hidden="true">?</span>
+      <span class="m-usermeta">
+        <strong id="m-username">Account</strong>
+        <span id="m-useremail"></span>
+        <span class="m-rolechip" id="m-role" hidden></span>
+      </span>
+    </section>
+
+    <div class="m-alert" id="more-alert" hidden role="alert"></div>
+
+    <!-- Menu sections are rendered by js/more.js so the role filter lives in
+         one place rather than being duplicated in markup. -->
+    <div id="m-menu"></div>
+
+    <button type="button" class="m-btn m-btn-secondary m-logout" id="logout">
+      <span class="m-btn-label">Log out</span>
+    </button>
+  </main>
+
+  <script type="module" src="js/more.js"></script>
+</body>
+</html>
