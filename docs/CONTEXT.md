@@ -40,6 +40,7 @@ js-learning/
 | [audits/](./audits/) | Point-in-time reviews of what is missing (POS/khata, 2026-08-11) |
 | [frontend-design-guide.md](./frontend-design-guide.md) | Landing-page design brief — palette, motion contract, and the product claims that may **not** be made |
 | [mobile-pos-design.md](./mobile-pos-design.md) | How the till should work on a phone, and what has to land before it can |
+| [parallel-agents.md](./parallel-agents.md) | Running several agents at once — worktrees, port slots, and the silent failure they prevent |
 | [../backend/README.md](../backend/README.md) | API setup |
 | [../e2e/README.md](../e2e/README.md) | Playwright QA harness |
 

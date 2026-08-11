@@ -13,6 +13,7 @@ import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { agentEnv } from './agent-env.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -40,8 +41,14 @@ const SPEC_BY_MILESTONE = {
   M35: 'm35-*.spec.js',
 };
 
-const API_URL = process.env.QA_API_URL || 'http://127.0.0.1:8000';
-const FE_URL = process.env.QA_FRONTEND_URL || 'http://127.0.0.1:3000';
+/*
+ * Ports follow this checkout's slot, so a QA run in an agent worktree starts
+ * its own servers instead of finding the main checkout's already listening and
+ * silently testing that copy of the code instead of its own.
+ */
+const PORTS = agentEnv();
+const API_URL = PORTS.apiUrl;
+const FE_URL = PORTS.feUrl;
 
 function parseMilestone(argv) {
   const raw = (argv[2] || process.env.QA_MILESTONE || '').toUpperCase();
@@ -155,13 +162,13 @@ async function main() {
 
   try {
     if (!(await isUp(`${API_URL}/api/health`))) {
-      console.log('Starting API on :8000 …');
+      console.log(`Starting API on :${PORTS.api} …`);
       // Force local billing test mode: M6 drives the admin-only checkout,
       // which otherwise calls Paddle for real. Shop fixtures are subscribed by
       // an admin grant and do not need it.
       apiChild = startProcess(
         'php',
-        ['backend/artisan', 'serve', '--port=8000', '--host=127.0.0.1'],
+        ['backend/artisan', 'serve', `--port=${PORTS.api}`, '--host=127.0.0.1'],
         ROOT,
         'api',
         { BILLING_SANDBOX: 'true' }
@@ -173,8 +180,8 @@ async function main() {
     }
 
     if (!(await isUp(FE_URL))) {
-      console.log('Starting frontend on :3000 …');
-      feChild = startProcess('npx', ['--yes', 'serve', '-l', '3000', '.'], ROOT, 'fe');
+      console.log(`Starting frontend on :${PORTS.web} …`);
+      feChild = startProcess('npx', ['--yes', 'serve', '-l', String(PORTS.web), '.'], ROOT, 'fe');
       started.push(feChild);
       await waitFor(FE_URL, 'Frontend');
     } else {

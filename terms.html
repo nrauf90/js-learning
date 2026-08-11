@@ -8,9 +8,11 @@
   <meta name="theme-color" content="#f4f7fb" media="(prefers-color-scheme: light)" />
   <meta name="theme-color" content="#060a14" media="(prefers-color-scheme: dark)" />
   <link rel="stylesheet" href="css/styles.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+  <!-- Vendored fonts — see vendor/README.md. Previously two preconnects
+       plus a stylesheet from Google Fonts; both third-party
+       hosts saw every visitor's IP, and a slow or blocked CDN delayed
+       first paint. Same-origin now, so the preconnects are moot. -->
+  <link rel="stylesheet" href="vendor/fonts/fonts.css" />
 </head>
 <body>
   <div class="page">

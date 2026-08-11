@@ -5,12 +5,12 @@
   "type": "module",
   "scripts": {
     "test": "node --test \"tests/**/*.test.js\"",
-    "start": "npx --yes serve -l 3000 .",
-    "dev:api": "cd backend/public && php -d opcache.enable_cli=1 -d opcache.memory_consumption=192 -d opcache.max_accelerated_files=20000 -d opcache.revalidate_freq=0 -S 127.0.0.1:8000 ../server.php",
+    "start": "node scripts/dev-serve.mjs web",
+    "dev:api": "node scripts/dev-serve.mjs api",
     "dev:api:plain": "php backend/artisan serve --host=127.0.0.1 --port=8000",
     "lint": "node scripts/lint-js.mjs",
     "mobile:build": "node scripts/build-mobile.mjs",
-    "mobile:serve": "npm run mobile:build && npx --yes serve -l 3100 www",
+    "mobile:serve": "npm run mobile:build && node scripts/dev-serve.mjs mobile",
     "mobile:sync": "npm run mobile:build && npx cap sync",
     "mobile:assets": "npx capacitor-assets generate --assetPath brand --splashBackgroundColor #071a3d --splashBackgroundColorDark #071a3d --iconBackgroundColor #071a3d --iconBackgroundColorDark #071a3d",
     "mobile:android": "npm run mobile:sync && npx cap open android",
@@ -30,7 +30,10 @@
     "qa:m13": "node scripts/qa-milestone.mjs M13",
     "qa:m23": "node scripts/qa-milestone.mjs M23",
     "qa:m35": "node scripts/qa-milestone.mjs M35",
-    "test:admin": "node scripts/test-admin-setup.mjs"
+    "test:admin": "node scripts/test-admin-setup.mjs",
+    "wt": "node scripts/worktree.mjs",
+    "wt:list": "node scripts/worktree.mjs list",
+    "ports": "node scripts/agent-env.mjs"
   },
   "keywords": [
     "pos",

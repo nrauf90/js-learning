@@ -10,10 +10,31 @@
  * `Connection: close`, so that cost repeats on each call instead of once.
  * The e2e helpers and QA scripts already point at 127.0.0.1.
  */
+/**
+ * Local dev runs one checkout per agent, each on its own port slot: the web
+ * server on 3000+N and the API on 8000+N (see scripts/agent-env.mjs). Deriving
+ * the API port from the page's own port keeps a worktree talking to *its* API.
+ *
+ * Without this, a page served from :3001 would still call :8000 — the main
+ * checkout's backend — and the failure is silent: requests succeed, tests pass,
+ * and the agent is testing somebody else's server.
+ *
+ * Confined to localhost and the 3000-3099 range so it can never fire in
+ * production, where the frontend is on 80/443 and this returns the default.
+ */
+function derivedLocalApi() {
+  if (typeof window === 'undefined') return null;
+  const { hostname, port } = window.location;
+  if (hostname !== 'localhost' && hostname !== '127.0.0.1') return null;
+  const n = Number(port);
+  if (!Number.isInteger(n) || n < 3000 || n > 3099) return null;
+  return `http://127.0.0.1:${8000 + (n - 3000)}`;
+}
+
 export const API_BASE_URL =
-  typeof window !== 'undefined' && window.API_BASE_URL
-    ? window.API_BASE_URL
-    : 'http://127.0.0.1:8000';
+  (typeof window !== 'undefined' && window.API_BASE_URL) ||
+  derivedLocalApi() ||
+  'http://127.0.0.1:8000';
 
 const TOKEN_KEY = 'cashflow_auth_token';
 

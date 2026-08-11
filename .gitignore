@@ -3,6 +3,12 @@ package-lock.json
 distc
 pnpm-lock.yaml
 
+# Parallel agent worktrees
+# .agent.json records THIS working copy’s port slot, so it must never be
+# committed — every checkout would then claim the same ports again.
+.worktrees/
+.agent.json
+
 # Capacitor mobile
 # www/ is assembled by scripts/build-mobile.mjs from mobile/ + js/api.js.
 # Committing it would mean every source edit shows up twice in a diff, and the
