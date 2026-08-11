@@ -36,6 +36,9 @@ js-learning/
 | [milestones/](./milestones/) | Goals + exit criteria per milestone |
 | [tasks/M1-tasks.md](./tasks/M1-tasks.md) … M35 | Checkboxes + completion logs |
 | [issues/](./issues/) | Offline QA bug reports (`BUG-xxx.md`) |
+| [features/](./features/) | What each part of the app **does today**, and where it is half-built |
+| [audits/](./audits/) | Point-in-time reviews of what is missing (POS/khata, 2026-08-11) |
+| [frontend-design-guide.md](./frontend-design-guide.md) | Landing-page design brief — palette, motion contract, and the product claims that may **not** be made |
 | [../backend/README.md](../backend/README.md) | API setup |
 | [../e2e/README.md](../e2e/README.md) | Playwright QA harness |
 
