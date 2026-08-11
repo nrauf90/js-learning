@@ -13,7 +13,7 @@ import { initTheme } from './theme.js';
 
 const USER_KEY = 'cashflow_auth_user';
 const USER_FETCHED_KEY = 'cashflow_auth_user_at';
-const HOME = 'home.html';
+const HOME = 'sell.html';
 
 const form = document.getElementById('login-form');
 const submit = document.getElementById('login-submit');
@@ -53,7 +53,7 @@ passwordToggle?.addEventListener('click', () => {
   const showing = passwordInput.type === 'text';
   passwordInput.type = showing ? 'password' : 'text';
   passwordToggle.setAttribute('aria-pressed', String(!showing));
-  passwordToggle.setAttribute('aria-label', showing ? 'Password dikhayein' : 'Password chhupayein');
+  passwordToggle.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
   passwordInput.focus();
   const end = passwordInput.value.length;
   passwordInput.setSelectionRange(end, end);
@@ -76,7 +76,7 @@ function errorText(err) {
      shopkeeper off to reset a password that was never wrong. Said in the
      product's own voice, because this is the one message a user hits when they
      are already frustrated. */
-  return 'Server se raabta nahi ho saka. Apna internet check karke dobara koshish karein.';
+  return 'Could not reach the server. Check your connection and try again.';
 }
 
 function saveSession(token, user) {
@@ -97,7 +97,7 @@ form.addEventListener('submit', async (event) => {
   const password = passwordInput.value;
 
   if (!email || !password) {
-    showAlert('Email aur password dono likhein.');
+    showAlert('Enter your email and password.');
     /* Focus the field that is actually empty, so the keyboard opens on the one
        needing input rather than making the user hunt for it. */
     (email ? passwordInput : emailInput).setAttribute('aria-invalid', 'true');

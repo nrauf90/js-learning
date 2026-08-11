@@ -22,7 +22,9 @@
     },
     "StatusBar": {
       "style": "DARK",
-      "backgroundColor": "#071a3d"
+      "backgroundColor": "#071a3d",
+      "_comment": "overlaysWebView false: by default Android draws the status bar ON TOP of the webview, which hid the till's 60px header entirely. env(safe-area-inset-top) would normally compensate, but Capacitor's safe-area CSS injection fails on this webview (visible in logcat as 'Error injecting safe area CSS'), so the inset resolves to 0 and nothing moves out of the way.",
+      "overlaysWebView": false
     },
     "Keyboard": {
       "resize": "native",

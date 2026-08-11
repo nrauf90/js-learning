@@ -11,10 +11,9 @@
 import { getAuthToken } from './api.js';
 import { currentTheme, hideNativeSplash, syncStatusBar } from './native.js';
 
-/* Where a signed-in user goes. `home.html` is a deliberate placeholder — it
-   proves the session round-trip and is the seam the mobile till and khata
-   screens get built behind. */
-const HOME = 'home.html';
+/* Where a signed-in user goes. The till is the app: everything else is looked
+   at between customers. */
+const HOME = 'sell.html';
 const LOGIN = 'login.html';
 
 /* The splash is not a loading bar — it is there so the app does not flash a

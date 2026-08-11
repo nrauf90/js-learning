@@ -29,7 +29,7 @@ function apply(theme) {
     /* Labels say what the button will DO, not what is currently showing —
        a button labelled with its current state reads as a status, not a
        control, to anyone using a screen reader. */
-    toggle.setAttribute('aria-label', theme === 'dark' ? 'Roshni wala theme' : 'Andhera theme');
+    toggle.setAttribute('aria-label', theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
   }
 
   /* The status bar is painted by the OS, not the webview, so it has to be told

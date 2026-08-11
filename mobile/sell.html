@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Sell | PK Galla</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <meta name="theme-color" content="#f4f7fb" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#060a14" media="(prefers-color-scheme: dark)" />
+  <link rel="stylesheet" href="css/mobile.css" />
+  <script src="js/config.js"></script>
+  <script src="js/theme-boot.js"></script>
+</head>
+<body class="m-app">
+  <!--
+    Layout is inverted from the desktop till: what you READ is at the top, what
+    you TAP is at the bottom, because the thumb arc on a one-handed phone is the
+    lower half of the screen. docs/mobile-pos-design.md §4.
+  -->
+  <main class="m-till">
+    <!-- Read: day status, the ticket, the total -->
+    <header class="till-status" id="till-status">
+      <span class="till-status-day" id="till-day">Checking day…</span>
+      <button type="button" class="till-status-theme" id="theme-toggle" aria-label="Change theme" aria-pressed="false">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </header>
+
+    <div class="m-alert till-alert" id="till-alert" hidden role="alert"></div>
+
+    <!-- Newest line at the BOTTOM: it is the one most likely to be wrong, so it
+         belongs where the eye and the thumb already are. -->
+    <section class="till-ticket" id="till-ticket" aria-label="Ticket" aria-live="polite">
+      <p class="till-empty" id="till-empty">Ticket is empty — pick items below.</p>
+      <ul class="till-lines" id="till-lines"></ul>
+    </section>
+
+    <!-- Act: total, then the controls, all within thumb reach -->
+    <div class="till-foot">
+      <div class="till-total" id="till-total">
+        <span class="till-count" id="till-count">0 items</span>
+        <span class="till-amount mono" id="till-amount">Rs 0</span>
+      </div>
+
+      <div class="till-picker">
+        <ul class="till-frequent" id="till-frequent" aria-label="Frequently sold"></ul>
+
+        <div class="till-search">
+          <svg class="till-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <label class="sr-only" for="till-q">Search products</label>
+          <input class="till-search-input" id="till-q" type="search" placeholder="Search…" autocomplete="off" enterkeyhint="search" />
+          <button type="button" class="till-search-clear" id="till-q-clear" aria-label="Clear search" hidden>&times;</button>
+        </div>
+
+        <ul class="till-results" id="till-results" hidden aria-label="Search results"></ul>
+      </div>
+
+      <div class="till-actions">
+        <button type="button" class="m-btn m-btn-primary till-pay" id="till-pay" disabled>
+          <span class="m-btn-label">Take payment</span>
+        </button>
+        <button type="button" class="m-btn m-btn-secondary till-clear" id="till-clear" disabled>
+          Clear ticket
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ─────────────────────────────────────────────── day gate (blocking) -->
+  <!-- Hard, not advisory: a sale rung into a day nobody opened cannot be
+       reconciled against a drawer count. Same rule as the desktop till. -->
+  <div class="m-sheet" id="day-gate" hidden role="dialog" aria-modal="true" aria-labelledby="day-gate-title">
+    <div class="m-sheet-card">
+      <h2 class="m-sheet-title" id="day-gate-title">Open day</h2>
+      <p class="m-sheet-note" id="day-gate-note">How much cash is in the drawer? No sale can be rung up before the day is opened.</p>
+
+      <div class="m-field">
+        <label class="m-label" for="day-float">Opening float (Rs)</label>
+        <input class="m-input" id="day-float" type="number" inputmode="decimal" min="0" step="1" value="0" enterkeyhint="done" />
+      </div>
+
+      <button type="button" class="m-btn m-btn-primary" id="day-open">
+        <span class="m-btn-label">Open day</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────────────────────── weigh / amount pad -->
+  <!--
+    One number, both readings, no mode. The desktop pad has "by weight" and "by
+    amount" tabs, and on a touch screen that tab is a mode error waiting to
+    happen: type 50 meaning rupees while it is in grams and 50 g of daal goes on
+    the ticket with nothing looking wrong. docs/mobile-pos-design.md §6.
+  -->
+  <div class="m-sheet" id="pad" hidden role="dialog" aria-modal="true" aria-labelledby="pad-title">
+    <div class="m-sheet-card pad-card">
+      <div class="pad-head">
+        <h2 class="m-sheet-title" id="pad-title">—</h2>
+        <button type="button" class="pad-close" id="pad-close" aria-label="Close">&times;</button>
+      </div>
+      <p class="m-sheet-note" id="pad-rate">—</p>
+
+      <output class="pad-entry mono" id="pad-entry" aria-live="off">0</output>
+
+      <div class="pad-readings" role="group" aria-label="What this means">
+        <button type="button" class="pad-reading" id="pad-as-qty">
+          <span class="pad-reading-from mono" id="pad-qty-from">—</span>
+          <span class="pad-reading-eq" aria-hidden="true">=</span>
+          <span class="pad-reading-to mono" id="pad-qty-to">—</span>
+        </button>
+        <button type="button" class="pad-reading" id="pad-as-amount">
+          <span class="pad-reading-from mono" id="pad-amt-from">—</span>
+          <span class="pad-reading-eq" aria-hidden="true">=</span>
+          <span class="pad-reading-to mono" id="pad-amt-to">—</span>
+        </button>
+      </div>
+
+      <ul class="pad-chips" id="pad-chips" aria-label="Common weights"></ul>
+
+      <div class="pad-keys" id="pad-keys">
+        <button type="button" data-k="7">7</button>
+        <button type="button" data-k="8">8</button>
+        <button type="button" data-k="9">9</button>
+        <button type="button" data-k="4">4</button>
+        <button type="button" data-k="5">5</button>
+        <button type="button" data-k="6">6</button>
+        <button type="button" data-k="1">1</button>
+        <button type="button" data-k="2">2</button>
+        <button type="button" data-k="3">3</button>
+        <button type="button" data-k=".">.</button>
+        <button type="button" data-k="0">0</button>
+        <button type="button" data-k="del" aria-label="Delete">⌫</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ──────────────────────────────────────────────────────── payment -->
+  <div class="m-sheet" id="pay" hidden role="dialog" aria-modal="true" aria-labelledby="pay-title">
+    <div class="m-sheet-card">
+      <div class="pad-head">
+        <h2 class="m-sheet-title" id="pay-title">Take payment</h2>
+        <button type="button" class="pad-close" id="pay-close" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="pay-total">
+        <span>Total</span>
+        <strong class="mono" id="pay-total">Rs 0</strong>
+      </div>
+
+      <div class="m-field">
+        <label class="m-label" for="pay-method">Method</label>
+        <select class="m-input" id="pay-method">
+          <option value="cash">Cash</option>
+          <option value="card">Card</option>
+          <option value="easypaisa">EasyPaisa</option>
+          <option value="jazzcash">JazzCash</option>
+          <option value="bank_transfer">Bank transfer</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="m-field" id="pay-cash-field">
+        <label class="m-label" for="pay-tendered">Amount received (Rs)</label>
+        <input class="m-input" id="pay-tendered" type="number" inputmode="decimal" min="0" step="1" placeholder="Leave blank for exact" enterkeyhint="done" />
+        <p class="pay-change" id="pay-change" hidden></p>
+      </div>
+
+      <div class="m-field" id="pay-ref-field" hidden>
+        <label class="m-label" for="pay-ref">Reference</label>
+        <input class="m-input" id="pay-ref" type="text" autocomplete="off" placeholder="Transaction id" />
+      </div>
+
+      <div class="m-alert" id="pay-alert" hidden role="alert"></div>
+
+      <button type="button" class="m-btn m-btn-primary" id="pay-confirm">
+        <span class="m-btn-label">Complete sale</span>
+      </button>
+    </div>
+  </div>
+
+  <script type="module" src="js/sell.js"></script>
+</body>
+</html>

@@ -32,6 +32,7 @@ const FILES = [
   ['mobile/index.html', 'index.html'],
   ['mobile/login.html', 'login.html'],
   ['mobile/home.html', 'home.html'],
+  ['mobile/sell.html', 'sell.html'],
 
   ['mobile/css/mobile.css', 'css/mobile.css'],
 
@@ -39,11 +40,15 @@ const FILES = [
   ['mobile/js/theme-boot.js', 'js/theme-boot.js'],
   ['mobile/js/native.js', 'js/native.js'],
   ['mobile/js/theme.js', 'js/theme.js'],
+  ['mobile/js/shell.js', 'js/shell.js'],
   ['mobile/js/boot.js', 'js/boot.js'],
   ['mobile/js/login.js', 'js/login.js'],
   ['mobile/js/home.js', 'js/home.js'],
+  ['mobile/js/sell.js', 'js/sell.js'],
 
   ['js/api.js', 'js/api.js'],
+  ['js/units.js', 'js/units.js'],
+  ['js/cart.js', 'js/cart.js'],
 
   ['mobile/assets/logo.png', 'assets/logo.png'],
   ['mobile/assets/favicon.svg', 'assets/favicon.svg'],
