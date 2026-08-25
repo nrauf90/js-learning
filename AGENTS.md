@@ -110,6 +110,8 @@ npm run qa:milestone -- M11  # Run E2E tests through milestone M11
 |------|------|------|-------------|---------|
 | Landing | `index.html` | No | No | Hero, about, contact |
 | Login | `login.html` | No | No | Email/password + Google OAuth |
+| Forgot password | `forgot-password.html` | No | No | Ask for a reset link |
+| Reset password | `reset-password.html` | No | No | Set a new password from the emailed link |
 | Signup | `signup.html` | No | No | Create account |
 | Sell (till) | `pos.html` | Yes | Yes (trial OK) | Scan/search, ticket, payment, receipt |
 | Products | `products.html` | Yes | Yes (trial OK) | Catalog, pricing, stock, categories |
@@ -132,6 +134,9 @@ npm run qa:milestone -- M11  # Run E2E tests through milestone M11
 | `number-format.js` | `formatCurrency`, `formatNumber`, etc. | Formatting utilities |
 | `api.js` | `API_BASE_URL`, `apiFetch`, `apiGet`, etc. | Laravel API client |
 | `auth.js` | (none, DOM) | Login/signup/logout forms |
+| `safe-redirect.js` | `safeNext`, `DEFAULT_LANDING` | Allowlist for `?next=` — closes an open redirect |
+| `password-reset.js` | (none, DOM) | Forgot-password and reset-password forms |
+| `attachments.js` | `uploadAll`, `galleryHTML`, `hydrateGallery`, … | Receipts and payment screenshots (private, so thumbnails are blob-fetched with the token) |
 | `nav.js` | `initNav`, `updateAuthState` | Navigation bar logic |
 | `shell.js` | (none, DOM) | Sidebar app shell (logged-in pages) |
 | `dashboard.js` | (none, DOM) | Dashboard Chart.js charts |
@@ -167,6 +172,13 @@ php artisan serve   # http://localhost:8000
 | POST | `/api/register` | No | Create account → `{ user, token }` |
 | POST | `/api/login` | No | Login → `{ user, token }` |
 | POST | `/api/logout` | Bearer | Revoke token |
+| POST | `/api/password/forgot` | No | Mail a reset link (answer never reveals whether the address exists) |
+| POST | `/api/password/reset` | No | Consume the token, set the password, revoke every session |
+| POST | `/api/purchases/{purchase}/attachments` | Bearer | Photo of the wholesaler bill (multipart) |
+| POST | `/api/purchase-payments/{purchasePayment}/attachments` | Bearer | Screenshot for a supplier instalment |
+| POST | `/api/sale-payments/{salePayment}/attachments` | Bearer | Screenshot for a khata or sale payment |
+| GET | `/api/attachments/{attachment}` | Bearer | Stream one back (private disk, re-authorised) |
+| DELETE | `/api/attachments/{attachment}` | Bearer | Remove one, file and row |
 | GET | `/api/user` | Bearer | Get current user |
 | PUT | `/api/user/profile` | Bearer | Update name |
 | PUT | `/api/user/password` | Bearer | Change password |

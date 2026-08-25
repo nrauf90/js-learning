@@ -44,6 +44,14 @@ the phone does not log the till out.
 creates an account if neither matches (with a random password, so the account can
 only be reached through Google until the owner sets one).
 
+The email match is only honoured when Google's **`email_verified` claim** says
+the address is verified. Without that check, matching on email alone is account
+takeover with no password: register a Google account claiming a shopkeeper's
+address and the callback would graft that `google_id` onto their row and mint a
+token for it. The same check gates *creating* an account, so an unverified
+address cannot claim one the real owner would later need. Either way the callback
+redirects to `login.html?error=google_email_unverified` and touches nothing.
+
 The callback then does the important part: it **never puts the bearer token in the
 URL**. A token in a redirect ends up in browser history, `Referer` headers and
 server access logs. Instead it mints a random 40-character code, caches
@@ -54,6 +62,42 @@ swaps it for the real token. `Cache::pull` makes the code single-use.
 
 A failure at the Socialite step redirects to `login.html?error=google_auth_failed`
 rather than showing a stack trace.
+
+### Forgotten passwords
+
+`POST /api/password/forgot` takes an email and sends Laravel's standard reset
+notification. The response is **the same whether or not the address belongs to an
+account** — including when the broker's own 60-second per-address throttle fires,
+because "you already asked for this recently" confirms the address exists just as
+loudly as a plain success. Anything else turns the endpoint into an
+account-enumeration oracle.
+
+The link points at the frontend, not at Laravel: the API host serves JSON and has
+no reset form on it. `AppServiceProvider::configurePasswordResetLinks()` rewrites
+it to `{FRONTEND_URL}/reset-password.html#token=…&email=…`.
+
+The token rides in the **fragment**, which is never sent to a server — so it stays
+out of the frontend host's access logs, out of `Referer` headers, and out of any
+proxy in between. It also survives static hosts that rewrite `/page.html` to
+`/page`; that redirect drops the query string, which would strip the token off
+every link the app ever mailed. `js/password-reset.js` reads the fragment, falls
+back to a query string for links mailed under the older format, and clears it
+from the address bar with `history.replaceState` either way.
+
+`POST /api/password/reset` consumes the token and sets the password. It **revokes
+every Sanctum token on the account** — a reset is what someone does when they
+think the old password is loose, so leaving the till logged in on the device that
+leaked it would defeat the exercise. A bad token, an expired one and a mismatched
+address all produce one identical message, so the endpoint cannot be used to
+probe which addresses have a live reset outstanding.
+
+Both routes are throttled harder than login: 5/min in production (60 in
+local/testing), because `/password/forgot` sends mail on behalf of an address the
+caller does not have to own.
+
+Screens: `forgot-password.html` (reachable from a link under the login button)
+and `reset-password.html`. Opening the reset page without a token disables the
+submit button and says so, rather than letting someone type a password and fail.
 
 ### Profile
 
@@ -109,15 +153,17 @@ each call because the dev server sends `Connection: close`.
 
 | Layer | File |
 |---|---|
-| Pages | `login.html`, `signup.html`, `profile.html` |
-| Controllers | `js/auth.js`, `js/profile.js` |
+| Pages | `login.html`, `signup.html`, `profile.html`, `forgot-password.html`, `reset-password.html` |
+| Controllers | `js/auth.js`, `js/profile.js`, `js/password-reset.js` |
+| Redirect allowlist | `js/safe-redirect.js` |
 | API client | `js/api.js` |
 | Shell (user card, logout) | `js/shell.js`; public-page nav in `js/nav.js` |
-| API | `backend/app/Http/Controllers/Api/AuthController.php`, `GoogleAuthController.php` |
+| API | `backend/app/Http/Controllers/Api/AuthController.php`, `GoogleAuthController.php`, `PasswordResetController.php` |
+| Reset link format | `backend/app/Providers/AppServiceProvider.php` |
 | Model | `backend/app/Models/User.php` |
 | Migrations | `0001_01_01_000000_create_users_table.php`, `2026_07_30_124107_add_google_fields_to_users_table.php`, `2026_07_30_230000_add_is_admin_to_users_table.php`, `2026_08_06_100000_add_paddle_customer_to_users_table.php`, `2026_08_07_100001_add_roles_to_users_table.php` |
-| Tests | `backend/tests/Feature/AuthTest.php`, `GoogleAuthTest.php`, `ProfileTest.php` |
-| E2E | `e2e/tests/m2-auth.spec.js` |
+| Tests | `backend/tests/Feature/AuthTest.php`, `GoogleAuthTest.php`, `ProfileTest.php`, `PasswordResetTest.php`; `tests/safe-redirect.test.js` |
+| E2E | `e2e/tests/m2-auth.spec.js`, `e2e/tests/m36-password-reset.spec.js` |
 
 ## API endpoints
 
@@ -125,6 +171,8 @@ each call because the dev server sends `Connection: close`.
 |---|---|---|---|
 | POST | `/api/register` | no | Create an account → `{ user, token }` |
 | POST | `/api/login` | no | → `{ user, token }` |
+| POST | `/api/password/forgot` | no | Mail a reset link; the answer never says whether the address exists |
+| POST | `/api/password/reset` | no | Consume the token, set the password, revoke every session |
 | POST | `/api/auth/google/exchange` | no | Swap a one-time code for a token |
 | GET | `/api/auth/google/redirect` | no | Start the Google flow |
 | GET | `/api/auth/google/callback` | no | Google returns here; redirects to the frontend with a code |
@@ -148,10 +196,13 @@ each call because the dev server sends `Connection: close`.
 
 ## Edge cases & known limits
 
-- **No password reset.** `password_reset_tokens` exists (Laravel's default table)
-  but there is no forgot-password endpoint or screen. A locked-out shop owner has
-  no self-service route back in; a locked-out staff member can be reset by their
-  shop admin.
+- **Password reset needs working mail.** The flow is complete (see above), but
+  `MAIL_MAILER` defaults to `log`, so on a fresh checkout the link goes to
+  `storage/logs/laravel.log` rather than an inbox. A deployment has to configure a
+  real mailer or the reset is a dead end.
+- **The mobile app has no forgot-password screen.** `mobile/login.html` is the
+  till's login; a locked-out cashier resets from the web app, or their shop admin
+  resets them from the staff screen.
 - **No email verification.** `email_verified_at` exists and is only set by the
   admin seeder.
 - **Email cannot be changed** by the account holder — `PUT /api/user/profile`
@@ -166,6 +217,9 @@ each call because the dev server sends `Connection: close`.
 - **Sign-up does not create a shop.** A self-registered account is a `shop_admin`
   with `shop_id` null until they save shop details; several staff endpoints 409
   until they do.
-- The `next` parameter is taken from the query string and used directly as
-  `window.location.href`. It is only ever produced by the app's own redirects, but
-  it is not validated.
+- The `next` parameter is filtered through `safeNext()` (`js/safe-redirect.js`)
+  before it reaches `window.location.href`. It is an allowlist by shape — a bare
+  `*.html` in this directory, optionally with a query — refusing schemes,
+  protocol-relative `//host`, backslash variants and `..`. It used to be used
+  unvalidated, which made `login.html?next=https://evil.example` an open redirect
+  straight off the password field. See `tests/safe-redirect.test.js`.

@@ -33,6 +33,13 @@ upload endpoint is the one place in this app where a caller hands over bytes tha
 later get served back, so the checks belong in exactly one place where they can be
 reviewed as a unit.
 
+Those checks now live one level up, in the abstract `ImageStore`, and are shared
+with `ReceiptImageStore` (the bills and payment screenshots on the Stock In
+screen — see [purchases-stock-in.md](./purchases-stock-in.md)). Subclasses choose
+only *where* a file lands and how large it may be; what counts as an acceptable
+file is not theirs to decide. `CatalogImageStore` is 2 MB on the `public` disk;
+`ReceiptImageStore` is 5 MB on a private one.
+
 Files land on the `public` disk under `catalog/products/` and
 `catalog/categories/`. The **relative path** is stored, not a full URL, so the app
 can move between disks (local dev, S3) without rewriting every row;
@@ -106,7 +113,7 @@ trail records that `image_path` changed, though not what the old picture was.
 | Catalogue UI | `products.html` (`#product-image`, `#category-image` and their previews); `js/products.js` — `stageFile()`, `uploadImage()`, `clearStaged()` |
 | Till rail | `js/pos.js` — `categoryThumbHTML()` |
 | API | `ProductController::uploadImage()` / `destroyImage()`, `ProductCategoryController::uploadImage()` / `destroyImage()` |
-| Service | `backend/app/Services/CatalogImageStore.php` |
+| Service | `backend/app/Services/CatalogImageStore.php` (checks in `ImageStore.php`) |
 | Migration | `2026_08_07_100002_add_image_path_to_products_and_categories.php` |
 | Tests | `backend/tests/Feature/CatalogImageTest.php` |
 | Demo data | `backend/database/seeders/GroceryCatalogSeeder.php` copies bundled images in |

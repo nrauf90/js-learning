@@ -147,18 +147,72 @@ The payment history is computed with the running balance walked forward in the
 order the money actually moved, then **reversed** for display. Computing it down
 a reversed list would print the wrong figure against every row but the last.
 
+### Receipts and payment screenshots
+
+The paperwork behind the money. Two things carry it: a **delivery** carries the
+wholesaler's bill, photographed at the back door, and each **instalment** carries
+the JazzCash/EasyPaisa/bank screenshot for the transfer that paid it. This is what
+answers a supplier three weeks later who says an instalment never arrived — before
+it existed the answer was whether anyone still had the paper.
+
+Attachments are **polymorphic** (`attachments` table, `attachable_type` /
+`attachable_id`) rather than a `receipt_path` column on each table. A long bill is
+routinely photographed in two or three pieces, which a one-to-one column could
+never hold, and sale payments and khata settlements are the same problem wearing
+a different hat.
+
+**They are private, and that is the whole design.** Product pictures live on the
+`public` disk because a shelf photo is decoration; one of these carries an account
+title, a phone number, a transaction id and an amount. They go to the private
+`receipts` disk (`storage/app/receipts`, no public URL, no symlink) and are served
+by `AttachmentController::show()`, which re-derives the parent purchase and
+re-runs its authorisation before a byte leaves the disk. The response carries
+`X-Content-Type-Options: nosniff` and `Cache-Control: private` — a shared cache
+must never hold a document that took an authorisation check to reach.
+
+That privacy has a visible consequence in the browser: `<img src="/api/attachments/1">`
+sends no bearer token and gets a 401, so every thumbnail is **fetched as a blob**
+with the token attached and shown through an object URL. `js/attachments.js` is
+that dance — it caches object URLs by attachment id (the invoice re-renders on
+every payment and every delete) and revokes them on `pagehide`, because an object
+URL pins its blob in memory until it is released.
+
+The checks on the way in are `ImageStore`, shared with the catalogue: `image` +
+`mimes` sniff the bytes, then `getimagesize()` parses the header properly, and the
+stored filename is built from the row id and the *decoded* image type — never from
+the upload's own name. A PHP payload wearing a JPEG header does not get through,
+an SVG is refused outright (it is a script container), and an upload called
+`../../shell.php` can neither escape the directory nor land with an executable
+extension. The ceiling is 5 MB, against the catalogue's 2 MB: this is a full-page
+screenshot that has to stay legible enough to read a transaction id off, and it is
+fetched one at a time rather than dozens at once by a till.
+
+Twelve attachments per record (`AttachmentController::MAX_PER_RECORD`). High
+enough that no honest use hits it, low enough that the invoice screen is not a
+photo album on a disk with no quota behind it.
+
+On screen: the delivery form and the payment form both **stage** files rather than
+uploading them, because an attachment needs an id and neither record has one until
+the API has written it. The record is created first and the files follow, and a
+failed upload does not fail the save — the delivery or the payment is the thing
+that matters, and the receipt can be added afterwards from the invoice's own "Add
+photo". The payment history gains a **Proof** column showing the screenshot filed
+against each row.
+
 ## Screens / files
 
 | Layer | File |
 |---|---|
 | Page | `purchases.html` (sidebar label **Stock In**) |
 | Controller | `js/purchases.js` |
-| API | `backend/app/Http/Controllers/Api/PurchaseController.php` |
-| Service | `backend/app/Services/Pos/PurchaseService.php` |
-| Models | `Purchase`, `PurchaseItem`, `PurchasePayment`, `Supplier` |
+| Attachments (shared) | `js/attachments.js`, `css/styles.css` (`.attachment-*`) |
+| API | `backend/app/Http/Controllers/Api/PurchaseController.php`, `AttachmentController.php` |
+| Service | `backend/app/Services/Pos/PurchaseService.php`, `backend/app/Services/ReceiptImageStore.php` (checks in `ImageStore.php`) |
+| Models | `Purchase`, `PurchaseItem`, `PurchasePayment`, `Supplier`, `Attachment` |
 | Policy | `backend/app/Policies/PurchasePolicy.php` |
-| Migrations | `2026_08_08_100000_create_purchases_tables.php`, `2026_08_08_100006_create_purchase_payments_table.php` |
-| Tests | `backend/tests/Feature/PurchaseTest.php`, `PurchasePaymentTest.php` |
+| Migrations | `2026_08_08_100000_create_purchases_tables.php`, `2026_08_08_100006_create_purchase_payments_table.php`, `2026_08_09_100000_create_attachments_table.php` |
+| Tests | `backend/tests/Feature/PurchaseTest.php`, `PurchasePaymentTest.php`, `PurchaseAttachmentTest.php` |
+| E2E | `e2e/tests/m36-purchase-receipts.spec.js` |
 
 ## API endpoints
 
@@ -172,6 +226,10 @@ a reversed list would print the wrong figure against every row but the last.
 | POST | `/api/purchases` | Book a delivery in |
 | GET | `/api/purchases/{purchase}` | One invoice with lines, supplier and payments |
 | POST | `/api/purchases/{purchase}/payments` | Pay something off it |
+| POST | `/api/purchases/{purchase}/attachments` | Attach a photo of the bill (multipart `image`, optional `caption`) |
+| POST | `/api/purchase-payments/{purchasePayment}/attachments` | Attach the transfer screenshot to one instalment |
+| GET | `/api/attachments/{attachment}` | Stream one attachment's bytes, authorisation re-checked |
+| DELETE | `/api/attachments/{attachment}` | Remove one, file and row |
 
 `POST /api/purchases` body: `supplier_id`, `invoice_number`, `purchase_date`,
 `discount_amount`, `amount_paid`, `deposit_method`, `paid_by_name`, `note`,
@@ -199,6 +257,13 @@ hours of every Pakistani morning.
 - Filing a delivery under another shop's supplier is refused by an explicit
   ownership check, not just `exists:suppliers,id`, which would leak that
   wholesaler's name back through the purchase list.
+- Attachments authorise the **same pair** as paying an invoice does: `view` on the
+  parent purchase and `create` on `Purchase`. Filing and deleting the paperwork is
+  part of the same job as receiving the stock, so a till-only clerk can do
+  neither. Reading is addressed by attachment id because an `<img>` can only carry
+  a URL, so `show()` re-derives the parent and re-runs `view` before serving;
+  an attachable type it does not recognise is refused rather than served, so
+  adding one cannot become a silent leak.
 
 ## Edge cases & known limits
 
@@ -223,3 +288,17 @@ hours of every Pakistani morning.
 - The purchase-payment method list is `Sale::SETTLEMENT_METHODS`, so both sides of
   the shop's book name money the same way; `credit` is absent for the same reason
   it is absent there.
+- **Attachments are images only.** JPG, PNG and WebP — the formats
+  `getimagesize()` can positively identify. A supplier who mails a PDF invoice has
+  to screenshot it. Accepting PDFs would need a separate validation path, since
+  the image-header check that makes this safe does not apply to them.
+- **Deleting an attachment is permanent** and is not written to the activity log,
+  so there is no record that a receipt was removed or by whom.
+- Sale payments and khata settlements carry these too, through
+  `POST /api/sale-payments/{salePayment}/attachments` — see
+  [khata-udhaar.md](./khata-udhaar.md#proof-of-payment). That endpoint is gated on
+  `settle` rather than the catalogue permission, because collecting udhaar is
+  till work and receiving stock is not.
+- **Nothing sweeps orphaned files.** If the row insert fails after the file
+  landed, the upload path deletes it — but a file whose parent purchase is deleted
+  by hand in the database would be left behind.

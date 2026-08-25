@@ -132,6 +132,49 @@ One `paid_at` stamp is taken for the whole lump sum rather than per allocation �
 a loop that straddled a second boundary would split one handful of notes into two
 payments on the customer's page.
 
+### Proof of payment
+
+The customer transfers on JazzCash and shows the screenshot at the counter.
+Three weeks later they say they paid and the notebook says otherwise; the picture
+is what settles it. It is attached when the payment is recorded, or added
+afterwards from the payment's own row.
+
+The awkward part is that **there is no single row to hang it on**. A lump sum is
+spread across several tickets, so one handful of notes writes several
+`sale_payments` rows. So:
+
+- `POST /api/customers/{customer}/payments` now answers with a `payment_id` on
+  every allocation, plus a top-level `payment_id` naming the **first** of them.
+  That first row is the anchor the picture is filed against — one upload, one
+  file, however many tickets the money cleared.
+- `CustomerController::paymentHistory()` gathers attachments back across **every**
+  row in the group when the ledger is read. It already groups allocations into one
+  displayed payment (keyed on timestamp, method, recorder, receiver, reference and
+  note); reading attachments off the representative row alone would show or lose
+  the picture depending on which allocation happened to be first.
+
+The upload endpoint is `POST /api/sale-payments/{salePayment}/attachments`, and it
+covers the single-sale instalment on the sale detail screen too — both write the
+same table.
+
+**Authorised differently from the purchase receipts**, and the difference is the
+point. Booking stock in is catalogue work, so its paperwork needs the catalogue
+permission. Collecting udhaar is till work — the customer hands the notes to
+whoever is behind the counter — so this asks only for `settle` on the parent sale,
+exactly what recording the payment itself asks for. A till-only cashier who may
+take the money can file and remove the proof of it.
+
+Everything else about storage is shared with the Stock In receipts: the private
+`receipts` disk, the `ImageStore` checks on the way in, and blob-fetched
+thumbnails in the browser because `<img src>` carries no bearer token. See
+[purchases-stock-in.md](./purchases-stock-in.md#receipts-and-payment-screenshots).
+
+On screen the thumbnail sits **inside the "Received by" cell** rather than in a
+column of its own: this dialog is capped at 520px by `.pos-modal-card`, and a
+fifth column pushed the proof off the edge into a horizontal scroll nobody would
+find. It reads better there anyway — who took the money, how, and the picture of
+it, in one place.
+
 ### `received_by_name` is not `recorded_by`
 
 `sale_payments` carries both:
@@ -181,13 +224,15 @@ entries, so the history and the statement can never quote different balances.
 |---|---|
 | Page | `customers.html` (sidebar label **Khata**) |
 | Controller | `js/customers.js` |
+| Attachments (shared) | `js/attachments.js`, `backend/app/Http/Controllers/Api/AttachmentController.php`, `backend/app/Services/ReceiptImageStore.php` |
 | Till dialog | `js/pos.js` — `openUdhaar()`, `submitUdhaar()`, `#pos-udhaar` |
 | API | `backend/app/Http/Controllers/Api/CustomerController.php`, `SaleController::storePayment()` |
 | Services | `backend/app/Services/Pos/SalePaymentService.php`, `SaleService::resolveCustomer()` / `assertWithinCreditLimit()` |
-| Models | `Customer`, `Sale`, `SalePayment` |
+| Models | `Customer`, `Sale`, `SalePayment`, `Attachment` |
 | Policy | `backend/app/Policies/CustomerPolicy.php` |
 | Migrations | `2026_08_08_100002_create_customers_table.php`, `2026_08_07_100004_create_sale_payments_table.php`, `2026_08_08_100005_add_received_by_name_to_sale_payments_table.php` |
-| Tests | `backend/tests/Feature/CustomerKhataTest.php` |
+| Tests | `backend/tests/Feature/CustomerKhataTest.php`, `KhataAttachmentTest.php` |
+| E2E | `e2e/tests/m36-khata-receipts.spec.js` |
 
 The screen has two views: **Owes money** (default — the question the page exists
 to answer) and **Everyone** (the address book behind it). Both are paginated
@@ -207,6 +252,9 @@ form.
 | GET | `/api/customers/{customer}/ledger` | Statement + payment history + customer facts |
 | POST | `/api/customers/{customer}/payments` | Lump sum, allocated oldest-first |
 | POST | `/api/sales/{sale}/payments` | Instalment against one specific sale |
+| POST | `/api/sale-payments/{salePayment}/attachments` | Attach the transfer screenshot (multipart `image`, optional `caption`) |
+| GET | `/api/attachments/{attachment}` | Stream one, authorisation re-checked |
+| DELETE | `/api/attachments/{attachment}` | Remove one, file and row |
 
 Payment body: `amount` (required), `method` (required, from
 `Sale::SETTLEMENT_METHODS` — `credit` is absent on purpose, settling a debt with
@@ -214,6 +262,10 @@ more credit moves no money), `reference`, `note`, `received_by_name`.
 
 The response names which tickets the money landed on, so the shopkeeper can read
 back "that clears the 14th and half of the 20th".
+
+It also names the `sale_payments` row each allocation wrote, and the first of
+them as `payment_id` — the anchor a screenshot is filed against. See
+[Proof of payment](#proof-of-payment).
 
 ## Permissions & gating
 
@@ -225,6 +277,10 @@ back "that clears the 14th and half of the 20th".
 - `create` returns true for everyone — udhaar is collected by whoever is behind
   the counter when the customer walks in, not only by the owner. Same for
   `settle`, scoped to the shop.
+- Attaching or removing a payment screenshot asks for `settle` on the parent
+  sale — the same permission as taking the money. Deliberately *not* the
+  catalogue permission the Stock In receipts use: a till-only cashier who may
+  collect udhaar must be able to file the proof of it.
 - There is **no delete**. A khata page can be marked inactive; it cannot be
   removed through the API.
 
