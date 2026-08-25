@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Attachment;
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
 use App\Models\PurchasePayment;
@@ -171,7 +172,9 @@ class PurchaseController extends Controller
         $this->authorize('view', $purchase);
 
         return response()->json([
-            'purchase' => $this->payload($purchase->load('items', 'supplier', 'payments')),
+            'purchase' => $this->payload(
+                $purchase->load('items', 'supplier', 'attachments', 'payments', 'payments.attachments')
+            ),
         ]);
     }
 
@@ -245,6 +248,10 @@ class PurchaseController extends Controller
         // The lock, the over-payment check and the recomputed total all live in
         // the service so they run inside one transaction.
         $paid = $this->purchases->recordPayment($request->user(), $purchase, $validated);
+
+        // Loaded so the response carries the instalment that was just written —
+        // the till needs its id to attach the transfer screenshot to it.
+        $paid->load('attachments', 'payments', 'payments.attachments');
 
         return response()->json([
             'message' => $paid->outstandingAmount() <= 0
@@ -378,6 +385,12 @@ class PurchaseController extends Controller
             'payments' => $purchase->relationLoaded('payments')
                 ? $this->paymentHistory($purchase)
                 : [],
+            // The wholesaler's bill, photographed when the delivery was booked
+            // in. Only on the detail view — the list would otherwise carry a
+            // dozen rows of paperwork nobody has asked to see yet.
+            'attachments' => $purchase->relationLoaded('attachments')
+                ? $purchase->attachments->map(fn (Attachment $a) => AttachmentController::payload($a))->values()->all()
+                : [],
         ];
     }
 
@@ -408,6 +421,11 @@ class PurchaseController extends Controller
                 'recorded_by' => $payment->recorded_by,
                 'paid_at' => $payment->paid_at?->toIso8601String(),
                 'balance_after' => $balance,
+                // The transfer screenshot, when one was filed. This is what
+                // answers a supplier who says an instalment never arrived.
+                'attachments' => $payment->relationLoaded('attachments')
+                    ? $payment->attachments->map(fn (Attachment $a) => AttachmentController::payload($a))->values()->all()
+                    : [],
             ];
         })->values()->all();
     }

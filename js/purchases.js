@@ -25,6 +25,16 @@ import { apiGet, apiPost, getAuthToken } from './api.js';
 import { initShell } from './shell.js';
 import { initTheme } from './theme.js';
 import { paymentLabel, receiptDateTime, receiptNum } from './receipt.js';
+import {
+  attachmentProblem,
+  galleryHTML,
+  hydrateGallery,
+  MAX_PER_RECORD,
+  openAttachment,
+  releaseThumbnails,
+  removeAttachment,
+  uploadAll,
+} from './attachments.js';
 import { priceToBase, shortOf, toBase } from './units.js';
 
 let products = [];
@@ -372,6 +382,10 @@ async function submitPurchase(event) {
       })),
     });
 
+    // Before resetPurchaseForm(), which clears the picker: the delivery now
+    // has an id, which is the thing the receipts had to wait for.
+    const attached = await flushStaged('purchase', `/api/purchases/${saved.purchase.id}/attachments`);
+
     resetPurchaseForm();
 
     // Stock and cost both moved, so the picker is reloaded alongside the list —
@@ -379,7 +393,7 @@ async function submitPurchase(event) {
     currentPage = 1;
     await Promise.all([loadProducts(), loadPurchases(), loadPayables()]);
 
-    showAlert(`Stock in ${saved?.purchase?.reference || ''} saved.`.trim(), 'success');
+    showAlert(`${`Stock in ${saved?.purchase?.reference || ''} saved.`.trim()}${attached}`, 'success');
   } catch (err) {
     // The 422 names the offending line ("Atta: enter a quantity…"), which is
     // the only thing that tells the shopkeeper what to change.
@@ -620,7 +634,7 @@ function renderPaymentHistory(purchase) {
     `${payments.length} payment${payments.length === 1 ? '' : 's'}`;
 
   if (payments.length === 0) {
-    body.innerHTML = '<tr><td colspan="7" class="admin-table-empty">Nothing paid on this invoice yet.</td></tr>';
+    body.innerHTML = '<tr><td colspan="8" class="admin-table-empty">Nothing paid on this invoice yet.</td></tr>';
     return;
   }
 
@@ -637,9 +651,14 @@ function renderPaymentHistory(purchase) {
         <td>${escapeHtml(payment.reference || '—')}</td>
         <td>${escapeHtml(payment.note || '—')}</td>
         <td class="sales-num${balance > 0 ? ' is-due' : ''}">${escapeHtml(formatRs(balance))}</td>
+        <td>${paymentProofHTML(payment)}</td>
       </tr>`;
     })
     .join('');
+
+  // The proof cells are drawn empty and filled once their bytes arrive, so a
+  // slow connection does not make the table jump about as each one lands.
+  hydrateGallery(body);
 }
 
 /** Only the methods that carry a transaction id ask for one. */
@@ -690,6 +709,7 @@ function renderDetail(purchase) {
   renderDetailHeader(purchase);
   renderDetailItems(purchase);
   renderDetailTotals(purchase);
+  renderDetailAttachments(purchase);
   renderPaymentForm(purchase);
   renderPaymentHistory(purchase);
 }
@@ -745,8 +765,26 @@ async function submitPurchasePayment(event) {
   try {
     const data = await apiPost(`/api/purchases/${openPurchase.id}/payments`, payload);
 
-    renderDetail(data.purchase);
-    showPaymentAlert(data.message || 'Payment recorded.', 'success');
+    // The instalment just written is the newest one on the invoice, and its id
+    // is what the screenshot has to hang off. The API returns the whole list in
+    // the order the money moved, so the last entry is this payment.
+    const payments = data.purchase?.payments || [];
+    const recorded = payments[payments.length - 1];
+
+    const attached = recorded
+      ? await flushStaged('payment', `/api/purchase-payments/${recorded.id}/attachments`)
+      : '';
+
+    // Re-read rather than rendering `data.purchase`: that copy was built before
+    // the screenshot existed, so the proof column would come back empty until
+    // the next refresh.
+    if (attached) {
+      await openDetail(openPurchase.id);
+    } else {
+      renderDetail(data.purchase);
+    }
+
+    showPaymentAlert(`${data.message || 'Payment recorded.'}${attached}`, 'success');
 
     // The row's paid and pending columns, and the payables totals, all moved.
     await Promise.all([loadPurchases(), loadPayables()]);
@@ -757,6 +795,217 @@ async function submitPurchasePayment(event) {
   } finally {
     button.disabled = false;
   }
+}
+
+/* ----------------------------------------------------------- attachments */
+
+/**
+ * Files picked but not yet sent, keyed by which picker they came from.
+ *
+ * They cannot go up with the form that stages them: an attachment hangs off a
+ * delivery or an instalment, and neither has an id until the API has written
+ * it. So the record is created first and the files follow — see
+ * flushStaged().
+ */
+const staged = { purchase: [], payment: [] };
+
+const STAGED_TARGETS = {
+  purchase: { input: 'purchase-receipt-input', list: 'purchase-receipt-staged' },
+  payment: { input: 'purchase-payment-receipt-input', list: 'purchase-payment-receipt-staged' },
+};
+
+/** Shows what is queued, so nobody wonders whether the picker took the file. */
+function renderStaged(kind) {
+  const list = el(STAGED_TARGETS[kind].list);
+  if (!list) return;
+
+  list.innerHTML = staged[kind]
+    .map(
+      (file, index) => `
+      <li class="attachment-staged-item">
+        <span class="attachment-name">${escapeHtml(file.name)}</span>
+        <button type="button" class="attachment-remove" data-staged-kind="${escapeHtml(kind)}"
+                data-staged-index="${index}" aria-label="Remove ${escapeHtml(file.name)}">&times;</button>
+      </li>`
+    )
+    .join('');
+}
+
+/**
+ * Takes whatever the picker holds, keeps what the API would accept, and says
+ * why about the rest.
+ *
+ * The input is cleared afterwards so picking the same file twice in a row still
+ * fires a change event — otherwise removing a staged file and re-choosing it
+ * would silently do nothing.
+ */
+function stageFrom(kind) {
+  const input = el(STAGED_TARGETS[kind].input);
+  const chosen = [...(input?.files || [])];
+  if (input) input.value = '';
+  if (chosen.length === 0) return;
+
+  const rejected = [];
+
+  for (const file of chosen) {
+    if (staged[kind].length >= MAX_PER_RECORD) {
+      rejected.push(`${file.name}: only ${MAX_PER_RECORD} attachments fit on one record.`);
+      continue;
+    }
+
+    const problem = attachmentProblem(file);
+    if (problem) {
+      rejected.push(`${file.name}: ${problem}`);
+      continue;
+    }
+
+    staged[kind].push(file);
+  }
+
+  renderStaged(kind);
+
+  if (rejected.length) {
+    const say = kind === 'payment' ? showPaymentAlert : showAlert;
+    say(rejected.join(' '));
+  }
+}
+
+function unstage(kind, index) {
+  staged[kind].splice(index, 1);
+  renderStaged(kind);
+}
+
+function clearStaged(kind) {
+  staged[kind] = [];
+  const input = el(STAGED_TARGETS[kind].input);
+  if (input) input.value = '';
+  renderStaged(kind);
+}
+
+/**
+ * Sends the queued files to a record that now exists.
+ *
+ * Deliberately does not throw. The delivery or the payment is already saved and
+ * is the thing that matters; a receipt that failed to upload is worth a sentence
+ * on screen, not an error that makes the shopkeeper think the money was not
+ * recorded. It can be added afterwards from the invoice's own "Add photo".
+ *
+ * @returns {string} what to append to the success message, if anything
+ */
+async function flushStaged(kind, path) {
+  const files = staged[kind];
+  if (files.length === 0) return '';
+
+  const { uploaded, failed } = await uploadAll(path, files);
+  clearStaged(kind);
+
+  if (failed.length === 0) {
+    return ` ${uploaded.length} receipt${uploaded.length === 1 ? '' : 's'} attached.`;
+  }
+
+  return ` ${uploaded.length} of ${uploaded.length + failed.length} receipts attached — ${failed.join(' ')}`;
+}
+
+/** The bill photographed against the delivery itself. */
+function renderDetailAttachments(purchase) {
+  const panel = el('purchase-detail-attachments');
+  if (!panel) return;
+
+  panel.innerHTML = galleryHTML(purchase.attachments, {
+    deletable: true,
+    emptyText: 'No bill photographed for this delivery yet.',
+  });
+
+  hydrateGallery(panel);
+}
+
+/**
+ * The screenshot filed against one instalment, as a cell in the history table.
+ *
+ * Not deletable from here: the row is three lines tall and a delete control on
+ * each would crowd out the figures the table exists to show. Removing one is
+ * done from the gallery above, where the thumbnail is large enough to be sure
+ * which file is being thrown away.
+ */
+function paymentProofHTML(payment) {
+  const list = payment.attachments || [];
+  if (list.length === 0) return '<span class="attachment-none">&mdash;</span>';
+
+  return `<span class="attachment-proof">${list
+    .map(
+      (attachment) =>
+        `<button type="button" class="attachment-open attachment-open-mini"
+                 data-attachment-open="${escapeHtml(String(attachment.id))}"
+                 aria-label="Open the proof of this payment">
+           <span class="attachment-thumb attachment-thumb-mini"
+                 data-attachment-thumb="${escapeHtml(String(attachment.id))}"></span>
+         </button>`
+    )
+    .join('')}</span>`;
+}
+
+/**
+ * One delegated listener for every gallery on the screen.
+ *
+ * The invoice re-renders on each payment and each delete, so per-thumbnail
+ * listeners would leak a set every time.
+ */
+function wireAttachmentClicks() {
+  document.addEventListener('click', async (event) => {
+    const staging = event.target.closest('[data-staged-index]');
+    if (staging) {
+      unstage(staging.dataset.stagedKind, Number(staging.dataset.stagedIndex));
+      return;
+    }
+
+    const open = event.target.closest('[data-attachment-open]');
+    if (open) {
+      openAttachment(open.dataset.attachmentOpen);
+      return;
+    }
+
+    const remove = event.target.closest('[data-attachment-remove]');
+    if (!remove) return;
+
+    if (!window.confirm('Remove this receipt? The picture is deleted for good.')) return;
+
+    try {
+      await removeAttachment(Number(remove.dataset.attachmentRemove));
+      if (openPurchase) await openDetail(openPurchase.id);
+    } catch (err) {
+      showPaymentAlert(err.message || 'Could not remove that receipt.');
+    }
+  });
+
+  // Both pickers stage rather than upload, for the reason `staged` explains.
+  el('purchase-receipt-input')?.addEventListener('change', () => stageFrom('purchase'));
+  el('purchase-payment-receipt-input')?.addEventListener('change', () => stageFrom('payment'));
+
+  // The invoice's own picker is the exception: the delivery already exists, so
+  // the file can go straight up.
+  el('purchase-detail-receipt-input')?.addEventListener('change', async (event) => {
+    const files = [...(event.target.files || [])];
+    event.target.value = '';
+    if (files.length === 0 || !openPurchase) return;
+
+    clearPaymentAlert();
+
+    const usable = files.filter((file) => !attachmentProblem(file));
+    const rejected = files.length - usable.length;
+
+    if (usable.length === 0) {
+      showPaymentAlert('Attach a JPG, PNG or WebP image under 5 MB.');
+      return;
+    }
+
+    const { failed } = await uploadAll(`/api/purchases/${openPurchase.id}/attachments`, usable);
+
+    await openDetail(openPurchase.id);
+
+    if (failed.length || rejected) {
+      showPaymentAlert([...failed, rejected ? `${rejected} file(s) were not images.` : ''].filter(Boolean).join(' '));
+    }
+  });
 }
 
 /* -------------------------------------------------------------------- boot */
@@ -814,6 +1063,11 @@ function wire() {
   el('purchase-detail-back').addEventListener('click', showListView);
   el('purchase-payment-method').addEventListener('change', togglePaymentReferenceField);
   el('purchase-payment-form').addEventListener('submit', submitPurchasePayment);
+  wireAttachmentClicks();
+
+  // Object URLs pin their blob in memory until revoked, and an invoice with a
+  // bill and four screenshots on it is easily 15 MB of them.
+  window.addEventListener('pagehide', releaseThumbnails);
 }
 
 async function boot() {

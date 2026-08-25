@@ -30,6 +30,7 @@
     "qa:m13": "node scripts/qa-milestone.mjs M13",
     "qa:m23": "node scripts/qa-milestone.mjs M23",
     "qa:m35": "node scripts/qa-milestone.mjs M35",
+    "qa:m36": "node scripts/qa-milestone.mjs M36",
     "test:admin": "node scripts/test-admin-setup.mjs",
     "wt": "node scripts/worktree.mjs",
     "wt:list": "node scripts/worktree.mjs list",

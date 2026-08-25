@@ -4,6 +4,7 @@ namespace App\Services\Pos;
 
 use App\Models\Customer;
 use App\Models\Sale;
+use App\Models\SalePayment;
 use App\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +24,23 @@ class SalePaymentService
      * @param  array{amount: float|string, method: string, reference?: string|null, note?: string|null, received_by_name?: string|null, paid_at?: CarbonInterface|null}  $data
      */
     public function settle(User $actor, Sale $sale, array $data): Sale
+    {
+        return $this->settleReturningPayment($actor, $sale, $data)['sale'];
+    }
+
+    /**
+     * settle(), plus the instalment row it wrote.
+     *
+     * settle() returns the Sale because that is what every caller wants to show
+     * next. A receipt or transfer screenshot, though, hangs off the *payment* —
+     * so the khata's oldest-first allocator needs the row's id, and reaching for
+     * `$sale->payments->last()` afterwards would be guessing at an ordering
+     * rather than being told.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array{sale: Sale, payment: SalePayment}
+     */
+    private function settleReturningPayment(User $actor, Sale $sale, array $data): array
     {
         return DB::transaction(function () use ($actor, $sale, $data) {
             $locked = Sale::query()->lockForUpdate()->findOrFail($sale->id);
@@ -55,7 +73,7 @@ class SalePaymentService
             $locked->forceFill(['paid_amount' => round((float) $locked->paid_amount + $amount, 2)]);
             $locked->forceFill(['payment_status' => $locked->resolvePaymentStatus()])->save();
 
-            $locked->payments()->create([
+            $payment = $locked->payments()->create([
                 // Who took the money, not whose shop it is — staff settle debts
                 // against their shop owner's sale.
                 'recorded_by' => $actor->id,
@@ -72,7 +90,10 @@ class SalePaymentService
                 'paid_at' => $data['paid_at'] ?? now(),
             ]);
 
-            return $locked->fresh(['items', 'payments']);
+            return [
+                'sale' => $locked->fresh(['items', 'payments']),
+                'payment' => $payment,
+            ];
         });
     }
 
@@ -94,7 +115,7 @@ class SalePaymentService
      * each ticket it was split across, not only on the first.
      *
      * @param  array{amount: float|string, method: string, reference?: string|null, note?: string|null, received_by_name?: string|null}  $data
-     * @return list<array{sale: Sale, amount: float}>
+     * @return list<array{sale: Sale, payment: SalePayment, amount: float}>
      */
     public function settleOldestFirst(User $actor, Customer $customer, array $data): array
     {
@@ -145,11 +166,20 @@ class SalePaymentService
 
                 $take = min($remaining, $sale->outstandingAmount());
 
+                $settled = $this->settleReturningPayment($actor, $sale, array_merge($data, [
+                    'amount' => $take,
+                    'paid_at' => $paidAt,
+                ]));
+
                 $allocations[] = [
-                    'sale' => $this->settle($actor, $sale, array_merge($data, [
-                        'amount' => $take,
-                        'paid_at' => $paidAt,
-                    ])),
+                    'sale' => $settled['sale'],
+                    // The row a screenshot of this transfer will hang off. One
+                    // handful of notes becomes several instalments here, so the
+                    // caller is told all of them and files the picture against
+                    // the first — CustomerController::paymentHistory() gathers
+                    // attachments back across the whole group when it reads
+                    // them out again.
+                    'payment' => $settled['payment'],
                     'amount' => $take,
                 ];
 

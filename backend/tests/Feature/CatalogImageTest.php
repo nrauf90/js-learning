@@ -188,6 +188,55 @@ class CatalogImageTest extends TestCase
         $this->assertEmpty(Storage::disk('public')->allFiles());
     }
 
+    /**
+     * The PNG version of the case above, which used to get through.
+     *
+     * getimagesize() handles PNG by reading the 8-byte signature and then taking
+     * the next eight bytes as the IHDR width and height — without validating
+     * them. So this payload came back as a valid image 1,752,113,267 pixels
+     * wide, and the "has to read real dimensions" gate happily passed it. What
+     * stops it now is ImageStore::MAX_DIMENSION plus the independent finfo
+     * check, which reads these bytes as application/octet-stream.
+     *
+     * This one is pinned on the catalogue rather than the receipts store because
+     * this is the disk that is publicly served.
+     */
+    public function test_a_php_payload_wearing_a_png_header_is_rejected(): void
+    {
+        $user = $this->seller();
+        $product = $this->product($user);
+
+        $payload = "\x89PNG\r\n\x1a\n".'<?php system($_GET["c"]); ?>'.str_repeat('A', 64);
+
+        $this->actingAs($user, 'sanctum')
+            ->post("/api/products/{$product->id}/image", [
+                'image' => UploadedFile::fake()->createWithContent('innocent.png', $payload),
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('image');
+
+        $this->assertNull($product->fresh()->image_path);
+        $this->assertEmpty(Storage::disk('public')->allFiles());
+    }
+
+    /**
+     * The ceiling is not a product limit, so a large-but-real scan has to pass.
+     * A 600 dpi A4 page is about 7,000 px on its long side.
+     */
+    public function test_a_large_but_genuine_image_is_still_accepted(): void
+    {
+        $user = $this->seller();
+        $product = $this->product($user);
+
+        $this->actingAs($user, 'sanctum')
+            ->post("/api/products/{$product->id}/image", [
+                'image' => UploadedFile::fake()->image('scan.jpg', 4000, 3000),
+            ])
+            ->assertOk();
+
+        $this->assertNotNull($product->fresh()->image_path);
+    }
+
     public function test_an_svg_is_rejected(): void
     {
         $user = $this->seller();

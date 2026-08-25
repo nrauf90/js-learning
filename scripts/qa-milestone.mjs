@@ -18,7 +18,7 @@ import { agentEnv } from './agent-env.mjs';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 // M5 (tax calculator) was removed from the product; its spec file went with it.
-const MILESTONE_ORDER = ['M1', 'M2', 'M3', 'M4', 'M6', 'M7', 'M8', 'M9', 'M10', 'M11', 'M12', 'M13', 'M23', 'M35'];
+const MILESTONE_ORDER = ['M1', 'M2', 'M3', 'M4', 'M6', 'M7', 'M8', 'M9', 'M10', 'M11', 'M12', 'M13', 'M23', 'M35', 'M36'];
 
 /** Spec globs relative to e2e/tests — only include files that exist when running. */
 const SPEC_BY_MILESTONE = {
@@ -39,6 +39,8 @@ const SPEC_BY_MILESTONE = {
   M13: 'm13-*.spec.js',
   M23: 'm23-*.spec.js',
   M35: 'm35-*.spec.js',
+  // M36 — password reset, and receipts attached to stock in and its payments.
+  M36: 'm36-*.spec.js',
 };
 
 /*

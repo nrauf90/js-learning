@@ -129,6 +129,17 @@
               <div><dt>Still owed</dt><dd id="purchase-outstanding">Rs 0</dd></div>
             </dl>
 
+            <!-- The wholesaler's bill, photographed at the back door. Several
+                 files because a long bill is routinely shot in two or three
+                 pieces, and one column on the delivery could never hold that. -->
+            <div class="attachment-field">
+              <label class="input-label" for="purchase-receipt-input">Bill / receipt photo</label>
+              <input class="auth-input attachment-input" type="file" id="purchase-receipt-input"
+                     accept="image/jpeg,image/png,image/webp" multiple />
+              <p class="attachment-hint">Optional. JPG, PNG or WebP, up to 5 MB each. Uploaded once the delivery is saved.</p>
+              <ul class="attachment-staged" id="purchase-receipt-staged"></ul>
+            </div>
+
             <div class="cashflow-form-actions">
               <button type="submit" class="auth-submit cashflow-btn" id="purchase-submit">Save stock in</button>
               <button type="button" class="auth-google cashflow-btn" id="purchase-clear">Clear</button>
@@ -208,6 +219,17 @@
             <div class="pos-total-row"><dt>Still owed</dt><dd id="purchase-detail-outstanding">Rs 0</dd></div>
           </dl>
 
+          <div class="pos-ticket-head">
+            <h3 class="auth-title">Bill &amp; receipts</h3>
+            <label class="btn btn-secondary pos-mini attachment-add" for="purchase-detail-receipt-input">
+              Add photo
+              <input type="file" id="purchase-detail-receipt-input" class="attachment-add-input"
+                     accept="image/jpeg,image/png,image/webp" multiple />
+            </label>
+          </div>
+
+          <div id="purchase-detail-attachments" class="attachment-panel"></div>
+
           <div id="purchase-payment-alert" class="auth-alert" hidden role="alert"></div>
 
           <form class="sale-payment-form" id="purchase-payment-form" novalidate hidden>
@@ -248,6 +270,16 @@
               </div>
             </div>
 
+            <!-- The JazzCash/EasyPaisa/bank screenshot. This is what answers a
+                 supplier three weeks later who says the money never arrived. -->
+            <div class="attachment-field">
+              <label class="input-label" for="purchase-payment-receipt-input">Payment screenshot</label>
+              <input class="auth-input attachment-input" type="file" id="purchase-payment-receipt-input"
+                     accept="image/jpeg,image/png,image/webp" multiple />
+              <p class="attachment-hint">Optional. Attached to this payment once it is recorded.</p>
+              <ul class="attachment-staged" id="purchase-payment-receipt-staged"></ul>
+            </div>
+
             <button type="submit" class="auth-submit cashflow-btn" id="purchase-payment-submit">Record payment</button>
           </form>
 
@@ -267,10 +299,11 @@
                   <th>Reference</th>
                   <th>Note</th>
                   <th class="sales-num">Balance after</th>
+                  <th>Proof</th>
                 </tr>
               </thead>
               <tbody id="purchase-payments-body">
-                <tr><td colspan="7" class="admin-table-empty">Nothing paid on this invoice yet.</td></tr>
+                <tr><td colspan="8" class="admin-table-empty">Nothing paid on this invoice yet.</td></tr>
               </tbody>
             </table>
           </div>

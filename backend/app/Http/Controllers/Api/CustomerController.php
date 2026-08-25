@@ -234,7 +234,7 @@ class CustomerController extends Controller
 
         $sales = $customer->sales()
             ->where('payment_method', 'credit')
-            ->with('payments.recordedBy')
+            ->with('payments.recordedBy', 'payments.attachments')
             ->orderBy('sold_at')
             ->orderBy('id')
             ->get();
@@ -356,7 +356,14 @@ class CustomerController extends Controller
                 'payment_status' => $row['sale']->payment_status,
                 'outstanding_amount' => $row['sale']->outstandingAmount(),
                 'sold_at' => $row['sale']->sold_at?->toIso8601String(),
+                'payment_id' => $row['payment']->id,
             ])->values(),
+            // Where a screenshot of this transfer goes. One handful of notes is
+            // spread across several tickets, so there are several instalment
+            // rows and no single "the" payment — the first is the anchor, and
+            // the ledger gathers attachments back across the whole group when
+            // it reads them out again.
+            'payment_id' => $allocations[0]['payment']->id ?? null,
         ]);
     }
 
@@ -600,6 +607,7 @@ class CustomerController extends Controller
                 'recorded_by' => $payment->recordedBy?->name,
                 'balance_after' => 0.0,
                 'allocations' => [],
+                'attachments' => [],
             ];
 
             $groups[$key]['amount'] = round($groups[$key]['amount'] + $entry['credit'], 2);
@@ -608,7 +616,19 @@ class CustomerController extends Controller
                 'sale_id' => $entry['sale_id'],
                 'reference' => $entry['reference'],
                 'amount' => $entry['credit'],
+                // Every row the lump sum was split into, so a screenshot can be
+                // added later against a payment that has none yet.
+                'payment_id' => $payment->id,
             ];
+
+            // Gathered across the whole group rather than read off the
+            // representative row. One handful of notes becomes several
+            // `sale_payments` rows and the picture is filed against only one of
+            // them; taking just the first row's attachments would show it or
+            // lose it depending on which allocation happened to be first.
+            foreach ($payment->attachments as $attachment) {
+                $groups[$key]['attachments'][] = AttachmentController::payload($attachment);
+            }
         }
 
         return array_reverse(array_values($groups));

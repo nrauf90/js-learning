@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class PurchasePayment extends Model
 {
@@ -29,6 +30,12 @@ class PurchasePayment extends Model
     public function purchase(): BelongsTo
     {
         return $this->belongsTo(Purchase::class);
+    }
+
+    /** The transfer screenshot, or a photo of the signed slip. */
+    public function attachments(): MorphMany
+    {
+        return $this->morphMany(Attachment::class, 'attachable')->oldest('id');
     }
 
     public function recordedBy(): BelongsTo

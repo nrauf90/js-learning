@@ -1034,6 +1034,13 @@ body {
   font-size: 0.9rem;
 }
 
+/* Sits directly under the log in button rather than at the foot of the card,
+   so it reads as part of the form it belongs to. The generic .auth-footer gap
+   would push it down next to "Back to home" and make it look like navigation. */
+.auth-forgot {
+  margin-top: 0.9rem;
+}
+
 /* Site nav + cash flow */
 .header-actions {
   display: flex;
@@ -6431,5 +6438,237 @@ body.sales-modal-open {
 
   .price-card {
     padding: 1.5rem 1.25rem;
+  }
+}
+
+/* =========================================================================
+   Receipts and payment screenshots (js/attachments.js)
+
+   Used on the Stock In screen in three places: staging files against the
+   delivery form, staging one against the payment form, and the invoice's own
+   gallery. All three share the thumbnail because they are the same object seen
+   at three moments.
+
+   Every colour is a theme token, so these read correctly in both themes without
+   a second block further down.
+   ========================================================================= */
+
+.attachment-field {
+  margin-top: 1rem;
+}
+
+/* The file input is a full-width control like every other .auth-input, but the
+   browser draws its button at the intrinsic height of the text — the padding
+   the other inputs carry would leave it floating in the middle of the box. */
+.attachment-input {
+  padding: 0.55rem 0.75rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.attachment-hint {
+  margin-top: 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+/* --- files chosen but not yet sent -------------------------------------- */
+
+.attachment-staged {
+  list-style: none;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.attachment-staged-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.4rem 0.65rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+/* --- the gallery on the invoice ----------------------------------------- */
+
+.attachment-panel {
+  margin-bottom: 1rem;
+}
+
+.attachment-empty,
+.attachment-none {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+/* auto-fill rather than auto-fit: with one receipt attached, auto-fit would
+   stretch that single thumbnail across the whole invoice. */
+.attachment-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.attachment-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.5rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.attachment-open {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+/* A fixed box with a fixed aspect: a bill photographed portrait and a
+   screenshot photographed landscape have to sit in the same row without one of
+   them setting the row's height. */
+.attachment-thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.attachment-thumb img {
+  width: 100%;
+  height: 100%;
+  /* contain, not cover: this is a document, and a transaction id cropped out
+     of the corner defeats the point of keeping it. */
+  object-fit: contain;
+}
+
+.attachment-thumb.is-missing {
+  color: var(--danger);
+  border-style: dashed;
+}
+
+.attachment-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  font-size: 0.78rem;
+  line-height: 1.3;
+}
+
+/* Two lines and then an ellipsis: a phone's default screenshot name is long
+   enough to push every card in the row taller on its own. */
+.attachment-name {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+.attachment-size {
+  color: var(--text-muted);
+}
+
+.attachment-remove {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--danger);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* In the staged list the item is a flex row, not a card, so the absolute
+   positioning above would take the button out of the row entirely. */
+.attachment-staged-item .attachment-remove {
+  position: static;
+}
+
+.attachment-remove:hover {
+  background: var(--surface-2);
+}
+
+/* --- "Add photo" ---------------------------------------------------------
+   A <label> wrapping a hidden <input type="file">: the native control cannot be
+   styled to match the other buttons on this header, and a scripted .click() on
+   a hidden input is blocked as a popup in some webviews. */
+.attachment-add {
+  cursor: pointer;
+}
+
+.attachment-add-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- the proof cell in the payment history ------------------------------- */
+
+.attachment-proof {
+  display: inline-flex;
+  gap: 0.3rem;
+}
+
+/* Inside a details cell (the khata's "Received by") rather than a column of its
+   own, the thumbnails need to break onto their own line under the text. */
+.sales-table td .attachment-proof {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 0.35rem;
+}
+
+.attachment-thumb-mini {
+  width: 34px;
+  height: 34px;
+  aspect-ratio: auto;
+  border-radius: 6px;
+  font-size: 0.75rem;
+}
+
+.attachment-thumb-mini img {
+  /* cover here, unlike the gallery: at 34px the picture is an indicator that
+     something is on file, not something anyone reads. Cover fills the square;
+     contain would letterbox a portrait screenshot down to a sliver. */
+  object-fit: cover;
+}
+
+@media (max-width: 640px) {
+  .attachment-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
   }
 }

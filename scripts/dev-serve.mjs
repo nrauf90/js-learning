@@ -16,6 +16,14 @@ import { ROOT, agentEnv } from './agent-env.mjs';
 const target = process.argv[2];
 const env = agentEnv();
 
+/*
+ * Both static targets read serve.json at the repo root, which turns `serve`'s
+ * cleanUrls off. That default 301-redirects /page.html to /page and DROPS THE
+ * QUERY STRING doing it — which silently strips the token off a password reset
+ * link, and off anything else this app ever puts in a query. serve.json takes
+ * no comments of its own (its schema rejects unknown keys, "$comment" included),
+ * so the reason lives here.
+ */
 const RUNNERS = {
   web: () => ({
     label: `web  http://127.0.0.1:${env.web}`,

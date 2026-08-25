@@ -182,6 +182,16 @@
 
             <p class="sale-payment-due" id="khata-payment-left"></p>
 
+            <!-- The JazzCash/EasyPaisa/bank screenshot the customer shows at the
+                 counter. Three weeks later this is what settles "I paid you". -->
+            <div class="attachment-field">
+              <label class="input-label" for="khata-receipt-input">Payment screenshot</label>
+              <input class="auth-input attachment-input" type="file" id="khata-receipt-input"
+                     accept="image/jpeg,image/png,image/webp" multiple />
+              <p class="attachment-hint">Optional. Attached to this payment once it is recorded.</p>
+              <ul class="attachment-staged" id="khata-receipt-staged"></ul>
+            </div>
+
             <button type="submit" class="auth-submit cashflow-btn" id="khata-payment-submit">Record payment</button>
           </form>
 

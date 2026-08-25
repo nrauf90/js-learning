@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Purchase extends Model
 {
@@ -48,6 +49,17 @@ class Purchase extends Model
     public function items(): HasMany
     {
         return $this->hasMany(PurchaseItem::class);
+    }
+
+    /**
+     * Photographs of the wholesaler's bill for this delivery.
+     *
+     * Oldest first: a bill shot in three pieces was shot in reading order, and
+     * newest-first would show the shopkeeper page three.
+     */
+    public function attachments(): MorphMany
+    {
+        return $this->morphMany(Attachment::class, 'attachable')->oldest('id');
     }
 
     /**

@@ -22,6 +22,14 @@
 import { apiGet, apiPost, apiPut, getAuthToken } from './api.js';
 import { initShell } from './shell.js';
 import { initTheme } from './theme.js';
+import {
+  attachmentProblem,
+  hydrateGallery,
+  MAX_PER_RECORD,
+  openAttachment,
+  releaseThumbnails,
+  uploadAll,
+} from './attachments.js';
 import { paymentLabel, receiptDateTime, receiptNum } from './receipt.js';
 
 /** The aging bands the API reports, in the order they are read. */
@@ -409,6 +417,7 @@ function renderPayments(payments) {
         <td>
           ${escapeHtml(payment.received_by || 'Not recorded')}
           ${meta ? `<small>${escapeHtml(meta)}</small>` : ''}
+          ${proofCellHTML(payment)}
         </td>
         <td class="sales-num">${escapeHtml(formatRs(payment.amount))}</td>
         <td class="sales-num${left > 0 ? ' is-due' : ''}">${
@@ -417,6 +426,10 @@ function renderPayments(payments) {
       </tr>`;
     })
     .join('');
+
+  // The proof cells are drawn empty and filled once their bytes arrive, so a
+  // slow connection does not make the table jump about as each one lands.
+  hydrateGallery(body);
 }
 
 function showPaymentAlert(message, type = 'error') {
@@ -481,6 +494,12 @@ function renderPaymentForm(customer) {
   const owed = Number(customer.balance) || 0;
 
   form.reset();
+  // form.reset() empties the file input but not the staged list beside it,
+  // which is plain JS state. Without this, a screenshot picked for one customer
+  // and then abandoned would be uploaded against the next customer's payment —
+  // this function runs on every open of the dialog, which is the moment that
+  // has to be clean.
+  clearStagedProof();
   toggleReferenceField();
 
   // Nothing owed, nothing to collect — and the API would reject the attempt
@@ -589,8 +608,15 @@ async function submitPayment(event) {
 
     const data = await apiPost(`/api/customers/${openCustomer.id}/payments`, payload);
 
+    // A lump sum is split across several tickets, so several instalment rows
+    // were just written and there is no single "the" payment. The API names the
+    // first as the anchor; the ledger gathers attachments back across the whole
+    // group when it reads them out, so the picture shows on the one line the
+    // shopkeeper sees.
+    const attached = await flushStagedProof(data?.payment_id);
+
     await refreshDetail();
-    showPaymentAlert(allocationMessage(data), 'success');
+    showPaymentAlert(`${allocationMessage(data)}${attached}`, 'success');
 
     // The row's balance, the aging tiles and the totals all moved.
     await Promise.all([loadList(), loadSummary()]);
@@ -697,6 +723,146 @@ function setView(next) {
   loadList();
 }
 
+/* ----------------------------------------------------------- attachments */
+
+/**
+ * The screenshot picked for a payment that has not been recorded yet.
+ *
+ * It cannot go up with the form: the picture hangs off a `sale_payments` row,
+ * and none exists until the API has taken the money. So the payment is recorded
+ * first and the file follows — see submitPayment().
+ */
+let stagedProof = [];
+
+function renderStagedProof() {
+  const list = el('khata-receipt-staged');
+  if (!list) return;
+
+  list.innerHTML = stagedProof
+    .map(
+      (file, index) => `
+      <li class="attachment-staged-item">
+        <span class="attachment-name">${escapeHtml(file.name)}</span>
+        <button type="button" class="attachment-remove" data-staged-index="${index}"
+                aria-label="Remove ${escapeHtml(file.name)}">&times;</button>
+      </li>`
+    )
+    .join('');
+}
+
+/**
+ * Takes what the picker holds, keeps what the API would accept, says why about
+ * the rest. The input is cleared so re-choosing the same file still fires.
+ */
+function stageProof() {
+  const input = el('khata-receipt-input');
+  const chosen = [...(input?.files || [])];
+  if (input) input.value = '';
+  if (chosen.length === 0) return;
+
+  const rejected = [];
+
+  for (const file of chosen) {
+    if (stagedProof.length >= MAX_PER_RECORD) {
+      rejected.push(`${file.name}: only ${MAX_PER_RECORD} attachments fit on one payment.`);
+      continue;
+    }
+
+    const problem = attachmentProblem(file);
+    if (problem) {
+      rejected.push(`${file.name}: ${problem}`);
+      continue;
+    }
+
+    stagedProof.push(file);
+  }
+
+  renderStagedProof();
+
+  if (rejected.length) showPaymentAlert(rejected.join(' '));
+}
+
+function clearStagedProof() {
+  stagedProof = [];
+  const input = el('khata-receipt-input');
+  if (input) input.value = '';
+  renderStagedProof();
+}
+
+/**
+ * Sends the staged screenshot to the row the API just wrote.
+ *
+ * Deliberately does not throw: the money is already recorded and that is the
+ * part that matters. A screenshot that failed to upload is worth a sentence on
+ * screen, not an error that makes the cashier think the payment did not go
+ * through.
+ *
+ * @returns {Promise<string>} what to append to the success message
+ */
+async function flushStagedProof(paymentId) {
+  if (stagedProof.length === 0 || !paymentId) return '';
+
+  const { uploaded, failed } = await uploadAll(`/api/sale-payments/${paymentId}/attachments`, stagedProof);
+  clearStagedProof();
+
+  if (failed.length === 0) {
+    return ` ${uploaded.length} screenshot${uploaded.length === 1 ? '' : 's'} attached.`;
+  }
+
+  return ` ${uploaded.length} of ${uploaded.length + failed.length} screenshots attached — ${failed.join(' ')}`;
+}
+
+/**
+ * The screenshots filed against one payment, shown under its details.
+ *
+ * Inside the "Received by" cell rather than a column of its own: this dialog is
+ * capped at 520px, and a fifth column pushed the proof off the edge into a
+ * horizontal scroll nobody would find. It reads better there anyway — who took
+ * the money, how, and the picture of it, in one place.
+ *
+ * The ledger gathers attachments across every allocation a lump sum was split
+ * into, so this is one line's worth of pictures however many tickets the money
+ * landed on.
+ */
+function proofCellHTML(payment) {
+  const list = payment.attachments || [];
+  // Nothing rather than a dash: this sits inside the details cell, and a "—"
+  // there reads as an empty field rather than "no picture was filed".
+  if (list.length === 0) return '';
+
+  return `<span class="attachment-proof">${list
+    .map(
+      (attachment) =>
+        `<button type="button" class="attachment-open attachment-open-mini"
+                 data-attachment-open="${escapeHtml(String(attachment.id))}"
+                 aria-label="Open the proof of this payment">
+           <span class="attachment-thumb attachment-thumb-mini"
+                 data-attachment-thumb="${escapeHtml(String(attachment.id))}"></span>
+         </button>`
+    )
+    .join('')}</span>`;
+}
+
+/**
+ * One delegated listener for the whole dialog. The payments table re-renders on
+ * every payment, so per-thumbnail listeners would leak a set each time.
+ */
+function wireProofClicks() {
+  document.addEventListener('click', async (event) => {
+    const staging = event.target.closest('#khata-receipt-staged [data-staged-index]');
+    if (staging) {
+      stagedProof.splice(Number(staging.dataset.stagedIndex), 1);
+      renderStagedProof();
+      return;
+    }
+
+    const open = event.target.closest('#khata-payments-body [data-attachment-open]');
+    if (open) openAttachment(open.dataset.attachmentOpen);
+  });
+
+  el('khata-receipt-input')?.addEventListener('change', stageProof);
+}
+
 function wireList() {
   document.querySelectorAll('[data-view]').forEach((button) => {
     button.addEventListener('click', () => setView(button.dataset.view));
@@ -751,6 +917,11 @@ function wireModal() {
   el('khata-method').addEventListener('change', toggleReferenceField);
   el('khata-amount').addEventListener('input', renderRemainder);
   el('khata-payment-form').addEventListener('submit', submitPayment);
+  wireProofClicks();
+
+  // Object URLs pin their blob in memory until revoked, and this dialog is
+  // opened and closed for one customer after another.
+  window.addEventListener('pagehide', releaseThumbnails);
 }
 
 /* -------------------------------------------------------------------- boot */

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\ActivityLogController;
 use App\Http\Controllers\Api\AdminController;
+use App\Http\Controllers\Api\AttachmentController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BillingController;
 use App\Http\Controllers\Api\CashEntryController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\DayBalanceController;
 use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Api\PaddleWebhookController;
+use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\ProductCategoryController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\PurchaseController;
@@ -35,6 +37,18 @@ Route::middleware($authThrottle)->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/auth/google/exchange', [GoogleAuthController::class, 'exchange']);
+});
+
+// Forgotten passwords. Unauthenticated by necessity — the whole point is that
+// the caller cannot log in. Throttled harder than login is: /password/forgot
+// sends mail on behalf of an address the caller does not have to own, so the
+// route limit is the thing standing between a script and somebody's inbox.
+// Laravel's own 60s-per-address broker throttle sits underneath it.
+$resetThrottle = app()->environment('local', 'testing') ? 'throttle:60,1' : 'throttle:5,1';
+
+Route::middleware($resetThrottle)->group(function () {
+    Route::post('/password/forgot', [PasswordResetController::class, 'forgot']);
+    Route::post('/password/reset', [PasswordResetController::class, 'reset']);
 });
 
 Route::middleware($authThrottle)->get('/auth/google/redirect', [GoogleAuthController::class, 'redirect']);
@@ -103,6 +117,23 @@ Route::middleware('auth:sanctum')->group(function () use ($authThrottle) {
         Route::post('/purchases', [PurchaseController::class, 'store']);
         Route::get('/purchases/{purchase}', [PurchaseController::class, 'show']);
         Route::post('/purchases/{purchase}/payments', [PurchaseController::class, 'storePayment']);
+
+        // Receipts and payment screenshots. Multipart, so they sit apart from
+        // the JSON routes above rather than overloading either with a second
+        // request shape — the same split the catalogue image routes use.
+        //
+        // Reading and deleting are addressed by attachment id because an <img>
+        // tag can only carry a URL; AttachmentController re-derives the parent
+        // purchase and re-runs its authorisation before serving a byte.
+        Route::post('/purchases/{purchase}/attachments', [AttachmentController::class, 'storeForPurchase']);
+        Route::post('/purchase-payments/{purchasePayment}/attachments', [AttachmentController::class, 'storeForPurchasePayment']);
+        // Money taken over the counter — a khata settlement, or an instalment
+        // against one credit sale. Both write `sale_payments` rows, so both
+        // attach here; the khata's oldest-first allocator writes several at
+        // once and files the picture against the first of them.
+        Route::post('/sale-payments/{salePayment}/attachments', [AttachmentController::class, 'storeForSalePayment']);
+        Route::get('/attachments/{attachment}', [AttachmentController::class, 'show']);
+        Route::delete('/attachments/{attachment}', [AttachmentController::class, 'destroy']);
         // ── end purchases ───────────────────────────────────────────────────
 
         // ── customers (udhaar khata) ────────────────────────────────────────
@@ -219,4 +250,5 @@ Route::middleware('auth:sanctum')->group(function () use ($authThrottle) {
 
 if (app()->environment('local', 'testing')) {
     Route::middleware('auth:sanctum')->post('/qa/expire-trial', [QaController::class, 'expireTrial']);
+    Route::middleware('auth:sanctum')->post('/qa/password-reset-token', [QaController::class, 'passwordResetToken']);
 }
