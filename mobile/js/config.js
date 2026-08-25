@@ -14,10 +14,16 @@
  *   iOS simulator          http://127.0.0.1:8000     (shares the host network)
  *   Production             https://api.your-domain.com
  *
- * Cleartext HTTP to a LAN IP is fine for development — `allowMixedContent` is
- * on in capacitor.config.json — but a release build must be HTTPS: Android
- * blocks cleartext by default from API 28, and a bearer token over plain HTTP
- * on shop Wi-Fi is readable by anyone on it.
+ * Cleartext HTTP to a LAN IP works in a *debug* build only, and it takes two
+ * things: android/app/src/debug/res/xml/network_security_config.xml (Android
+ * blocks cleartext from API 28) and MainActivity's BuildConfig.DEBUG branch,
+ * which relaxes the webview's mixed-content mode — the app is served from
+ * https://localhost, so an http API is mixed content.
+ *
+ * Neither applies to a release build, and `allowMixedContent` in
+ * capacitor.config.json is deliberately false, so a release NATIVE_API must be
+ * HTTPS. A bearer token over plain HTTP on shop Wi-Fi is readable by anyone
+ * on it.
  */
 (function configureApi() {
   var NATIVE_API = 'http://10.0.2.2:8000';

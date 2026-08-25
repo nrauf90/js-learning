@@ -71,7 +71,7 @@ function fillCategories() {
     return;
   }
   select.innerHTML = categories
-    .map((c) => `<option value="${c.id}">${c.name}</option>`)
+    .map((c) => `<option value="${escapeHtml(String(c.id))}">${escapeHtml(c.name)}</option>`)
     .join('');
 }
 
@@ -143,7 +143,7 @@ function renderEntries(totals) {
       <li class="entry-row" data-id="${e.id}">
         <div class="entry-main">
           <span class="entry-type entry-type-${e.type}">${e.type}</span>
-          <span class="entry-cat">${e.category?.name || '—'}</span>
+          <span class="entry-cat">${e.category?.name ? escapeHtml(e.category.name) : '—'}</span>
           <span class="entry-amount">${formatRs(e.amount)}</span>
         </div>
         <div class="entry-meta">${e.note ? escapeHtml(e.note) : '<span class="muted">No note</span>'}</div>

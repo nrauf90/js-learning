@@ -11,8 +11,14 @@ test.describe('M13 — Theme default & FOUC fix', () => {
     await expect(html).not.toHaveAttribute('data-theme', 'dark');
 
     const bg = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--bg').trim());
-    // Light --bg from css/styles.css :root (unattributed block).
-    expect(bg).toBe('#f5f7fa');
+    // Light --bg from css/styles.css :root (the unattributed block). The
+    // exact value has to track that file: it was #f5f7fa until the PK Galla
+    // rebrand repainted the palette, and this assertion was left behind.
+    //
+    // What is actually being tested is the line above — that the first paint
+    // is not dark. The hex is here so a palette change cannot quietly swap
+    // the two blocks over and still pass.
+    expect(bg).toBe('#f4f7fb');
   });
 
   test('toggle switches to dark and persists across reload', async ({ page }) => {

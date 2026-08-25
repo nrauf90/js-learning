@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!--
+      allowBackup="false": the app keeps its Sanctum bearer token, the cached
+      user and the offline sales queue in the webview's localStorage/IndexedDB.
+      With backup on, all of that is copied into Google's cloud backup and is
+      readable from an `adb backup` on any device with USB debugging on — a
+      token lifted that way is a working login to the shop's takings until it
+      expires 30 days later. Nothing here is worth restoring anyway: the ledger
+      lives on the server, and a fresh install just logs in again.
+    -->
     <application
-        android:allowBackup="true"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"

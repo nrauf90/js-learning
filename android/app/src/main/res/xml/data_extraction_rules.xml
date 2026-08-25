@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 12+ (API 31) reads this instead of the older allowBackup/
+  fullBackupContent pair, and it ignores allowBackup="false" for
+  device-to-device transfer unless that case is spelled out too. Both sections
+  are therefore present and both exclude everything.
+
+  Same reasoning as the manifest comment: the webview's localStorage holds a
+  live bearer token, the cached user and the offline sales queue. None of it
+  should leave the device, and none of it is worth restoring — the ledger is
+  on the server and a fresh install simply logs in again.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="root" />
+        <exclude domain="database" />
+        <exclude domain="sharedpref" />
+        <exclude domain="external" />
+        <exclude domain="file" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="root" />
+        <exclude domain="database" />
+        <exclude domain="sharedpref" />
+        <exclude domain="external" />
+        <exclude domain="file" />
+    </device-transfer>
+</data-extraction-rules>

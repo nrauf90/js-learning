@@ -3,7 +3,8 @@
   "appName": "PK Galla",
   "webDir": "www",
   "android": {
-    "allowMixedContent": true
+    "_comment": "allowMixedContent stays false. A release build serves the app from https://localhost, and true would let any http:// subresource or XHR load into that origin — on shop wifi that is an injection point for a bearer token the webview is holding. Debug builds reach a plaintext dev API through android/app/src/debug/res/xml/network_security_config.xml instead, which is scoped to three known hosts.",
+    "allowMixedContent": false
   },
   "server": {
     "androidScheme": "https",

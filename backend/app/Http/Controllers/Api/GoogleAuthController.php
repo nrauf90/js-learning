@@ -40,7 +40,20 @@ class GoogleAuthController extends Controller
         $user = User::where('google_id', $googleUser->getId())->first();
 
         if (! $user && $googleUser->getEmail()) {
-            $user = User::where('email', $googleUser->getEmail())->first();
+            $existing = User::where('email', $googleUser->getEmail())->first();
+
+            // Adopting an existing account on an email match is how "sign in
+            // with Google" is expected to behave — but the match is only
+            // trustworthy if Google says it verified that address. An
+            // unverified one is a string the account holder typed, so honouring
+            // it would let anyone who types a shopkeeper's address into a
+            // throwaway Google account walk into that shop's takings without
+            // ever knowing the password.
+            if ($existing && ! self::emailIsVerified($googleUser)) {
+                return redirect()->away($frontend.'/login.html?error=google_email_unverified');
+            }
+
+            $user = $existing;
         }
 
         if ($user) {
@@ -50,6 +63,13 @@ class GoogleAuthController extends Controller
                 'name' => $user->name ?: ($googleUser->getName() ?: 'Google User'),
             ])->save();
         } else {
+            // A brand-new account on an unverified address would claim that
+            // address, and the real owner would then hit the branch above and
+            // be locked out of the email they actually control.
+            if ($googleUser->getEmail() && ! self::emailIsVerified($googleUser)) {
+                return redirect()->away($frontend.'/login.html?error=google_email_unverified');
+            }
+
             $user = User::create([
                 'name' => $googleUser->getName() ?: 'Google User',
                 'email' => $googleUser->getEmail() ?: $googleUser->getId().'@google.local',
@@ -72,6 +92,24 @@ class GoogleAuthController extends Controller
         ], now()->addMinutes(2));
 
         return redirect()->away($frontend.'/login.html?google_code='.$code);
+    }
+
+    /**
+     * Whether Google itself vouches for the address on this profile.
+     *
+     * Socialite normalises name/email/avatar but drops the rest, so the claim
+     * is read off the raw OIDC payload it keeps in `->user`. Google sends it as
+     * a real boolean on the id_token and as the string "true" on the userinfo
+     * endpoint, so both spellings count. Anything else — absent, false, an
+     * unexpected shape — is treated as unverified: this gate decides whether a
+     * stranger can claim a shopkeeper's account, so the failure has to be the
+     * safe direction.
+     */
+    private static function emailIsVerified(object $googleUser): bool
+    {
+        $claim = data_get($googleUser->user ?? [], 'email_verified');
+
+        return $claim === true || $claim === 'true' || $claim === 1 || $claim === '1';
     }
 
     public function exchange(Request $request): JsonResponse

@@ -1,5 +1,6 @@
 import { API_BASE_URL, apiPost, getAuthToken, setAuthToken } from './api.js';
 import { initNav } from './nav.js';
+import { safeNext } from './safe-redirect.js';
 import { initTheme } from './theme.js';
 
 const USER_KEY = 'cashflow_auth_user';
@@ -35,10 +36,16 @@ function formatValidationErrors(body) {
   return Object.values(body.errors).flat().join(' ');
 }
 
+/**
+ * Where to go once the login succeeds.
+ *
+ * `next` comes off the query string, so it goes through safeNext() before it
+ * ever reaches location.href — see js/safe-redirect.js for what that refuses
+ * and why.
+ */
 function redirectAfterAuth() {
   const params = new URLSearchParams(window.location.search);
-  const next = params.get('next') || 'dashboard.html';
-  window.location.href = next;
+  window.location.href = safeNext(params.get('next'));
 }
 
 async function handleGoogleCodeFromUrl() {
@@ -47,7 +54,15 @@ async function handleGoogleCodeFromUrl() {
   const error = params.get('error');
 
   if (error) {
-    showAlert('Google sign-in failed. Try again or use email/password.');
+    // An unverified Google address is refused on purpose: it would otherwise
+    // be a way to claim an account by typing its email into a new Google
+    // profile. Telling the shopkeeper to "try again" would send them round
+    // the same loop, so this case gets its own instruction.
+    showAlert(
+      error === 'google_email_unverified'
+        ? 'That Google account has not verified its email address, so it cannot be used to sign in. Verify it with Google, or log in with your email and password.'
+        : 'Google sign-in failed. Try again or use email/password.'
+    );
     return;
   }
 
