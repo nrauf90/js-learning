@@ -200,6 +200,9 @@ class DayBookService
         $instalmentCash = (float) SalePayment::query()
             ->whereHas('sale', fn ($query) => $query->where('user_id', $ownerId))
             ->where('method', 'cash')
+            // A reversed instalment never reached the drawer — voided rows stay
+            // on the khata for the record but count as no money anywhere.
+            ->whereNull('reversed_at')
             ->whereDate('paid_at', $date)
             ->sum('amount');
 
@@ -247,7 +250,10 @@ class DayBookService
 
     private function cashInstalments(Sale $sale): float
     {
-        return round((float) $sale->payments->where('method', 'cash')->sum('amount'), 2);
+        return round((float) $sale->payments
+            ->where('method', 'cash')
+            ->whereNull('reversed_at')
+            ->sum('amount'), 2);
     }
 
     /**

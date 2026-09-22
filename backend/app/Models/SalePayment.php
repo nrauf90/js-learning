@@ -20,12 +20,23 @@ class SalePayment extends Model
         'paid_at',
     ];
 
+    // `reversed_at` / `reversed_by_user_id` are deliberately not fillable: they
+    // are only ever stamped by SalePaymentService::reverse(), never taken from
+    // a request payload.
+
     protected function casts(): array
     {
         return [
             'amount' => 'decimal:2',
             'paid_at' => 'datetime',
+            'reversed_at' => 'datetime',
         ];
+    }
+
+    /** Voided instalments still stand on the page, marked rather than gone. */
+    public function isReversed(): bool
+    {
+        return $this->reversed_at !== null;
     }
 
     public function sale(): BelongsTo
@@ -36,5 +47,10 @@ class SalePayment extends Model
     public function recordedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'recorded_by');
+    }
+
+    public function reversedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reversed_by_user_id');
     }
 }

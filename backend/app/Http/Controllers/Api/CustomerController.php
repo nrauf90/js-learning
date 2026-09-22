@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Sale;
 use App\Models\SalePayment;
+use App\Services\ActivityLogger;
 use App\Services\Pos\SalePaymentService;
 use Carbon\Carbon;
 use Illuminate\Database\Query\Builder as QueryBuilder;
@@ -44,7 +45,10 @@ class CustomerController extends Controller
 
     private const OLDEST_BUCKET = 'days_90_plus';
 
-    public function __construct(private SalePaymentService $payments) {}
+    public function __construct(
+        private SalePaymentService $payments,
+        private ActivityLogger $activity,
+    ) {}
 
     /** The whole khata, debtors and settled customers alike. */
     public function index(Request $request): JsonResponse
@@ -217,9 +221,17 @@ class CustomerController extends Controller
     }
 
     /**
-     * The running statement for one page of the khata: every credit sale and
-     * every rupee taken against it, in the order they happened, with the
-     * balance after each. This is the notebook page, read top to bottom.
+     * The running statement for one page of the khata: every credit sale,
+     * every rupee taken against it, and any refund, in the order they
+     * happened, with the balance after each. This is the notebook page, read
+     * top to bottom.
+     *
+     * Also on the page: any ticket still owed on, whatever method it was rung
+     * up as — a part-paid non-credit sale counts toward the khata total via
+     * OUTSTANDING_SQL, so hiding it would leave the page unable to explain the
+     * figure at the bottom. Its counter money never itemised a sale_payments
+     * row, so it is shown as a "Paid at the till" line rather than left to
+     * make the running balance disagree with the outstanding column.
      *
      * The same page also answers the question the customer is actually standing
      * there asking — "I paid you two thousand last week, what is left?" — so the
@@ -233,8 +245,14 @@ class CustomerController extends Controller
         $this->authorize('view', $customer);
 
         $sales = $customer->sales()
-            ->where('payment_method', 'credit')
-            ->with('payments.recordedBy')
+            // Anything still owed on belongs on the page, however it was rung
+            // up: a part-paid ticket whose method is not 'credit' still adds
+            // to the balance OUTSTANDING_SQL reports, and hiding it would leave
+            // the page unable to explain the figure at the bottom.
+            ->where(fn ($query) => $query
+                ->where('payment_method', 'credit')
+                ->orWhereRaw(Customer::OUTSTANDING_SQL.' > 0'))
+            ->with(['payments.recordedBy', 'payments.reversedBy'])
             ->orderBy('sold_at')
             ->orderBy('id')
             ->get();
@@ -243,9 +261,32 @@ class CustomerController extends Controller
 
         foreach ($sales as $sale) {
             $entries[] = $this->entry('sale', $sale->sold_at, $sale, [
-                'description' => 'Credit sale',
+                'description' => $sale->payment_method === 'credit' ? 'Credit sale' : 'Sale',
                 'charge' => round((float) $sale->total, 2),
+                // On a non-credit ticket the method is what explains the line —
+                // "Sale · Cash" says the money was expected at the counter.
+                'method' => $sale->payment_method === 'credit' ? null : $sale->payment_method,
             ]);
+
+            // A part-paid ticket that was not rung up on credit still handed
+            // money over at the counter — it just never itemised it in
+            // sale_payments. Shown as its own line so the running balance lands
+            // on the figure the outstanding column reports; carrying no
+            // payment row, it stays out of the payment history and cannot be
+            // reversed.
+            $counterPaid = round(
+                (float) $sale->paid_amount
+                - (float) $sale->payments->whereNull('reversed_at')->sum('amount'),
+                2
+            );
+
+            if ($counterPaid > 0) {
+                $entries[] = $this->entry('payment', $sale->sold_at, $sale, [
+                    'description' => 'Paid at the till',
+                    'credit' => $counterPaid,
+                    'method' => $sale->payment_method === 'credit' ? null : $sale->payment_method,
+                ]);
+            }
 
             foreach ($sale->payments as $payment) {
                 $entries[] = $this->entry('payment', $payment->paid_at, $sale, [
@@ -258,6 +299,10 @@ class CustomerController extends Controller
                     'payment_reference' => $payment->reference,
                     'payment_id' => $payment->id,
                     'received_by' => $payment->received_by_name,
+                    // Reversed rows stay on the page marked, not gone: a khata
+                    // that has been argued over has to explain itself.
+                    'reversed' => $payment->isReversed(),
+                    'reversed_by' => $payment->reversedBy?->name,
                     // Carried for paymentHistory() below and dropped by
                     // publicEntry() before any of this leaves the controller.
                     'payment' => $payment,
@@ -292,7 +337,11 @@ class CustomerController extends Controller
         $balance = 0.0;
 
         foreach ($entries as $index => $entry) {
-            $balance = round($balance + $entry['charge'] - $entry['credit'], 2);
+            // A reversed instalment still prints on the page but moves nothing:
+            // the money it claimed to bring back never arrived, so it cannot
+            // move the running balance.
+            $credit = $entry['reversed'] ? 0.0 : $entry['credit'];
+            $balance = round($balance + $entry['charge'] - $credit, 2);
             $entries[$index]['balance'] = $balance;
         }
 
@@ -357,6 +406,61 @@ class CustomerController extends Controller
                 'outstanding_amount' => $row['sale']->outstandingAmount(),
                 'sold_at' => $row['sale']->sold_at?->toIso8601String(),
             ])->values(),
+        ]);
+    }
+
+    /**
+     * Void a payment written down wrong.
+     *
+     * The history shows a lump sum as one line and hands back the first row's
+     * id for it; the service resolves the rest of the group — same stamp, same
+     * hands — and voids every allocation together, so a reversed lump payment
+     * never un-pays just its first ticket.
+     */
+    public function reversePayment(Request $request, Customer $customer, SalePayment $payment): JsonResponse
+    {
+        $this->authorize('settle', $customer);
+
+        // A payment id lifted from another page's history finds nothing here:
+        // 404, not 403 — on this khata the row simply does not exist.
+        abort_unless(
+            Sale::query()
+                ->whereKey($payment->sale_id)
+                ->where('customer_id', $customer->id)
+                ->exists(),
+            404
+        );
+
+        $result = $this->payments->reverse($request->user(), $customer, $payment);
+
+        // The page is the subject, not the instalment row: the trail is read as
+        // "what happened on Bilal's khata", and the customer is what names it.
+        $this->activity->reversed($request->user(), $customer, [
+            'amount' => number_format($result['amount'], 2),
+            'method' => $payment->method,
+            'sales' => $result['sales']->map(fn (Sale $sale) => $sale->reference)->implode(', '),
+            'payment_ids' => $result['payments']->pluck('id')->implode(','),
+        ]);
+
+        $balance = $customer->outstandingBalance();
+
+        return response()->json([
+            'message' => sprintf(
+                'Reversed Rs %s — %s now owes Rs %s.',
+                number_format($result['amount'], 2),
+                $customer->name,
+                number_format($balance, 2),
+            ),
+            'customer' => $this->payload($customer->fresh(), ['balance' => $balance]),
+            'reversed' => [
+                'amount' => $result['amount'],
+                'sales' => $result['sales']->map(fn (Sale $sale) => [
+                    'sale_id' => $sale->id,
+                    'reference' => $sale->reference,
+                    'payment_status' => $sale->payment_status,
+                    'outstanding_amount' => $sale->outstandingAmount(),
+                ])->values(),
+            ],
         ]);
     }
 
@@ -541,6 +645,8 @@ class CustomerController extends Controller
             'payment_reference' => null,
             'payment_id' => null,
             'received_by' => null,
+            'reversed' => false,
+            'reversed_by' => null,
             'payment' => null,
             ...$extra,
         ];
@@ -570,7 +676,9 @@ class CustomerController extends Controller
         $groups = [];
 
         foreach ($entries as $entry) {
-            if ($entry['type'] !== 'payment') {
+            // "Paid at the till" lines carry no sale_payments row — they are a
+            // statement line, not an instalment, so there is nothing to fold.
+            if ($entry['type'] !== 'payment' || $entry['payment'] === null) {
                 continue;
             }
 
@@ -599,9 +707,15 @@ class CustomerController extends Controller
                 // typed into".
                 'recorded_by' => $payment->recordedBy?->name,
                 'balance_after' => 0.0,
+                // A group voids atomically, so the first row's stamp speaks
+                // for them all — but the flag is AND-ed per row anyway, so a
+                // half-voided group could never pass itself off as clean.
+                'reversed' => true,
+                'reversed_by' => $payment->reversedBy?->name,
                 'allocations' => [],
             ];
 
+            $groups[$key]['reversed'] = $groups[$key]['reversed'] && $payment->isReversed();
             $groups[$key]['amount'] = round($groups[$key]['amount'] + $entry['credit'], 2);
             $groups[$key]['balance_after'] = $entry['balance'];
             $groups[$key]['allocations'][] = [
@@ -632,6 +746,8 @@ class CustomerController extends Controller
             'payment_reference' => $entry['payment_reference'],
             'payment_id' => $entry['payment_id'],
             'received_by' => $entry['received_by'],
+            'reversed' => $entry['reversed'],
+            'reversed_by' => $entry['reversed_by'],
         ];
     }
 

@@ -629,6 +629,9 @@ class SaleController extends Controller
                     'note' => $payment->note,
                     'recorded_by' => $payment->recorded_by,
                     'paid_at' => $payment->paid_at?->toIso8601String(),
+                    // A voided instalment still shows on a reprint, marked —
+                    // hiding it would print a receipt fuller than the truth.
+                    'reversed_at' => $payment->reversed_at?->toIso8601String(),
                 ])->values()
                 : [],
         ];

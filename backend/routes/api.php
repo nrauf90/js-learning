@@ -114,6 +114,9 @@ Route::middleware('auth:sanctum')->group(function () use ($authThrottle) {
         Route::put('/customers/{customer}', [CustomerController::class, 'update']);
         Route::get('/customers/{customer}/ledger', [CustomerController::class, 'ledger']);
         Route::post('/customers/{customer}/payments', [CustomerController::class, 'recordPayment']);
+        // DELETE rather than POST …/reverse: the void *is* the row's delete —
+        // it just leaves a marked line behind instead of a hole.
+        Route::delete('/customers/{customer}/payments/{payment}', [CustomerController::class, 'reversePayment']);
         // ── end customers ───────────────────────────────────────────────────
 
         // ── day book (opening / closing balance) ────────────────────────────

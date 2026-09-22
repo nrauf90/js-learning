@@ -29,9 +29,11 @@ class ActivityLogger
 
     public const STOCK_ADJUSTED = 'stock_adjusted';
 
-    public const ACTIONS = [self::CREATED, self::UPDATED, self::DELETED, self::STOCK_ADJUSTED];
+    public const REVERSED = 'reversed';
 
-    public const SUBJECT_TYPES = ['Product', 'ProductCategory'];
+    public const ACTIONS = [self::CREATED, self::UPDATED, self::DELETED, self::STOCK_ADJUSTED, self::REVERSED];
+
+    public const SUBJECT_TYPES = ['Product', 'ProductCategory', 'Customer'];
 
     /**
      * Columns that say nothing about what a person did. Ids and timestamps are
@@ -129,6 +131,18 @@ class ActivityLogger
         }
 
         $this->write($actor, self::STOCK_ADJUSTED, $product, $changes);
+    }
+
+    /**
+     * A khata payment taken back. Its own action rather than `deleted`,
+     * because nothing was deleted — the instalment still stands on the page,
+     * marked, and "reversed" is the word the shopkeeper used.
+     *
+     * @param  array<string, mixed>  $changes
+     */
+    public function reversed(User $actor, Model $subject, array $changes): void
+    {
+        $this->write($actor, self::REVERSED, $subject, $changes);
     }
 
     /**

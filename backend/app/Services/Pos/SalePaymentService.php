@@ -4,8 +4,10 @@ namespace App\Services\Pos;
 
 use App\Models\Customer;
 use App\Models\Sale;
+use App\Models\SalePayment;
 use App\Models\User;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -157,6 +159,110 @@ class SalePaymentService
             }
 
             return $allocations;
+        });
+    }
+
+    /**
+     * Take back a payment that should never have been written down — the
+     * mis-typed instalment the khata otherwise carries forever.
+     *
+     * The rows are voided, not deleted: `reversed_at` is stamped on them and
+     * the ledger keeps showing the line, marked, so a disputed khata can still
+     * explain itself. Everywhere that sums this table filters reversed rows
+     * out, which is what actually puts the money back on the customer's page.
+     *
+     * A lump sum is one row per ticket it cleared, all sharing the stamp
+     * CustomerController::paymentHistory() folds them back together on — so
+     * reversal voids the whole group, keyed exactly the way the history groups
+     * it. Voiding only the row the caller happened to hold would un-pay one
+     * ticket of a payment the customer remembers making once.
+     *
+     * @return array{payments: Collection<int, SalePayment>, sales: Collection<int, Sale>, amount: float}
+     */
+    public function reverse(User $actor, Customer $customer, SalePayment $payment): array
+    {
+        return DB::transaction(function () use ($actor, $customer, $payment) {
+            $locked = SalePayment::query()->lockForUpdate()->findOrFail($payment->id);
+
+            // The same fold the payment history draws: one stamp plus
+            // everything that tells one handful of notes from another. The
+            // ledger shows this group as a single line, so it is reversed as a
+            // single line.
+            $siblings = SalePayment::query()
+                ->whereIn('sale_id', $customer->sales()->select('id'))
+                ->where('paid_at', $locked->paid_at->toDateTimeString())
+                ->where(function ($query) use ($locked) {
+                    foreach (['method', 'recorded_by', 'received_by_name', 'reference', 'note'] as $field) {
+                        $value = $locked->getAttribute($field);
+                        $value === null ? $query->whereNull($field) : $query->where($field, $value);
+                    }
+                })
+                ->lockForUpdate()
+                ->get();
+
+            if (! $siblings->contains('id', $locked->id)) {
+                throw ValidationException::withMessages([
+                    'payment' => ['This payment is not on this khata.'],
+                ]);
+            }
+
+            if ($siblings->contains(fn (SalePayment $row) => $row->reversed_at !== null)) {
+                throw ValidationException::withMessages([
+                    'payment' => ['This payment has already been reversed.'],
+                ]);
+            }
+
+            // Locked before the balances move, same as settleOldestFirst:
+            // a till settling this khata at the same moment would otherwise
+            // collect against a balance that is about to grow again.
+            $sales = Sale::query()
+                ->whereIn('id', $siblings->pluck('sale_id')->unique()->all())
+                ->lockForUpdate()
+                ->get();
+
+            // paid_amount is re-derived, never decremented. Every rupee of a
+            // credit sale's paid figure is itemised in sale_payments — the
+            // till deposit included — but a sale part-paid some other way can
+            // hold money no row explains; that unitemised floor survives the
+            // reversal untouched.
+            $floors = $sales->mapWithKeys(fn (Sale $sale) => [
+                $sale->id => max(0.0, round(
+                    (float) $sale->paid_amount - (float) $sale->payments()->sum('amount'),
+                    2
+                )),
+            ]);
+
+            $stamp = now();
+            $ids = $siblings->pluck('id')->all();
+
+            SalePayment::query()->whereIn('id', $ids)->update([
+                'reversed_at' => $stamp,
+                'reversed_by_user_id' => $actor->id,
+            ]);
+
+            $siblings->each(fn (SalePayment $row) => $row->forceFill([
+                'reversed_at' => $stamp,
+                'reversed_by_user_id' => $actor->id,
+            ]));
+
+            foreach ($sales as $sale) {
+                $paid = round(
+                    $floors[$sale->id]
+                    + (float) $sale->payments()->whereNull('reversed_at')->sum('amount'),
+                    2
+                );
+
+                $sale->forceFill(['paid_amount' => $paid]);
+                // The same three-way call settle() makes: outstanding against
+                // the new paid figure decides paid / partial / pending.
+                $sale->forceFill(['payment_status' => $sale->resolvePaymentStatus()])->save();
+            }
+
+            return [
+                'payments' => $siblings,
+                'sales' => $sales,
+                'amount' => round((float) $siblings->sum('amount'), 2),
+            ];
         });
     }
 

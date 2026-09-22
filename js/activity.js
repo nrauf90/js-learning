@@ -17,6 +17,7 @@ const ACTION_LABELS = {
   updated: 'Updated',
   deleted: 'Deleted',
   stock_adjusted: 'Stock adjusted',
+  reversed: 'Reversed',
 };
 
 const ACTION_BADGES = {
@@ -24,11 +25,13 @@ const ACTION_BADGES = {
   updated: 'admin-badge-info',
   deleted: 'admin-badge-danger',
   stock_adjusted: 'admin-badge-warning',
+  reversed: 'admin-badge-danger',
 };
 
 const SUBJECT_LABELS = {
   Product: 'Product',
   ProductCategory: 'Category',
+  Customer: 'Khata page',
 };
 
 /** Field names the report spells out rather than showing the column name. */

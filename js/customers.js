@@ -19,10 +19,11 @@
  * straight back into this DOM, so everything interpolated goes through
  * escapeHtml() — including the values that land inside attributes.
  */
-import { apiGet, apiPost, apiPut, getAuthToken } from './api.js';
+import { apiDelete, apiGet, apiPost, apiPut, getAuthToken } from './api.js';
 import { initShell } from './shell.js';
 import { initTheme } from './theme.js';
-import { paymentLabel, receiptDateTime, receiptNum } from './receipt.js';
+import { paymentLabel, receiptDateTime, receiptNum, rememberShop, storedShop } from './receipt.js';
+import { reminderText, reminderUrl, whatsappNumber } from './whatsapp.js';
 
 /** The aging bands the API reports, in the order they are read. */
 const AGING_BUCKETS = [
@@ -53,6 +54,9 @@ let rows = [];
 
 /** The khata page the dialog is showing, so the payment form knows its target. */
 let openCustomer = null;
+
+/** The statement rows behind the open dialog — the printed sheet reuses them. */
+let openEntries = [];
 
 let editingId = null;
 
@@ -176,12 +180,48 @@ function oldestCellHTML(customer) {
   return `${escapeHtml(formatDay(customer.oldest_debt_at))} <small>${days} day${days === 1 ? '' : 's'} old</small>`;
 }
 
+/* ------------------------------------------------------------- reminders */
+
+/**
+ * A WhatsApp nudge is only as good as the number on the page — no number, no
+ * button to press, just the reason why sitting on its tooltip.
+ */
+function remindButtonHTML(customer, dataAttr = '') {
+  if (!whatsappNumber(customer.phone)) {
+    return '<button type="button" class="btn btn-ghost pos-mini" disabled title="No phone number on this khata page">Remind</button>';
+  }
+
+  const attr = dataAttr ? ` ${dataAttr}="${escapeHtml(String(customer.id))}"` : '';
+  return `<button type="button" class="btn btn-ghost pos-mini"${attr} title="Send a WhatsApp reminder">Remind</button>`;
+}
+
+/** Opens the shop's own WhatsApp with the message already typed — no API. */
+function remindCustomer(customer) {
+  if (!customer) return;
+
+  const url = reminderUrl(
+    customer.phone,
+    reminderText({
+      name: customer.name,
+      shop: storedShop()?.name,
+      balance: formatRs(Number(customer.balance) || 0),
+    })
+  );
+
+  if (!url) {
+    showAlert('This khata page has no phone number to remind.');
+    return;
+  }
+
+  window.open(url, '_blank', 'noopener');
+}
+
 function renderRows() {
   const body = el('khata-body');
   if (!body) return;
 
   if (rows.length === 0) {
-    body.innerHTML = `<tr><td colspan="6" class="admin-table-empty">${
+    body.innerHTML = `<tr><td colspan="7" class="admin-table-empty">${
       view === 'owing' ? 'Nobody owes the shop anything.' : 'No customers on the khata yet.'
     }</td></tr>`;
     return;
@@ -208,6 +248,7 @@ function renderRows() {
             ? '<span class="admin-badge admin-badge-warning">Owes</span>'
             : '<span class="admin-badge admin-badge-success">Clear</span>'
         }</td>
+        <td>${remindButtonHTML(customer, 'data-remind')}</td>
       </tr>`;
     })
     .join('');
@@ -328,7 +369,7 @@ function renderLedger(entries) {
   if (!body) return;
 
   if (!entries || entries.length === 0) {
-    body.innerHTML = '<tr><td colspan="4" class="admin-table-empty">No credit sales on this page yet.</td></tr>';
+    body.innerHTML = '<tr><td colspan="4" class="admin-table-empty">Nothing on this page yet.</td></tr>';
     return;
   }
 
@@ -352,11 +393,18 @@ function renderLedger(entries) {
       const charged = entry.charge > 0;
       const amount = charged ? entry.charge : entry.credit;
 
+      // A reversed payment still occupies its line — struck through — so the
+      // page can answer "where did that payment go" instead of hiding it.
+      const reversed = entry.reversed === true;
+      const detail = reversed
+        ? `${label} — reversed${entry.reversed_by ? ` by ${entry.reversed_by}` : ''}`
+        : label;
+
       return `
-      <tr>
+      <tr${reversed ? ' class="is-reversed"' : ''}>
         <td class="sales-when">${escapeHtml(receiptDateTime(entry.at))}</td>
         <td>
-          ${escapeHtml(label)}
+          ${escapeHtml(detail)}
           ${meta ? `<small>${escapeHtml(meta)}</small>` : ''}
         </td>
         <td class="sales-num${charged ? ' is-due' : ''}">${escapeHtml(`${charged ? '+' : '−'} ${formatRs(amount)}`)}</td>
@@ -380,13 +428,14 @@ function renderPayments(payments) {
 
   if (!payments || payments.length === 0) {
     body.innerHTML =
-      '<tr><td colspan="4" class="admin-table-empty">Nothing paid against this khata yet.</td></tr>';
+      '<tr><td colspan="5" class="admin-table-empty">Nothing paid against this khata yet.</td></tr>';
     return;
   }
 
   body.innerHTML = payments
     .map((payment) => {
       const left = Number(payment.balance_after) || 0;
+      const reversed = payment.reversed === true;
 
       // A lump sum arrives as one line naming every ticket it cleared, which is
       // what gets read back: "that clears the 14th and half of the 20th".
@@ -399,20 +448,28 @@ function renderPayments(payments) {
         payment.note && payment.note !== 'Khata payment' ? payment.note : '',
         tickets.length ? `on ${tickets.join(', ')}` : '',
         payment.recorded_by ? `entered by ${payment.recorded_by}` : '',
+        reversed && payment.reversed_by ? `reversed by ${payment.reversed_by}` : '',
       ]
         .filter(Boolean)
         .join(' · ');
 
       return `
-      <tr>
+      <tr${reversed ? ' class="is-reversed"' : ''}>
         <td class="sales-when">${escapeHtml(receiptDateTime(payment.at))}</td>
         <td>
           ${escapeHtml(payment.received_by || 'Not recorded')}
           ${meta ? `<small>${escapeHtml(meta)}</small>` : ''}
         </td>
         <td class="sales-num">${escapeHtml(formatRs(payment.amount))}</td>
-        <td class="sales-num${left > 0 ? ' is-due' : ''}">${
-          left > 0 ? escapeHtml(formatRs(left)) : 'Clear'
+        <td class="sales-num${left > 0 && !reversed ? ' is-due' : ''}">${
+          reversed ? '—' : left > 0 ? escapeHtml(formatRs(left)) : 'Clear'
+        }</td>
+        <td>${
+          reversed
+            ? '<span class="admin-badge admin-badge-muted">Reversed</span>'
+            : `<button type="button" class="btn btn-ghost pos-mini" data-reverse-payment="${escapeHtml(
+                String(payment.id)
+              )}" title="Take this payment back — the amount goes onto the khata again">Reverse</button>`
         }</td>
       </tr>`;
     })
@@ -501,11 +558,23 @@ function renderPaymentForm(customer) {
 
 function renderDetail(customer, entries, payments) {
   openCustomer = customer;
+  openEntries = entries || [];
 
   el('khata-detail-title').textContent = customer.name;
+
+  // Remind is only as useful as the number on the page — disabled, with the
+  // reason on the tooltip, when there is none.
+  const remind = el('khata-remind');
+  if (remind) {
+    remind.disabled = !whatsappNumber(customer.phone);
+    remind.title = remind.disabled
+      ? 'No phone number on this khata page'
+      : 'Send a WhatsApp reminder';
+  }
+
   renderFacts(customer);
   renderPayments(payments);
-  renderLedger(entries);
+  renderLedger(openEntries);
   renderPaymentForm(customer);
 }
 
@@ -522,6 +591,7 @@ function closeModal() {
   modal.hidden = true;
   document.body.classList.remove('sales-modal-open');
   openCustomer = null;
+  openEntries = [];
 }
 
 async function openDetail(id) {
@@ -601,6 +671,101 @@ async function submitPayment(event) {
   } finally {
     button.disabled = false;
   }
+}
+
+/**
+ * Taking a payment back. A lump sum is one line on this page but several rows
+ * on the server — the DELETE voids the whole group, and the line stays on the
+ * page marked reversed rather than vanishing mid-argument.
+ */
+async function reversePayment(paymentId) {
+  if (!openCustomer) return;
+
+  if (!window.confirm('Reverse this payment? The amount goes back onto the khata.')) return;
+
+  try {
+    const data = await apiDelete(`/api/customers/${openCustomer.id}/payments/${paymentId}`);
+
+    await refreshDetail();
+    showPaymentAlert(data.message || 'Payment reversed.', 'success');
+
+    // The row's balance, the aging tiles and the totals all moved back.
+    await Promise.all([loadList(), loadSummary()]);
+  } catch (err) {
+    showPaymentAlert(err.body?.errors?.payment?.[0] || err.message || 'Could not reverse the payment');
+  }
+}
+
+/* ------------------------------------------------------------ statement */
+
+/**
+ * The paper the customer is handed: the shop's letterhead, their name, and the
+ * same running statement the dialog shows — charges down one side, payments
+ * down the other, and what is left at the bottom. Built from the rows already
+ * on screen so the print can never disagree with the page it came from.
+ */
+function statementHTML(customer, entries) {
+  const shop = storedShop();
+  const shopName = shop?.name || 'PK Galla';
+  const shopLine = [shop?.address, shop?.phone].filter(Boolean).join(' · ');
+
+  const rows = (entries || [])
+    .map((entry) => {
+      const meta = [
+        entry.description || ENTRY_LABELS[entry.type] || entry.type,
+        entry.method ? paymentLabel(entry.method) : '',
+        entry.payment_reference || '',
+        entry.reversed ? 'reversed' : '',
+      ]
+        .filter(Boolean)
+        .join(' · ');
+
+      return `
+      <tr${entry.reversed ? ' class="is-reversed"' : ''}>
+        <td>${escapeHtml(formatDay(entry.at))}</td>
+        <td>${escapeHtml(entry.reference || '—')}</td>
+        <td>${escapeHtml(meta)}</td>
+        <td class="stmt-num">${entry.charge > 0 ? escapeHtml(receiptNum(entry.charge)) : ''}</td>
+        <td class="stmt-num">${entry.credit > 0 ? escapeHtml(receiptNum(entry.credit)) : ''}</td>
+        <td class="stmt-num">${escapeHtml(receiptNum(entry.balance))}</td>
+      </tr>`;
+    })
+    .join('');
+
+  const owed = Number(customer.balance) || 0;
+
+  return `
+    <p class="stmt-shop">${escapeHtml(shopName)}</p>
+    ${shopLine ? `<p class="stmt-line">${escapeHtml(shopLine)}</p>` : ''}
+    <p class="stmt-title">Khata statement</p>
+    <p class="stmt-line">
+      ${escapeHtml(customer.name)}${customer.phone ? ` · ${escapeHtml(customer.phone)}` : ''}
+      · printed ${escapeHtml(formatDay(new Date().toISOString()))}
+    </p>
+    <table class="stmt-table">
+      <thead>
+        <tr><th>Date</th><th>Ref</th><th>Detail</th><th class="stmt-num">Charge</th><th class="stmt-num">Paid</th><th class="stmt-num">Balance</th></tr>
+      </thead>
+      <tbody>${rows || '<tr><td colspan="6">No entries.</td></tr>'}</tbody>
+      <tfoot>
+        <tr><td colspan="5">Total outstanding</td><td class="stmt-num">${escapeHtml(formatRs(owed))}</td></tr>
+      </tfoot>
+    </table>
+    <p class="stmt-foot">Generated by PK Galla</p>`;
+}
+
+/**
+ * `khata-printing` is the print-time switch: the sheet lives inside the open
+ * dialog, and the flag tells the print stylesheet to show the sheet and hide
+ * the rest of the modal around it.
+ */
+function printStatement() {
+  const sheet = el('khata-statement');
+  if (!openCustomer || !sheet) return;
+
+  sheet.innerHTML = statementHTML(openCustomer, openEntries);
+  document.body.classList.add('khata-printing');
+  window.print();
 }
 
 /* ------------------------------------------------------- add / edit a page */
@@ -728,6 +893,14 @@ function wireList() {
   // Delegated: the list is re-rendered on every load, and per-row listeners
   // would leak one set each time.
   el('khata-body').addEventListener('click', (event) => {
+    // A Remind press is not an open-the-page press.
+    const remind = event.target.closest('[data-remind]');
+    if (remind) {
+      event.stopPropagation();
+      remindCustomer(rows.find((c) => String(c.id) === remind.dataset.remind));
+      return;
+    }
+
     const row = event.target.closest('tr[data-customer-id]');
     if (!row) return;
     openDetail(Number(row.dataset.customerId));
@@ -742,6 +915,16 @@ function wireModal() {
     const customer = openCustomer;
     closeModal();
     startEdit(customer);
+  });
+
+  el('khata-remind').addEventListener('click', () => remindCustomer(openCustomer));
+  el('khata-print').addEventListener('click', printStatement);
+  window.addEventListener('afterprint', () => document.body.classList.remove('khata-printing'));
+
+  // Delegated: the payment history re-renders on every refresh.
+  el('khata-payments-body').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-reverse-payment]');
+    if (button) reversePayment(Number(button.dataset.reversePayment));
   });
 
   document.addEventListener('keydown', (event) => {
@@ -762,6 +945,12 @@ async function boot() {
 
   wireList();
   wireModal();
+
+  // The statement and the reminder both carry the shop's name — keep the same
+  // cache the receipt prints from warm.
+  apiGet('/api/shop')
+    .then((data) => rememberShop(data?.shop))
+    .catch(() => {});
 
   el('customer-form').addEventListener('submit', submitCustomer);
   el('customer-cancel').addEventListener('click', resetForm);

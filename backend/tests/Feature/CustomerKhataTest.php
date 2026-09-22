@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\DayBalance;
 use App\Models\Product;
 use App\Models\Sale;
+use App\Models\SalePayment;
 use App\Models\Shop;
 use App\Models\User;
 use App\Services\Pos\DayBookService;
@@ -1092,5 +1093,321 @@ class CustomerKhataTest extends TestCase
             'Bilal (delivery)',
             Sale::query()->find($sale['id'])->payments()->latest('id')->value('received_by_name'),
         );
+    }
+
+    /* ------------------------------------------------------------- reversal */
+
+    public function test_a_mistyped_payment_can_be_taken_back(): void
+    {
+        $user = $this->seller();
+        $sale = $this->onCredit($user, $this->product($user), 2); // Rs 240
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson("/api/customers/{$sale['customer_id']}/payments", ['amount' => 100, 'method' => 'cash'])
+            ->assertOk()
+            ->assertJsonPath('customer.balance', 140);
+
+        $paymentId = $this->actingAs($user, 'sanctum')
+            ->getJson("/api/customers/{$sale['customer_id']}/ledger")
+            ->json('payments.0.id');
+
+        $this->actingAs($user, 'sanctum')
+            ->deleteJson("/api/customers/{$sale['customer_id']}/payments/{$paymentId}")
+            ->assertOk()
+            ->assertJsonPath('customer.balance', 240)
+            ->assertJsonPath('reversed.amount', 100);
+
+        // Voided, not deleted: the row still stands, marked with when and by whom.
+        $payment = SalePayment::findOrFail($paymentId);
+        $this->assertNotNull($payment->reversed_at);
+        $this->assertSame($user->id, $payment->reversed_by_user_id);
+        $this->assertDatabaseCount('sale_payments', 1);
+
+        // The sale's figures are re-derived from the rows still standing, and
+        // it reopens exactly the way settle() would have closed it.
+        $sale = Sale::findOrFail($sale['id']);
+        $this->assertSame('0.00', $sale->paid_amount);
+        $this->assertSame('pending', $sale->payment_status);
+    }
+
+    public function test_reversing_a_lump_sum_voids_every_ticket_it_cleared(): void
+    {
+        $user = $this->seller();
+        $product = $this->product($user);
+
+        $oldest = $this->onCredit($user, $product, 1);  // 120
+        $newest = $this->onCredit($user, $product, 2);  // 240
+        $this->backdate($oldest['id'], now()->subDays(9));
+
+        // One handful of notes, two instalment rows: 120 + 180.
+        $this->actingAs($user, 'sanctum')
+            ->postJson("/api/customers/{$oldest['customer_id']}/payments", ['amount' => 300, 'method' => 'cash'])
+            ->assertOk();
+
+        $this->assertEquals(60.0, Customer::findOrFail($oldest['customer_id'])->outstandingBalance());
+
+        // The history folds the lump sum into one line; its id is the first
+        // allocation's row, and the endpoint has to void the rest with it.
+        $paymentId = $this->actingAs($user, 'sanctum')
+            ->getJson("/api/customers/{$oldest['customer_id']}/ledger")
+            ->json('payments.0.id');
+
+        $this->actingAs($user, 'sanctum')
+            ->deleteJson("/api/customers/{$oldest['customer_id']}/payments/{$paymentId}")
+            ->assertOk()
+            ->assertJsonPath('customer.balance', 360)
+            ->assertJsonCount(2, 'reversed.sales');
+
+        $this->assertSame(2, SalePayment::query()->whereNotNull('reversed_at')->count());
+
+        $this->assertSame('0.00', Sale::findOrFail($oldest['id'])->paid_amount);
+        $this->assertSame('0.00', Sale::findOrFail($newest['id'])->paid_amount);
+        $this->assertSame('pending', Sale::findOrFail($oldest['id'])->payment_status);
+        $this->assertSame('pending', Sale::findOrFail($newest['id'])->payment_status);
+    }
+
+    public function test_reversing_one_instalment_leaves_the_others_standing(): void
+    {
+        $user = $this->seller();
+
+        // Rs 240 of goods, Rs 40 down at the till, Rs 200 collected later.
+        $sale = $this->onCredit($user, $this->product($user), 2, [
+            'paid_amount' => 40,
+            'deposit_method' => 'cash',
+        ]);
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson("/api/customers/{$sale['customer_id']}/payments", ['amount' => 200, 'method' => 'cash'])
+            ->assertOk()
+            ->assertJsonPath('customer.balance', 0);
+
+        // The deposit and the later visit are different payments — different
+        // stamps — so voiding one leaves the other exactly where it was.
+        $payments = $this->actingAs($user, 'sanctum')
+            ->getJson("/api/customers/{$sale['customer_id']}/ledger")
+            ->json('payments');
+
+        $this->actingAs($user, 'sanctum')
+            ->deleteJson("/api/customers/{$sale['customer_id']}/payments/{$payments[0]['id']}")
+            ->assertOk()
+            ->assertJsonPath('customer.balance', 200);
+
+        $sale = Sale::findOrFail($sale['id']);
+        $this->assertSame('40.00', $sale->paid_amount);
+        $this->assertSame('partial', $sale->payment_status);
+    }
+
+    public function test_a_payment_on_another_page_is_not_found(): void
+    {
+        $user = $this->seller();
+        $product = $this->product($user);
+
+        $ali = $this->onCredit($user, $product, 1, ['customer_name' => 'Ali', 'customer_phone' => '0300-1111111']);
+        $kareem = $this->onCredit($user, $product, 2, ['customer_name' => 'Kareem', 'customer_phone' => '0345-2222222']);
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson("/api/customers/{$kareem['customer_id']}/payments", ['amount' => 100, 'method' => 'cash'])
+            ->assertOk();
+
+        $paymentId = SalePayment::query()->latest('id')->value('id');
+
+        // Kareem's payment id on Ali's page: nothing by that id exists here.
+        $this->actingAs($user, 'sanctum')
+            ->deleteJson("/api/customers/{$ali['customer_id']}/payments/{$paymentId}")
+            ->assertNotFound();
+
+        $this->assertNull(SalePayment::findOrFail($paymentId)->reversed_at);
+        $this->assertEquals(140.0, Customer::findOrFail($kareem['customer_id'])->outstandingBalance());
+    }
+
+    public function test_another_shops_payment_is_not_found_either(): void
+    {
+        $mine = $this->seller();
+        $theirs = $this->seller();
+
+        $mySale = $this->onCredit($mine, $this->product($mine), 1, ['customer_name' => 'Mine']);
+        $theirSale = $this->onCredit($theirs, $this->product($theirs), 1, ['customer_name' => 'Theirs']);
+
+        $this->actingAs($theirs, 'sanctum')
+            ->postJson("/api/customers/{$theirSale['customer_id']}/payments", ['amount' => 50, 'method' => 'cash'])
+            ->assertOk();
+
+        $paymentId = SalePayment::query()->latest('id')->value('id');
+
+        // My page, their payment id — the answer is still "not here", not
+        // "not yours": an id that 403s confirms the row exists.
+        $this->actingAs($mine, 'sanctum')
+            ->deleteJson("/api/customers/{$mySale['customer_id']}/payments/{$paymentId}")
+            ->assertNotFound();
+
+        $this->assertNull(SalePayment::findOrFail($paymentId)->reversed_at);
+    }
+
+    public function test_a_payment_cannot_be_reversed_twice(): void
+    {
+        $user = $this->seller();
+        $sale = $this->onCredit($user, $this->product($user), 1);
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson("/api/customers/{$sale['customer_id']}/payments", ['amount' => 120, 'method' => 'cash'])
+            ->assertOk();
+
+        $paymentId = SalePayment::query()->latest('id')->value('id');
+        $url = "/api/customers/{$sale['customer_id']}/payments/{$paymentId}";
+
+        $this->actingAs($user, 'sanctum')->deleteJson($url)->assertOk();
+        $this->actingAs($user, 'sanctum')
+            ->deleteJson($url)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('payment');
+    }
+
+    public function test_a_reversed_payment_stays_on_the_ledger_marked_reversed(): void
+    {
+        $user = $this->seller();
+        $sale = $this->onCredit($user, $this->product($user), 1); // 120
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson("/api/customers/{$sale['customer_id']}/payments", ['amount' => 120, 'method' => 'cash'])
+            ->assertOk();
+
+        $paymentId = SalePayment::query()->latest('id')->value('id');
+
+        $this->actingAs($user, 'sanctum')
+            ->deleteJson("/api/customers/{$sale['customer_id']}/payments/{$paymentId}")
+            ->assertOk();
+
+        $body = $this->actingAs($user, 'sanctum')
+            ->getJson("/api/customers/{$sale['customer_id']}/ledger")
+            ->assertOk()
+            ->json();
+
+        // Two lines: the charge and the voided payment. The payment still
+        // shows its Rs 120 — struck through — but it moves the balance by
+        // nothing, so the page closes on the full debt again.
+        $this->assertCount(2, $body['entries']);
+        $this->assertFalse($body['entries'][0]['reversed']);
+        $this->assertTrue($body['entries'][1]['reversed']);
+        $this->assertEquals(120.0, $body['entries'][1]['credit']);
+        $this->assertEquals(120.0, $body['entries'][1]['balance']);
+
+        $this->assertTrue($body['payments'][0]['reversed']);
+        $this->assertSame($user->name, $body['payments'][0]['reversed_by']);
+
+        $this->assertEquals(120.0, $body['customer']['balance']);
+    }
+
+    public function test_a_reversed_cash_payment_never_reached_the_drawer(): void
+    {
+        $user = $this->seller();
+        $product = $this->product($user);
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson('/api/day-book/open', ['opening_amount' => 1000])
+            ->assertSuccessful();
+
+        $sale = $this->onCredit($user, $product, 2);
+        $this->backdate($sale['id'], now()->subDay());
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson("/api/customers/{$sale['customer_id']}/payments", ['amount' => 150, 'method' => 'cash'])
+            ->assertOk();
+
+        $this->assertEquals(150.0, app(DayBookService::class)->cashPosition($user, now()->toDateString())['in']);
+
+        $paymentId = SalePayment::query()->latest('id')->value('id');
+
+        $this->actingAs($user, 'sanctum')
+            ->deleteJson("/api/customers/{$sale['customer_id']}/payments/{$paymentId}")
+            ->assertOk();
+
+        // The drawer is a count of notes, not a count of rows: a voided
+        // instalment puts the debt back without pretending cash exists.
+        $cash = app(DayBookService::class)->cashPosition($user, now()->toDateString());
+        $this->assertEquals(0.0, $cash['in']);
+        $this->assertEquals(0.0, $cash['net']);
+    }
+
+    public function test_a_reversal_is_written_to_the_activity_log(): void
+    {
+        $user = $this->seller();
+        $sale = $this->onCredit($user, $this->product($user), 1);
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson("/api/customers/{$sale['customer_id']}/payments", ['amount' => 60, 'method' => 'cash'])
+            ->assertOk();
+
+        $paymentId = SalePayment::query()->latest('id')->value('id');
+
+        $this->actingAs($user, 'sanctum')
+            ->deleteJson("/api/customers/{$sale['customer_id']}/payments/{$paymentId}")
+            ->assertOk();
+
+        // The trail names the page the money was struck off, not the row id.
+        $this->assertDatabaseHas('activity_logs', [
+            'action' => 'reversed',
+            'subject_type' => 'Customer',
+            'subject_id' => $sale['customer_id'],
+            'subject_label' => 'Bilal Traders',
+            'user_id' => $user->id,
+        ]);
+    }
+
+    /* -------------------------------------------- part-paid non-credit sales */
+
+    /**
+     * A ticket that went out part-paid by some other route — a hand-entered
+     * correction, a synced till record — still owes the shop money, and it
+     * counts toward the khata total via OUTSTANDING_SQL. The page has to show
+     * the line or it cannot explain the figure at the bottom.
+     */
+    public function test_a_part_paid_non_credit_sale_still_appears_on_the_ledger(): void
+    {
+        $user = $this->seller();
+
+        $customer = Customer::create(['user_id' => $user->id, 'name' => 'Bilal Traders']);
+
+        $sale = Sale::create([
+            'user_id' => $user->id,
+            'customer_id' => $customer->id,
+            'reference' => 'S-000901',
+            'subtotal' => 120,
+            'total' => 120,
+            'payment_method' => 'cash',
+            'payment_status' => 'partial',
+            'paid_amount' => 50,
+            'customer_name' => 'Bilal Traders',
+            'status' => 'completed',
+            'sold_at' => now(),
+        ]);
+
+        $this->assertEquals(70.0, $customer->outstandingBalance());
+
+        $body = $this->actingAs($user, 'sanctum')
+            ->getJson("/api/customers/{$customer->id}/ledger")
+            ->assertOk()
+            ->json();
+
+        // The ticket, then the counter money against it — the running balance
+        // has to land on the same Rs 70 the outstanding column reports.
+        $this->assertCount(2, $body['entries']);
+
+        $this->assertSame('sale', $body['entries'][0]['type']);
+        $this->assertSame('Sale', $body['entries'][0]['description']);
+        $this->assertSame('cash', $body['entries'][0]['method']);
+        $this->assertEquals(120.0, $body['entries'][0]['charge']);
+        $this->assertEquals(120.0, $body['entries'][0]['balance']);
+
+        $this->assertSame('payment', $body['entries'][1]['type']);
+        $this->assertSame('Paid at the till', $body['entries'][1]['description']);
+        $this->assertEquals(50.0, $body['entries'][1]['credit']);
+        $this->assertEquals(70.0, $body['entries'][1]['balance']);
+
+        // No sale_payments row exists for it, so it is not an instalment in
+        // the history and there is nothing to reverse.
+        $this->assertCount(0, $body['payments']);
+        $this->assertNull($body['entries'][1]['payment_id']);
+
+        $this->assertEquals(70.0, $body['customer']['balance']);
     }
 }

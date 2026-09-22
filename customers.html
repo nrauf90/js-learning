@@ -73,10 +73,11 @@
                   <th>Oldest debt</th>
                   <th class="sales-num">Limit left</th>
                   <th>Status</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody id="khata-body">
-                <tr><td colspan="6" class="admin-table-empty">Loading&hellip;</td></tr>
+                <tr><td colspan="7" class="admin-table-empty">Loading&hellip;</td></tr>
               </tbody>
             </table>
           </div>
@@ -133,6 +134,8 @@
       <div class="pos-receipt-head">
         <h2 class="auth-title" id="khata-detail-title">Khata</h2>
         <div class="pos-receipt-actions">
+          <button type="button" class="btn btn-secondary pos-mini" id="khata-remind">Remind</button>
+          <button type="button" class="btn btn-secondary pos-mini" id="khata-print">Print</button>
           <button type="button" class="btn btn-secondary pos-mini" id="khata-edit">Edit</button>
           <button type="button" class="pos-modal-close" id="khata-detail-close" aria-label="Close khata">&times;</button>
         </div>
@@ -199,10 +202,11 @@
                     <th>Received by</th>
                     <th class="sales-num">Paid</th>
                     <th class="sales-num">Left owing</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody id="khata-payments-body">
-                  <tr><td colspan="4" class="admin-table-empty">Loading&hellip;</td></tr>
+                  <tr><td colspan="5" class="admin-table-empty">Loading&hellip;</td></tr>
                 </tbody>
               </table>
             </div>
@@ -227,6 +231,11 @@
               </table>
             </div>
           </section>
+
+          <!-- Print-only statement sheet: populated with the same ledger rows
+               the tables above show, revealed by @media print when the body
+               carries .khata-printing (see js/customers.js + styles.css). -->
+          <div class="statement-sheet" id="khata-statement" hidden></div>
         </div>
       </div>
     </div>

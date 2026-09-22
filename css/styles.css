@@ -5353,6 +5353,94 @@ body.sales-modal-open {
   }
 }
 
+/* ---- Khata statement + reversed payments ----
+   A voided instalment stays on the page, struck through: a khata that has been
+   argued over has to be able to explain why the balance went back up. */
+
+tr.is-reversed td {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+/* The printed statement is a document, not a till roll: plain black on white,
+   sized to the page. On screen it stays hidden — it only exists to print. */
+.statement-sheet {
+  color: #111;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.stmt-shop {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.stmt-line {
+  margin: 0.15rem 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #333;
+}
+
+.stmt-title {
+  margin: 0.4rem 0 0.2rem;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.stmt-table {
+  width: 100%;
+  margin-top: 0.75rem;
+  border-collapse: collapse;
+}
+
+.stmt-table th,
+.stmt-table td {
+  padding: 0.3rem 0.4rem;
+  border-bottom: 1px solid #ccc;
+  text-align: left;
+  vertical-align: top;
+}
+
+.stmt-table thead th {
+  border-bottom: 2px solid #111;
+}
+
+.stmt-table tfoot td {
+  border-top: 2px solid #111;
+  border-bottom: none;
+  font-weight: 700;
+}
+
+.stmt-num {
+  text-align: right !important;
+  white-space: nowrap;
+}
+
+.stmt-foot {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #555;
+}
+
+/* Printing a statement: the open dialog's print rules already strip the
+   chrome; this keeps only the sheet inside it. */
+@media print {
+  body.khata-printing .sale-detail-inner > *:not(.statement-sheet) {
+    display: none !important;
+  }
+
+  body.khata-printing .statement-sheet {
+    display: block !important;
+  }
+}
+
 /* ---- Udhaar (credit) at the till ----
    Its own button and its own dialog rather than another value in the payment
    dropdown: letting the goods go without the money is a different act from

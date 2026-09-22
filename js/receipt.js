@@ -177,7 +177,7 @@ function paymentsHTML(payments) {
       (p) => `
       <div class="slip-row">
         <span>${escapeHtml(receiptDateTime(p.paid_at))}</span>
-        <span>${escapeHtml(paymentLabel(p.method))} ${receiptNum(p.amount)}</span>
+        <span>${escapeHtml(paymentLabel(p.method))} ${receiptNum(p.amount)}${p.reversed_at ? ' (reversed)' : ''}</span>
       </div>`
     )
     .join('');

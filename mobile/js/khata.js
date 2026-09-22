@@ -334,7 +334,14 @@ function renderStatement(entries) {
     /* The API's own wording where it has one — "Deposit taken at the till"
        says more than "Payment" about why that row is there. */
     const label = entry.description || ENTRY_LABELS[entry.type] || entry.type;
-    const meta = [entry.reference, entry.method ? methodLabel(entry.method) : '', entry.payment_reference]
+    const meta = [
+      entry.reference,
+      entry.method ? methodLabel(entry.method) : '',
+      entry.payment_reference,
+      /* A reversed instalment stays on the page, marked — the money never
+         arrived, but the page has to explain why the balance went back up. */
+      entry.reversed ? 'reversed' : '',
+    ]
       .filter(Boolean)
       .join(' · ');
     const charged = Number(entry.charge) > 0;
@@ -378,6 +385,7 @@ function renderPayments(payments) {
       payment.reference,
       payment.note && payment.note !== 'Khata payment' ? payment.note : '',
       tickets.length ? `on ${tickets.join(', ')}` : '',
+      payment.reversed ? `reversed${payment.reversed_by ? ` by ${payment.reversed_by}` : ''}` : '',
     ]
       .filter(Boolean)
       .join(' · ');
@@ -391,7 +399,7 @@ function renderPayments(payments) {
       </span>
       <span class="khata-entry-amt">
         ${escapeHtml(rs(payment.amount))}
-        <small class="mono">${escapeHtml(left > 0 ? rs(left) : 'Clear')}</small>
+        <small class="mono">${escapeHtml(payment.reversed ? '—' : left > 0 ? rs(left) : 'Clear')}</small>
       </span>`;
     el.payments.appendChild(li);
   }

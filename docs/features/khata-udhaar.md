@@ -186,7 +186,7 @@ entries, so the history and the statement can never quote different balances.
 | Services | `backend/app/Services/Pos/SalePaymentService.php`, `SaleService::resolveCustomer()` / `assertWithinCreditLimit()` |
 | Models | `Customer`, `Sale`, `SalePayment` |
 | Policy | `backend/app/Policies/CustomerPolicy.php` |
-| Migrations | `2026_08_08_100002_create_customers_table.php`, `2026_08_07_100004_create_sale_payments_table.php`, `2026_08_08_100005_add_received_by_name_to_sale_payments_table.php` |
+| Migrations | `2026_08_08_100002_create_customers_table.php`, `2026_08_07_100004_create_sale_payments_table.php`, `2026_08_08_100005_add_received_by_name_to_sale_payments_table.php`, `2026_08_09_100000_add_reversal_fields_to_sale_payments_table.php` |
 | Tests | `backend/tests/Feature/CustomerKhataTest.php` |
 
 The screen has two views: **Owes money** (default — the question the page exists
@@ -206,6 +206,7 @@ form.
 | PUT | `/api/customers/{customer}` | Edit name, phone, address, credit limit, notes, active flag |
 | GET | `/api/customers/{customer}/ledger` | Statement + payment history + customer facts |
 | POST | `/api/customers/{customer}/payments` | Lump sum, allocated oldest-first |
+| POST | `/api/customers/{customer}/payments/{paymentId}/reverse` | Void a payment — marks every allocation of that lump sum reversed and re-derives the sales it touched |
 | POST | `/api/sales/{sale}/payments` | Instalment against one specific sale |
 
 Payment body: `amount` (required), `method` (required, from
@@ -237,12 +238,16 @@ back "that clears the 14th and half of the 20th".
   that happens to sit on another one.
 - **Aging is measured from "now"**, so the response carries `as_of` and is only
   true as of when it was asked.
-- **Only `payment_method = 'credit'` sales appear on the statement.** A sale that
-  ended up partially paid by some other route would not show up on the ledger
-  page, though its balance would still count towards the customer's total via
-  `OUTSTANDING_SQL`.
-- **Payments cannot be reversed.** There is no endpoint to void a `sale_payments`
-  row; a mistake has to be corrected some other way.
+- **Any ticket still owed on appears on the statement**, whatever method it was
+  rung up as — a part-paid non-credit sale counts toward the khata total via
+  `OUTSTANDING_SQL`, so the ledger shows it too, with its counter money as a
+  "Paid at the till" line (it never itemised a `sale_payments` row).
+- **Payments are voided, never deleted.** `POST /api/customers/{id}/payments/{paymentId}/reverse`
+  sets `reversed_at`/`reversed_by_user_id` on every allocation of the lump sum
+  and re-derives each affected sale's `paid_amount`/`payment_status` from the
+  surviving rows. Reversed rows stay on the ledger and history, struck through,
+  so a disputed page still explains itself; every consumer that sums payments
+  excludes them.
 - The credit-limit check is **skipped for offline replays** — the goods already
   left the shop and the debt is already real, so refusing it on sync would not
   un-give the credit, only lose the record of it.
