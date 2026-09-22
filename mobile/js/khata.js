@@ -520,9 +520,11 @@ async function submitPayment(event) {
     await refreshDetail();
     paymentAlert(allocationMessage(data), 'success');
 
-    /* The row's balance, the aging tiles and the totals all moved. */
+    /* The row's balance, the aging tiles and the totals all moved. The summary
+       is shop-wide, so it is refreshed in either view — on "Everyone" the list
+       load would otherwise leave the stale total standing. */
     rows = [];
-    await loadList();
+    await Promise.all([loadList(), loadSummary()]);
   } catch (err) {
     /* The 422 names the exact balance ("Only Rs 500.00 is owed…"), which is
        the only thing that tells the cashier what to type instead. */

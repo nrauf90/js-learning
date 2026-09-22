@@ -767,6 +767,9 @@ async function confirmUdhaar() {
   }
 
   el.udhaarConfirm.disabled = true;
+  /* data-busy drives the spinner visually; aria-busy is what tells a screen
+     reader the button is working rather than simply unresponsive. */
+  el.udhaarConfirm.dataset.busy = 'true';
   el.udhaarConfirm.setAttribute('aria-busy', 'true');
 
   try {
@@ -783,6 +786,7 @@ async function confirmUdhaar() {
     udhaarError(errorText(err));
   } finally {
     el.udhaarConfirm.disabled = false;
+    el.udhaarConfirm.dataset.busy = 'false';
     el.udhaarConfirm.setAttribute('aria-busy', 'false');
   }
 }

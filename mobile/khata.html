@@ -47,7 +47,7 @@
     <div class="till-search">
       <svg class="till-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
       <label class="sr-only" for="khata-q">Search the khata</label>
-      <input class="till-search-input" id="khata-q" type="search" placeholder="Name or phone" autocomplete="off" enterkeyhint="search" />
+      <input class="till-search-input" id="khata-q" type="search" placeholder="Name or phone" autocomplete="off" maxlength="120" enterkeyhint="search" />
       <button type="button" class="till-search-clear" id="khata-q-clear" aria-label="Clear search" hidden>&times;</button>
     </div>
 
@@ -81,7 +81,7 @@
           <input class="m-input" id="kp-amount" type="number" inputmode="decimal" min="0" step="1" enterkeyhint="done" />
         </div>
         <div class="m-field">
-          <label class="m-label" for="kp-method">Received by</label>
+          <label class="m-label" for="kp-method">Paid via</label>
           <select class="m-input" id="kp-method">
             <option value="cash">Cash</option>
             <option value="card">Card</option>
