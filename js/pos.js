@@ -3,6 +3,15 @@ import { initTheme } from './theme.js';
 import { changeDue, computeTotals, createCart } from './cart.js';
 import { initPaperSelect, paymentLabel, receiptSlipHTML, rememberShop, storedShop } from './receipt.js';
 import {
+  adjustCachedStock,
+  cacheProducts,
+  cachedProducts,
+  isSupported as offlineSupported,
+  queueSale,
+  queuedCount,
+} from './offline-db.js';
+import { flushOutbox, startAutoSync } from './sync.js';
+import {
   QUICK_AMOUNTS,
   QUICK_VOLUMES,
   QUICK_WEIGHTS,
@@ -282,7 +291,7 @@ function filterProducts() {
       : 'Nothing here matches that.';
 }
 
-async function loadProducts() {
+async function fetchProducts() {
   const collected = [];
   let page = 1;
   let lastPage = 1;
@@ -299,11 +308,35 @@ async function loadProducts() {
     page += 1;
   } while (page <= lastPage && page <= MAX_PRODUCT_PAGES);
 
-  products = collected;
+  return collected;
+}
+
+function applyProductList(list) {
+  products = list;
   renderProducts();
   // Per-category counts are derived from this list, so the rail follows it.
   if (categoryButtons.length) renderCategories();
-  return products;
+}
+
+async function loadProducts() {
+  try {
+    const collected = await fetchProducts();
+    applyProductList(collected);
+    // Mirror the catalogue into IndexedDB so the next outage still has a till
+    // to sell from. Fire-and-forget: a cache that cannot be written must not
+    // stop a counter that is working fine.
+    if (offlineSupported()) cacheProducts(collected).catch(() => {});
+    return products;
+  } catch (err) {
+    // No answer at all — the mirror becomes the catalogue until the
+    // connection returns, which is the whole reason it exists.
+    const cached = offlineSupported() ? await cachedProducts().catch(() => []) : [];
+    if (cached.length) {
+      applyProductList(cached);
+      return products;
+    }
+    throw err;
+  }
 }
 
 /* ---------------------------------------------------------------- day book */
@@ -1063,18 +1096,180 @@ function renderChange(total) {
  * Errors are re-thrown: where a refusal belongs on screen differs between the
  * two — the till's alert strip for a cash sale, the udhaar dialog for a credit
  * one, where the name and the deposit that caused it are still editable.
+ *
+ * The exception is a request that never reached the server at all. The sale
+ * physically happened — the goods left the counter — so it is queued in the
+ * IndexedDB outbox and confirmed locally, then replayed by js/sync.js when
+ * the connection returns. A 4xx is a refusal, not a connectivity problem, and
+ * still surfaces to the cashier exactly as before.
  */
 async function submitSale(payload) {
   submitting = true;
   renderTotals();
   clearAlert();
 
+  // Minted before the first POST, not after a failure: any retry — ours or
+  // the sync loop's — must replay the same uuid or a sale that did land gets
+  // rung twice. The server treats it as the idempotency key.
+  payload.client_uuid = crypto.randomUUID();
+
   try {
     const data = await apiPost('/api/sales', payload);
+    adjustMirrorStock(payload);
     return data.sale;
+  } catch (err) {
+    // `status` is only set when a response arrived; a TypeError off a dead
+    // connection carries none. Only the second kind may be queued.
+    if (err?.status == null && offlineSupported()) {
+      return await queueOfflineSale(payload);
+    }
+    throw err;
   } finally {
     submitting = false;
     renderTotals();
+  }
+}
+
+/**
+ * Keep the mirrored catalogue's stock honest between syncs, so an offline
+ * till does not sell the same last packet twice. Fire-and-forget: the sale is
+ * already real, the mirror is only a courtesy copy.
+ */
+function adjustMirrorStock(payload) {
+  if (!offlineSupported()) return;
+  for (const item of payload.items || []) {
+    adjustCachedStock(item.product_id, -(Number(item.quantity) || 0)).catch(() => {});
+  }
+}
+
+/**
+ * Persist a sale the server never saw and hand back a receipt-shaped copy of
+ * it. `offline` tells SaleService the replay is history (negative stock is
+ * permitted, credit limits are not re-enforced); `sold_at` pins it to when
+ * the customer actually stood at the counter, so a queue that drains tomorrow
+ * does not land in tomorrow's day book.
+ */
+async function queueOfflineSale(payload) {
+  const queuedAt = new Date().toISOString();
+  const record = {
+    client_uuid: payload.client_uuid,
+    payload: { ...payload, offline: true, sold_at: payload.sold_at ?? queuedAt },
+    queued_at: queuedAt,
+    attempts: 0,
+  };
+
+  await queueSale(record);
+  adjustMirrorStock(record.payload);
+  renderOfflineStatus();
+  return localReceiptSale(record.payload);
+}
+
+/**
+ * The sale the receipt is rendered from when the server never answered. Built
+ * from the ticket rather than invented — names, prices and weights are all
+ * already on it — so the slip the customer is handed matches what the server
+ * will replay later.
+ */
+function localReceiptSale(payload) {
+  const totals = ticketTotals();
+  const tendered = payload.amount_tendered ?? null;
+  const isCredit = payload.payment_method === 'credit';
+  const paid = isCredit ? Number(payload.paid_amount) || 0 : totals.total;
+  const outstanding = round2(Math.max(totals.total - paid, 0));
+
+  return {
+    reference: `OFF-${String(payload.client_uuid).slice(0, 8).toUpperCase()}`,
+    sold_at: payload.sold_at,
+    customer_name: payload.customer_name || null,
+    items: cart.toArray().map((line) => ({
+      name: line.name,
+      quantity: line.quantity,
+      unit_price: line.unitPrice,
+      line_total: line.lineTotal,
+      unit_type: line.unitType,
+      price_unit: line.priceUnit,
+    })),
+    subtotal: totals.subtotal,
+    discount_amount: totals.discount,
+    rounding_adjustment: totals.rounding,
+    total: totals.total,
+    payment_method: payload.payment_method,
+    payment_status: outstanding > 0 ? (paid > 0 ? 'partial' : 'pending') : 'paid',
+    amount_tendered: tendered,
+    change_due: !isCredit && tendered !== null ? Math.max(round2(tendered - totals.total), 0) : 0,
+    paid_amount: paid,
+    outstanding_amount: outstanding,
+    // Read by renderReceiptState and renderReceipt to mark this as queued
+    // rather than server-confirmed. Never posted — it lives on the copy.
+    offline_queued: true,
+  };
+}
+
+/**
+ * The strip's one job is to make "the server does not know about these sales"
+ * impossible to miss — a queued sale that looks synced is money the shop
+ * believes is safe and is not.
+ */
+async function renderOfflineStatus() {
+  const strip = el('pos-offline');
+  if (!strip) return;
+
+  const queued = offlineSupported() ? await queuedCount().catch(() => 0) : 0;
+
+  if (!navigator.onLine) {
+    strip.hidden = false;
+    strip.dataset.state = 'offline';
+    strip.textContent =
+      queued > 0
+        ? `Offline — ${queued} sale${queued === 1 ? '' : 's'} queued on this till`
+        : 'Offline — sales will be queued on this till';
+    return;
+  }
+
+  strip.dataset.state = 'sync';
+  strip.hidden = queued === 0;
+  strip.textContent = `Online — ${queued} queued sale${queued === 1 ? '' : 's'} left to sync`;
+}
+
+/**
+ * apiPost throws on any non-2xx; the drain loop works on statuses, so the
+ * error is folded back into the {status, body} shape it classifies. A thrown
+ * TypeError (no response at all) becomes status null.
+ */
+async function sendQueuedSale(payload) {
+  try {
+    const body = await apiPost('/api/sales', payload);
+    return { status: 201, body };
+  } catch (err) {
+    return { status: err?.status ?? null, body: err?.body };
+  }
+}
+
+/**
+ * Drain the outbox, then refresh the figures a replay moves: replays take real
+ * stock and real money, so both the catalogue and the drawer count go stale
+ * the moment one lands.
+ */
+async function flushQueuedSales() {
+  if (!offlineSupported()) return;
+
+  try {
+    const result = await flushOutbox(sendQueuedSale);
+    if (result.synced > 0) {
+      loadProducts().catch(() => {});
+      loadDayBook();
+    }
+    if (result.halted) {
+      showAlert('Queued sales could not sync — sign in again, then reopen the till.');
+    } else if (result.dropped > 0) {
+      showAlert(
+        `${result.dropped} queued sale${result.dropped === 1 ? '' : 's'} rejected by the server — check the sales page.`
+      );
+    }
+  } catch {
+    // The outbox itself is unreadable; the strip still shows the count.
+  } finally {
+    renderOfflineStatus();
   }
 }
 
@@ -1636,15 +1831,20 @@ function renderReceiptState(sale) {
   el('pos-receipt-title').textContent = outstanding > 0 ? 'Saved on the khata' : 'Sale complete';
   note.dataset.state = status;
 
+  // Prefixed rather than replaced: the cashier still needs to know whether
+  // money changed hands, and that the server does not know about it yet.
+  const queued = sale.offline_queued ? 'Saved offline — will sync when connected. ' : '';
+
   if (outstanding <= 0) {
-    note.textContent = `Settled in full — ${formatRs(sale.total)} · ${paymentLabel(sale.payment_method)}`;
+    note.textContent = `${queued}Settled in full — ${formatRs(sale.total)} · ${paymentLabel(sale.payment_method)}`;
     return;
   }
 
   note.textContent =
-    paid > 0
+    queued +
+    (paid > 0
       ? `${formatRs(paid)} taken, ${formatRs(outstanding)} still owed${who}.`
-      : `Nothing taken — ${formatRs(outstanding)} owed${who}.`;
+      : `Nothing taken — ${formatRs(outstanding)} owed${who}.`);
 }
 
 function renderReceipt(sale) {
@@ -1657,7 +1857,10 @@ function renderReceipt(sale) {
   // No payment history at the counter: the sale has at most the one payment
   // that just happened, and printing a one-row history of it reads as a
   // second charge. Reprints from the sales page pass showPayments.
-  body.innerHTML = receiptSlipHTML(sale, { shop: storedShop() });
+  body.innerHTML = receiptSlipHTML(sale, {
+    shop: storedShop(),
+    notice: sale.offline_queued ? 'Saved offline — will sync' : undefined,
+  });
 
   openReceipt();
 }
@@ -1755,6 +1958,14 @@ async function boot() {
 
   renderTicket();
   ensureShop();
+
+  if (offlineSupported()) {
+    window.addEventListener('online', renderOfflineStatus);
+    window.addEventListener('offline', renderOfflineStatus);
+    renderOfflineStatus();
+    // Drain anything a previous outage queued, then again on each reconnect.
+    startAutoSync(flushQueuedSales);
+  }
 
   try {
     await Promise.all([

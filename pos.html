@@ -13,6 +13,8 @@
        hosts saw every visitor's IP, and a slow or blocked CDN delayed
        first paint. Same-origin now, so the preconnects are moot. -->
   <link rel="stylesheet" href="vendor/fonts/fonts.css" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <script src="js/sw-register.js" defer></script>
 </head>
 <!-- No app shell here: the till owns the whole viewport and offers one way
      out (Back), so a cashier cannot wander into billing or reports mid-sale. -->
@@ -36,6 +38,10 @@
     </header>
 
     <div id="pos-alert" class="auth-alert pos-alert" hidden role="alert"></div>
+    <!-- Offline/queued strip: separate from the alert because it is a standing
+         state, not a message — it stays up for as long as the till is holding
+         sales the server has never seen. -->
+    <div id="pos-offline" class="pos-offline no-print" hidden role="status"></div>
 
     <div class="pos-layout">
       <aside class="pos-pane pos-rail" aria-label="Categories">

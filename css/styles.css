@@ -3484,6 +3484,26 @@ body.sidebar-open .app-overlay {
   margin: 0.75rem clamp(0.75rem, 2vw, 1.5rem) 0;
 }
 
+/* Offline/queued strip. Warm rather than danger-red: nothing is broken, the
+   sales just have not reached the server yet — but it must be unmissable,
+   because a queued sale that reads as synced is money the shop thinks is
+   safe and is not. */
+.pos-offline {
+  flex-shrink: 0;
+  margin: 0.75rem clamp(0.75rem, 2vw, 1.5rem) 0;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  color: var(--text);
+  background: color-mix(in srgb, var(--warm) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warm) 45%, transparent);
+}
+
+.pos-offline[data-state='sync'] {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
 .pos-day-summary {
   display: flex;
   flex-wrap: wrap;
@@ -4430,6 +4450,16 @@ body[data-paper='58'] .receipt-slip {
   text-align: center;
   font-weight: 700;
   letter-spacing: 0.12em;
+}
+
+/* "Saved offline — will sync" and the like. Dashed, not solid like the status
+   box: it is a caveat about the slip, not a verdict on the sale. */
+.slip-notice {
+  margin: 1mm 0 0;
+  padding: 1mm 0;
+  border: 1px dashed #000;
+  text-align: center;
+  font-weight: 700;
 }
 
 .slip-foot {

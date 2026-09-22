@@ -40,12 +40,18 @@ export function classifySyncOutcome(status) {
   return 'retry';
 }
 
+/** The real stores, bundled so a test can inject an in-memory stand-in. */
+const indexedDbOutbox = { queuedSales, removeQueued, updateQueued, queuedCount };
+
 /**
  * @param {(sale: object) => Promise<{ status: number|null, body?: object }>} send
+ * @param {object} [outbox] the four offline-db functions — injectable because
+ *   IndexedDB does not exist under node:test, and the drain policy is the
+ *   part worth testing (see tests/sync.test.js).
  * @returns {Promise<{ synced: number, dropped: number, remaining: number, halted: boolean }>}
  */
-export async function flushOutbox(send) {
-  const pending = await queuedSales();
+export async function flushOutbox(send, outbox = indexedDbOutbox) {
+  const pending = await outbox.queuedSales();
   let synced = 0;
   let dropped = 0;
   let halted = false;
@@ -61,7 +67,7 @@ export async function flushOutbox(send) {
     const outcome = classifySyncOutcome(result.status);
 
     if (outcome === 'ok') {
-      await removeQueued(sale.client_uuid);
+      await outbox.removeQueued(sale.client_uuid);
       synced += 1;
       continue;
     }
@@ -72,7 +78,7 @@ export async function flushOutbox(send) {
     }
 
     if (outcome === 'drop') {
-      await removeQueued(sale.client_uuid);
+      await outbox.removeQueued(sale.client_uuid);
       dropped += 1;
       continue;
     }
@@ -82,19 +88,19 @@ export async function flushOutbox(send) {
     if (attempts >= MAX_ATTEMPTS) {
       // Park rather than delete: a sale that never syncs is money the shop
       // took, and silently dropping it is worse than leaving it visible.
-      await updateQueued(sale.client_uuid, { attempts, parked: true });
+      await outbox.updateQueued(sale.client_uuid, { attempts, parked: true });
       dropped += 1;
       continue;
     }
 
-    await updateQueued(sale.client_uuid, { attempts, last_error: result.status ?? 'network' });
+    await outbox.updateQueued(sale.client_uuid, { attempts, last_error: result.status ?? 'network' });
 
     // Stop on the first retryable failure. If the connection is down, the rest
     // will fail identically — no point hammering through the whole queue.
     break;
   }
 
-  return { synced, dropped, remaining: await queuedCount(), halted };
+  return { synced, dropped, remaining: await outbox.queuedCount(), halted };
 }
 
 /**

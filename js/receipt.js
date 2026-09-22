@@ -210,7 +210,10 @@ function moneyLineHTML(isCredit, collected, method) {
 
 /**
  * @param {object} sale  a sale payload from POST/GET /api/sales
- * @param {{ shopName?: string, showPayments?: boolean, copyLabel?: string }} [options]
+ * @param {{ shopName?: string, showPayments?: boolean, copyLabel?: string, notice?: string }} [options]
+ *   `notice` prints a boxed line under the slip title — used by the till for
+ *   "saved offline" slips, where the paper has to admit the server never saw
+ *   the sale.
  */
 export function receiptSlipHTML(sale, options = {}) {
   const shop = options.shop || storedShop();
@@ -244,6 +247,7 @@ export function receiptSlipHTML(sale, options = {}) {
       <p class="slip-shop">${escapeHtml(shopName)}</p>
       ${shopLine ? `<p class="slip-foot slip-foot-small">${escapeHtml(shopLine)}</p>` : ''}
       <p class="slip-sub">${escapeHtml(options.copyLabel || 'Sales Receipt')}</p>
+      ${options.notice ? `<p class="slip-notice">${escapeHtml(options.notice)}</p>` : ''}
 
       <div class="slip-rule"></div>
       <div class="slip-row"><span>Receipt</span><span>${escapeHtml(sale.reference || '—')}</span></div>
