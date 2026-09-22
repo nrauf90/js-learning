@@ -42,3 +42,9 @@ blob-report/
 e2e/.auth/
 docs/issues/**/shot-*.png
 ./.idea
+
+# Understand Anything knowledge-graph scratch (batch intermediates, tmp).
+# The graph itself (.ua/knowledge-graph.json, fingerprints, meta, scan-result)
+# IS committed so AI tools and the local dashboard work on any clone.
+.ua/.trash-*/
+.ua/tmp/

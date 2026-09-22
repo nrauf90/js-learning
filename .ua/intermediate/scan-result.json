@@ -1,0 +1,3621 @@
+{
+  "name": "PK Galla Online",
+  "description": "Point of sale and khata (udhaar credit) tracking for small Pakistani shops — vanilla JS till, Laravel 12 JSON API, Capacitor mobile app. Note: this project has over 100 source files; consider scoping analysis to a subdirectory for faster results.",
+  "languages": [
+    "batch",
+    "config",
+    "css",
+    "gradle",
+    "html",
+    "jar",
+    "java",
+    "javascript",
+    "json",
+    "markdown",
+    "mdc",
+    "pbxproj",
+    "php",
+    "pro",
+    "properties",
+    "storyboard",
+    "swift",
+    "txt",
+    "unknown",
+    "xcconfig",
+    "xml"
+  ],
+  "frameworks": [
+    "Laravel",
+    "Capacitor",
+    "Playwright",
+    "Chart.js",
+    "GSAP"
+  ],
+  "files": [
+    {
+      "path": ".cursor/rules/milestone-qa.mdc",
+      "language": "mdc",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".cursor/rules/task-completion.mdc",
+      "language": "mdc",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".ua/.understandignore",
+      "language": "unknown",
+      "sizeLines": 92,
+      "fileCategory": "code"
+    },
+    {
+      "path": "ADMIN_SETUP.md",
+      "language": "markdown",
+      "sizeLines": 251,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "AGENTS.md",
+      "language": "markdown",
+      "sizeLines": 314,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "README.md",
+      "language": "markdown",
+      "sizeLines": 66,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "activity.html",
+      "language": "html",
+      "sizeLines": 103,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "admin-categories.html",
+      "language": "html",
+      "sizeLines": 117,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "admin-entries.html",
+      "language": "html",
+      "sizeLines": 70,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "admin-payments.html",
+      "language": "html",
+      "sizeLines": 66,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "admin-shops.html",
+      "language": "html",
+      "sizeLines": 121,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "admin-subscriptions.html",
+      "language": "html",
+      "sizeLines": 97,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "admin-users.html",
+      "language": "html",
+      "sizeLines": 139,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "admin.html",
+      "language": "html",
+      "sizeLines": 160,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "android/app/build.gradle",
+      "language": "gradle",
+      "sizeLines": 54,
+      "fileCategory": "config"
+    },
+    {
+      "path": "android/app/capacitor.build.gradle",
+      "language": "gradle",
+      "sizeLines": 22,
+      "fileCategory": "config"
+    },
+    {
+      "path": "android/app/proguard-rules.pro",
+      "language": "pro",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": "android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java",
+      "language": "java",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": "android/app/src/debug/AndroidManifest.xml",
+      "language": "xml",
+      "sizeLines": 13,
+      "fileCategory": "config"
+    },
+    {
+      "path": "android/app/src/debug/res/xml/network_security_config.xml",
+      "language": "xml",
+      "sizeLines": 30,
+      "fileCategory": "config"
+    },
+    {
+      "path": "android/app/src/main/AndroidManifest.xml",
+      "language": "xml",
+      "sizeLines": 41,
+      "fileCategory": "config"
+    },
+    {
+      "path": "android/app/src/main/java/com/pkgalla/app/MainActivity.java",
+      "language": "java",
+      "sizeLines": 5,
+      "fileCategory": "code"
+    },
+    {
+      "path": "android/app/src/main/res/drawable-v24/ic_launcher_foreground.xml",
+      "language": "xml",
+      "sizeLines": 34,
+      "fileCategory": "config"
+    },
+    {
+      "path": "android/app/src/main/res/drawable/ic_launcher_background.xml",
+      "language": "xml",
+      "sizeLines": 170,
+      "fileCategory": "config"
+    },
+    {
+      "path": "android/app/src/main/res/layout/activity_main.xml",
+      "language": "xml",
+      "sizeLines": 12,
+      "fileCategory": "config"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+      "language": "xml",
+      "sizeLines": 4,
+      "fileCategory": "config"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
+      "language": "xml",
+      "sizeLines": 4,
+      "fileCategory": "config"
+    },
+    {
+      "path": "android/app/src/main/res/values/ic_launcher_background.xml",
+      "language": "xml",
+      "sizeLines": 3,
+      "fileCategory": "config"
+    },
+    {
+      "path": "android/app/src/main/res/values/strings.xml",
+      "language": "xml",
+      "sizeLines": 7,
+      "fileCategory": "config"
+    },
+    {
+      "path": "android/app/src/main/res/values/styles.xml",
+      "language": "xml",
+      "sizeLines": 21,
+      "fileCategory": "config"
+    },
+    {
+      "path": "android/app/src/main/res/xml/file_paths.xml",
+      "language": "xml",
+      "sizeLines": 4,
+      "fileCategory": "config"
+    },
+    {
+      "path": "android/app/src/test/java/com/getcapacitor/myapp/ExampleUnitTest.java",
+      "language": "java",
+      "sizeLines": 18,
+      "fileCategory": "code"
+    },
+    {
+      "path": "android/build.gradle",
+      "language": "gradle",
+      "sizeLines": 29,
+      "fileCategory": "config"
+    },
+    {
+      "path": "android/capacitor.settings.gradle",
+      "language": "gradle",
+      "sizeLines": 15,
+      "fileCategory": "config"
+    },
+    {
+      "path": "android/gradle.properties",
+      "language": "properties",
+      "sizeLines": 22,
+      "fileCategory": "config"
+    },
+    {
+      "path": "android/gradle/wrapper/gradle-wrapper.jar",
+      "language": "jar",
+      "sizeLines": 157,
+      "fileCategory": "code"
+    },
+    {
+      "path": "android/gradle/wrapper/gradle-wrapper.properties",
+      "language": "properties",
+      "sizeLines": 7,
+      "fileCategory": "config"
+    },
+    {
+      "path": "android/gradlew",
+      "language": "unknown",
+      "sizeLines": 251,
+      "fileCategory": "code"
+    },
+    {
+      "path": "android/gradlew.bat",
+      "language": "batch",
+      "sizeLines": 94,
+      "fileCategory": "script"
+    },
+    {
+      "path": "android/settings.gradle",
+      "language": "gradle",
+      "sizeLines": 4,
+      "fileCategory": "config"
+    },
+    {
+      "path": "android/variables.gradle",
+      "language": "gradle",
+      "sizeLines": 15,
+      "fileCategory": "config"
+    },
+    {
+      "path": "backend/.env.example",
+      "language": "config",
+      "sizeLines": 115,
+      "fileCategory": "config"
+    },
+    {
+      "path": "backend/.gitattributes",
+      "language": "unknown",
+      "sizeLines": 11,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/README.md",
+      "language": "markdown",
+      "sizeLines": 173,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "backend/app/Contracts/BillingProvider.php",
+      "language": "php",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Exceptions/BillingProviderException.php",
+      "language": "php",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Http/Controllers/Api/ActivityLogController.php",
+      "language": "php",
+      "sizeLines": 147,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Http/Controllers/Api/AdminController.php",
+      "language": "php",
+      "sizeLines": 527,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Http/Controllers/Api/AuthController.php",
+      "language": "php",
+      "sizeLines": 116,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Http/Controllers/Api/BillingController.php",
+      "language": "php",
+      "sizeLines": 247,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Http/Controllers/Api/CashEntryController.php",
+      "language": "php",
+      "sizeLines": 168,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Http/Controllers/Api/CategoryController.php",
+      "language": "php",
+      "sizeLines": 30,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Http/Controllers/Api/CustomerController.php",
+      "language": "php",
+      "sizeLines": 673,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Http/Controllers/Api/DayBalanceController.php",
+      "language": "php",
+      "sizeLines": 170,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Http/Controllers/Api/GoogleAuthController.php",
+      "language": "php",
+      "sizeLines": 103,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Http/Controllers/Api/PaddleWebhookController.php",
+      "language": "php",
+      "sizeLines": 301,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Http/Controllers/Api/ProductCategoryController.php",
+      "language": "php",
+      "sizeLines": 181,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Http/Controllers/Api/ProductController.php",
+      "language": "php",
+      "sizeLines": 532,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Http/Controllers/Api/PurchaseController.php",
+      "language": "php",
+      "sizeLines": 414,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Http/Controllers/Api/QaController.php",
+      "language": "php",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Http/Controllers/Api/ReceiptController.php",
+      "language": "php",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Http/Controllers/Api/ReportController.php",
+      "language": "php",
+      "sizeLines": 151,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Http/Controllers/Api/SaleController.php",
+      "language": "php",
+      "sizeLines": 636,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Http/Controllers/Api/ShopController.php",
+      "language": "php",
+      "sizeLines": 85,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Http/Controllers/Api/StaffController.php",
+      "language": "php",
+      "sizeLines": 170,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Http/Controllers/Controller.php",
+      "language": "php",
+      "sizeLines": 10,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Http/Middleware/AdminOnly.php",
+      "language": "php",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Http/Middleware/EnsureSubscribed.php",
+      "language": "php",
+      "sizeLines": 66,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Http/Middleware/ShopAdminOnly.php",
+      "language": "php",
+      "sizeLines": 51,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Models/ActivityLog.php",
+      "language": "php",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Models/CashEntry.php",
+      "language": "php",
+      "sizeLines": 37,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Models/Customer.php",
+      "language": "php",
+      "sizeLines": 88,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Models/DayBalance.php",
+      "language": "php",
+      "sizeLines": 64,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Models/ExpenseCategory.php",
+      "language": "php",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Models/Payment.php",
+      "language": "php",
+      "sizeLines": 56,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Models/Product.php",
+      "language": "php",
+      "sizeLines": 247,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Models/ProductCategory.php",
+      "language": "php",
+      "sizeLines": 34,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Models/Purchase.php",
+      "language": "php",
+      "sizeLines": 84,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Models/PurchaseItem.php",
+      "language": "php",
+      "sizeLines": 53,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Models/PurchasePayment.php",
+      "language": "php",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Models/Sale.php",
+      "language": "php",
+      "sizeLines": 150,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Models/SaleItem.php",
+      "language": "php",
+      "sizeLines": 65,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Models/SalePayment.php",
+      "language": "php",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Models/Shop.php",
+      "language": "php",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Models/StockMovement.php",
+      "language": "php",
+      "sizeLines": 110,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Models/Subscription.php",
+      "language": "php",
+      "sizeLines": 71,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Models/SubscriptionAddon.php",
+      "language": "php",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Models/Supplier.php",
+      "language": "php",
+      "sizeLines": 46,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Models/User.php",
+      "language": "php",
+      "sizeLines": 203,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Models/WebhookEvent.php",
+      "language": "php",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Policies/CashEntryPolicy.php",
+      "language": "php",
+      "sizeLines": 34,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Policies/CustomerPolicy.php",
+      "language": "php",
+      "sizeLines": 49,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Policies/DayBalancePolicy.php",
+      "language": "php",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Policies/ProductCategoryPolicy.php",
+      "language": "php",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Policies/ProductPolicy.php",
+      "language": "php",
+      "sizeLines": 67,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Policies/PurchasePolicy.php",
+      "language": "php",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Policies/SalePolicy.php",
+      "language": "php",
+      "sizeLines": 46,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Providers/AppServiceProvider.php",
+      "language": "php",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Services/ActivityLogger.php",
+      "language": "php",
+      "sizeLines": 226,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Services/Billing/PaddleClient.php",
+      "language": "php",
+      "sizeLines": 175,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Services/Billing/PaddleGateway.php",
+      "language": "php",
+      "sizeLines": 147,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Services/Billing/SubscriptionService.php",
+      "language": "php",
+      "sizeLines": 348,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Services/CatalogImageStore.php",
+      "language": "php",
+      "sizeLines": 138,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Services/Pos/DayBookService.php",
+      "language": "php",
+      "sizeLines": 316,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Services/Pos/PurchaseService.php",
+      "language": "php",
+      "sizeLines": 352,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Services/Pos/SalePaymentService.php",
+      "language": "php",
+      "sizeLines": 172,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Services/Pos/SaleService.php",
+      "language": "php",
+      "sizeLines": 573,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Services/ReportAggregator.php",
+      "language": "php",
+      "sizeLines": 465,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Support/SaleProfit.php",
+      "language": "php",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/app/Support/Unit.php",
+      "language": "php",
+      "sizeLines": 182,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/artisan",
+      "language": "unknown",
+      "sizeLines": 18,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/bootstrap/app.php",
+      "language": "php",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/bootstrap/providers.php",
+      "language": "php",
+      "sizeLines": 7,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/composer.json",
+      "language": "json",
+      "sizeLines": 88,
+      "fileCategory": "config"
+    },
+    {
+      "path": "backend/config/app.php",
+      "language": "php",
+      "sizeLines": 126,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/auth.php",
+      "language": "php",
+      "sizeLines": 117,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/billing.php",
+      "language": "php",
+      "sizeLines": 79,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/cache.php",
+      "language": "php",
+      "sizeLines": 117,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/cors.php",
+      "language": "php",
+      "sizeLines": 59,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/database.php",
+      "language": "php",
+      "sizeLines": 184,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/filesystems.php",
+      "language": "php",
+      "sizeLines": 88,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/logging.php",
+      "language": "php",
+      "sizeLines": 132,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/mail.php",
+      "language": "php",
+      "sizeLines": 118,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/queue.php",
+      "language": "php",
+      "sizeLines": 129,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/sanctum.php",
+      "language": "php",
+      "sizeLines": 89,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/services.php",
+      "language": "php",
+      "sizeLines": 48,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/session.php",
+      "language": "php",
+      "sizeLines": 217,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/data/grocery-catalog.json",
+      "language": "json",
+      "sizeLines": 2591,
+      "fileCategory": "config"
+    },
+    {
+      "path": "backend/database/factories/UserFactory.php",
+      "language": "php",
+      "sizeLines": 57,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/0001_01_01_000000_create_users_table.php",
+      "language": "php",
+      "sizeLines": 49,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/0001_01_01_000001_create_cache_table.php",
+      "language": "php",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/0001_01_01_000002_create_jobs_table.php",
+      "language": "php",
+      "sizeLines": 57,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_07_25_111555_create_personal_access_tokens_table.php",
+      "language": "php",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_07_30_124107_add_google_fields_to_users_table.php",
+      "language": "php",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_07_30_130323_create_expense_categories_table.php",
+      "language": "php",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_07_30_130324_create_cash_entries_table.php",
+      "language": "php",
+      "sizeLines": 30,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_07_30_180000_add_kind_to_expense_categories_table.php",
+      "language": "php",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_07_30_190000_create_subscriptions_table.php",
+      "language": "php",
+      "sizeLines": 28,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_07_30_190001_create_payments_table.php",
+      "language": "php",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_07_30_200000_create_subscription_addons_table.php",
+      "language": "php",
+      "sizeLines": 27,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_07_30_230000_add_is_admin_to_users_table.php",
+      "language": "php",
+      "sizeLines": 28,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_06_100000_add_paddle_customer_to_users_table.php",
+      "language": "php",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_06_100001_add_provider_fields_to_subscriptions_table.php",
+      "language": "php",
+      "sizeLines": 64,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_06_100002_add_provider_fields_to_payments_table.php",
+      "language": "php",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_06_100003_create_webhook_events_table.php",
+      "language": "php",
+      "sizeLines": 34,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_06_110000_create_product_categories_table.php",
+      "language": "php",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_06_110001_create_products_table.php",
+      "language": "php",
+      "sizeLines": 49,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_06_110002_create_sales_table.php",
+      "language": "php",
+      "sizeLines": 50,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_06_110003_create_sale_items_table.php",
+      "language": "php",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_06_110004_create_stock_movements_table.php",
+      "language": "php",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_06_120000_add_offline_and_refund_fields_to_sales_table.php",
+      "language": "php",
+      "sizeLines": 46,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_07_100000_create_shops_table.php",
+      "language": "php",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_07_100001_add_roles_to_users_table.php",
+      "language": "php",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_07_100002_add_image_path_to_products_and_categories.php",
+      "language": "php",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_07_100003_add_credit_fields_to_sales_table.php",
+      "language": "php",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_07_100004_create_sale_payments_table.php",
+      "language": "php",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_07_100005_create_day_balances_table.php",
+      "language": "php",
+      "sizeLines": 53,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_07_100006_create_activity_logs_table.php",
+      "language": "php",
+      "sizeLines": 55,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_07_110000_add_units_of_sale_to_catalogue.php",
+      "language": "php",
+      "sizeLines": 95,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_08_100000_create_purchases_tables.php",
+      "language": "php",
+      "sizeLines": 107,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_08_100001_add_is_active_to_expense_categories_table.php",
+      "language": "php",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_08_100002_create_customers_table.php",
+      "language": "php",
+      "sizeLines": 68,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_08_100003_add_wastage_expiry_and_pack_size_to_catalogue.php",
+      "language": "php",
+      "sizeLines": 68,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_08_100004_add_rounding_adjustment_to_sales.php",
+      "language": "php",
+      "sizeLines": 37,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_08_100005_add_received_by_name_to_sale_payments_table.php",
+      "language": "php",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/migrations/2026_08_08_100006_create_purchase_payments_table.php",
+      "language": "php",
+      "sizeLines": 49,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/seeders/AdminUserSeeder.php",
+      "language": "php",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/seeders/DatabaseSeeder.php",
+      "language": "php",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/seeders/ExpenseCategorySeeder.php",
+      "language": "php",
+      "sizeLines": 106,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/database/seeders/GroceryCatalogSeeder.php",
+      "language": "php",
+      "sizeLines": 152,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/package.json",
+      "language": "json",
+      "sizeLines": 17,
+      "fileCategory": "config"
+    },
+    {
+      "path": "backend/phpunit.xml",
+      "language": "xml",
+      "sizeLines": 40,
+      "fileCategory": "config"
+    },
+    {
+      "path": "backend/public/.htaccess",
+      "language": "unknown",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/public/index.php",
+      "language": "php",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/public/robots.txt",
+      "language": "txt",
+      "sizeLines": 2,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "backend/resources/css/app.css",
+      "language": "css",
+      "sizeLines": 11,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "backend/resources/js/app.js",
+      "language": "javascript",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/resources/js/bootstrap.js",
+      "language": "javascript",
+      "sizeLines": 4,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/resources/views/welcome.blade.php",
+      "language": "php",
+      "sizeLines": 277,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/routes/api.php",
+      "language": "php",
+      "sizeLines": 222,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/routes/console.php",
+      "language": "php",
+      "sizeLines": 8,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/routes/web.php",
+      "language": "php",
+      "sizeLines": 7,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/server.php",
+      "language": "php",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Concerns/CreatesSubscribedUser.php",
+      "language": "php",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Feature/ActivityLogTest.php",
+      "language": "php",
+      "sizeLines": 403,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Feature/AdminPanelTest.php",
+      "language": "php",
+      "sizeLines": 247,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Feature/AuthTest.php",
+      "language": "php",
+      "sizeLines": 126,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Feature/BillingTest.php",
+      "language": "php",
+      "sizeLines": 647,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Feature/CashEntryTest.php",
+      "language": "php",
+      "sizeLines": 356,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Feature/CatalogImageTest.php",
+      "language": "php",
+      "sizeLines": 280,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Feature/CustomerKhataTest.php",
+      "language": "php",
+      "sizeLines": 1096,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Feature/DayBookTest.php",
+      "language": "php",
+      "sizeLines": 636,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Feature/ExampleTest.php",
+      "language": "php",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Feature/FreeTrialTest.php",
+      "language": "php",
+      "sizeLines": 106,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Feature/GoogleAuthTest.php",
+      "language": "php",
+      "sizeLines": 50,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Feature/PosTest.php",
+      "language": "php",
+      "sizeLines": 804,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Feature/ProfileTest.php",
+      "language": "php",
+      "sizeLines": 96,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Feature/ProfitReportTest.php",
+      "language": "php",
+      "sizeLines": 532,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Feature/PurchasePaymentTest.php",
+      "language": "php",
+      "sizeLines": 412,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Feature/PurchaseTest.php",
+      "language": "php",
+      "sizeLines": 484,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Feature/ReceiptAddonTest.php",
+      "language": "php",
+      "sizeLines": 119,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Feature/ReportTest.php",
+      "language": "php",
+      "sizeLines": 244,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Feature/SaleReportingTest.php",
+      "language": "php",
+      "sizeLines": 651,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Feature/ShopStaffTest.php",
+      "language": "php",
+      "sizeLines": 610,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Feature/SubscriptionGateTest.php",
+      "language": "php",
+      "sizeLines": 149,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Feature/WastageTest.php",
+      "language": "php",
+      "sizeLines": 491,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Feature/WeighedGoodsTest.php",
+      "language": "php",
+      "sizeLines": 448,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/TestCase.php",
+      "language": "php",
+      "sizeLines": 10,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tests/Unit/ExampleTest.php",
+      "language": "php",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/vite.config.js",
+      "language": "javascript",
+      "sizeLines": 18,
+      "fileCategory": "code"
+    },
+    {
+      "path": "billing.html",
+      "language": "html",
+      "sizeLines": 82,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "brand/README.md",
+      "language": "markdown",
+      "sizeLines": 56,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "capacitor.config.json",
+      "language": "json",
+      "sizeLines": 34,
+      "fileCategory": "config"
+    },
+    {
+      "path": "cashflow.html",
+      "language": "html",
+      "sizeLines": 116,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "css/styles.css",
+      "language": "css",
+      "sizeLines": 6435,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "customers.html",
+      "language": "html",
+      "sizeLines": 237,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "dashboard.html",
+      "language": "html",
+      "sizeLines": 102,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "docs/CONTEXT.md",
+      "language": "markdown",
+      "sizeLines": 107,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/README.md",
+      "language": "markdown",
+      "sizeLines": 79,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/audits/2026-08-11-pos-khata-audit.md",
+      "language": "markdown",
+      "sizeLines": 212,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/features/README.md",
+      "language": "markdown",
+      "sizeLines": 71,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/features/activity-log.md",
+      "language": "markdown",
+      "sizeLines": 162,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/features/admin-panel.md",
+      "language": "markdown",
+      "sizeLines": 190,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/features/app-shell-and-theme.md",
+      "language": "markdown",
+      "sizeLines": 176,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/features/billing-subscriptions.md",
+      "language": "markdown",
+      "sizeLines": 291,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/features/cash-flow.md",
+      "language": "markdown",
+      "sizeLines": 152,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/features/catalogue-images.md",
+      "language": "markdown",
+      "sizeLines": 148,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/features/dashboard.md",
+      "language": "markdown",
+      "sizeLines": 90,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/features/day-book.md",
+      "language": "markdown",
+      "sizeLines": 170,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/features/khata-udhaar.md",
+      "language": "markdown",
+      "sizeLines": 248,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/features/landing-and-legal.md",
+      "language": "markdown",
+      "sizeLines": 103,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/features/offline-sync.md",
+      "language": "markdown",
+      "sizeLines": 143,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/features/pos-till.md",
+      "language": "markdown",
+      "sizeLines": 280,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/features/product-categories.md",
+      "language": "markdown",
+      "sizeLines": 97,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/features/products-catalogue.md",
+      "language": "markdown",
+      "sizeLines": 204,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/features/purchases-stock-in.md",
+      "language": "markdown",
+      "sizeLines": 225,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/features/receipt-addon.md",
+      "language": "markdown",
+      "sizeLines": 102,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/features/receipts-printing.md",
+      "language": "markdown",
+      "sizeLines": 146,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/features/reports.md",
+      "language": "markdown",
+      "sizeLines": 204,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/features/sales-history.md",
+      "language": "markdown",
+      "sizeLines": 195,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/features/shop-and-staff.md",
+      "language": "markdown",
+      "sizeLines": 192,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/features/stock-and-wastage.md",
+      "language": "markdown",
+      "sizeLines": 183,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/features/units-and-money.md",
+      "language": "markdown",
+      "sizeLines": 167,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/features/users-and-auth.md",
+      "language": "markdown",
+      "sizeLines": 171,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/frontend-design-guide.md",
+      "language": "markdown",
+      "sizeLines": 319,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/issues/M11/BUG-001-is-admin-not-mass-assignable.md",
+      "language": "markdown",
+      "sizeLines": 40,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/issues/M11/BUG-002-admin-panel-link-disappears.md",
+      "language": "markdown",
+      "sizeLines": 38,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/issues/M11/BUG-003-cash-entries-admin-page-broken.md",
+      "language": "markdown",
+      "sizeLines": 34,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/issues/M11/BUG-004-payment-gateway-column-mismatch.md",
+      "language": "markdown",
+      "sizeLines": 38,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/issues/M11/BUG-005-m11-tests-never-ran.md",
+      "language": "markdown",
+      "sizeLines": 37,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/issues/M11/BUG-006-admin-tables-xss-and-broken-onclick.md",
+      "language": "markdown",
+      "sizeLines": 46,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/issues/M11/BUG-007-admin-modals-always-visible-and-uncloseable.md",
+      "language": "markdown",
+      "sizeLines": 66,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/issues/M2/BUG-001-unauthenticated-api-user-returns-401.md",
+      "language": "markdown",
+      "sizeLines": 26,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/issues/M2/BUG-002-no-dashboard-after-login.md",
+      "language": "markdown",
+      "sizeLines": 42,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/issues/M3/BUG-001-guest-is-redirected-from-cashflow-page-to-login.md",
+      "language": "markdown",
+      "sizeLines": 9,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/issues/M3/BUG-002-logged-in-user-can-add-an-expense-in-the-ui.md",
+      "language": "markdown",
+      "sizeLines": 9,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/issues/M3/BUG-003-guest-is-redirected-from-cashflow-page-to-login.md",
+      "language": "markdown",
+      "sizeLines": 9,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/issues/M4/BUG-001-income-entries-and-category-reports.md",
+      "language": "markdown",
+      "sizeLines": 29,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/issues/M6/BUG-001-sandbox-checkout-activates-subscription-via-api.md",
+      "language": "markdown",
+      "sizeLines": 37,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/issues/M6/BUG-002-logged-in-user-can-complete-sandbox-checkout-in-ui.md",
+      "language": "markdown",
+      "sizeLines": 37,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/issues/M7/BUG-001-login-form-works-for-existing-user.md",
+      "language": "markdown",
+      "sizeLines": 34,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/issues/README.md",
+      "language": "markdown",
+      "sizeLines": 59,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M1-foundation.md",
+      "language": "markdown",
+      "sizeLines": 11,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M10-premium-ui.md",
+      "language": "markdown",
+      "sizeLines": 34,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M11-admin-panel.md",
+      "language": "markdown",
+      "sizeLines": 58,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M12-security-hardening.md",
+      "language": "markdown",
+      "sizeLines": 39,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M13-theme-default-fix.md",
+      "language": "markdown",
+      "sizeLines": 35,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M14-performance-code-quality.md",
+      "language": "markdown",
+      "sizeLines": 32,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M15-ux-accessibility-polish.md",
+      "language": "markdown",
+      "sizeLines": 36,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M16-cashflow-search-filters.md",
+      "language": "markdown",
+      "sizeLines": 24,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M17-budgets.md",
+      "language": "markdown",
+      "sizeLines": 24,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M18-csv-export-import.md",
+      "language": "markdown",
+      "sizeLines": 26,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M19-recurring-transactions.md",
+      "language": "markdown",
+      "sizeLines": 27,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M2-authentication.md",
+      "language": "markdown",
+      "sizeLines": 22,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M20-accounts-wallets.md",
+      "language": "markdown",
+      "sizeLines": 29,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M21-user-categories.md",
+      "language": "markdown",
+      "sizeLines": 25,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M22-soft-delete-trash.md",
+      "language": "markdown",
+      "sizeLines": 24,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M23-pos-and-paddle.md",
+      "language": "markdown",
+      "sizeLines": 203,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M23-receipt-upload.md",
+      "language": "markdown",
+      "sizeLines": 28,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M24-report-comparisons.md",
+      "language": "markdown",
+      "sizeLines": 25,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M25-notifications-reminders.md",
+      "language": "markdown",
+      "sizeLines": 26,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M26-savings-goals.md",
+      "language": "markdown",
+      "sizeLines": 24,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M27-tags-labels.md",
+      "language": "markdown",
+      "sizeLines": 24,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M28-bulk-operations.md",
+      "language": "markdown",
+      "sizeLines": 24,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M29-full-backup-export.md",
+      "language": "markdown",
+      "sizeLines": 22,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M3-cashflow.md",
+      "language": "markdown",
+      "sizeLines": 21,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M30-multi-currency.md",
+      "language": "markdown",
+      "sizeLines": 26,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M31-audit-trail.md",
+      "language": "markdown",
+      "sizeLines": 23,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M32-dashboard-customization.md",
+      "language": "markdown",
+      "sizeLines": 22,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M33-offline-pwa.md",
+      "language": "markdown",
+      "sizeLines": 26,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M34-keyboard-shortcuts.md",
+      "language": "markdown",
+      "sizeLines": 22,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M35-kiryana-pack.md",
+      "language": "markdown",
+      "sizeLines": 199,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M4-reports.md",
+      "language": "markdown",
+      "sizeLines": 33,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M5-tax-calculator.md",
+      "language": "markdown",
+      "sizeLines": 22,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M6-billing.md",
+      "language": "markdown",
+      "sizeLines": 22,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M7-subscription-gate.md",
+      "language": "markdown",
+      "sizeLines": 20,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M8-receipt-addon.md",
+      "language": "markdown",
+      "sizeLines": 20,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/milestones/M9-free-trial.md",
+      "language": "markdown",
+      "sizeLines": 23,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/mobile-pos-design.md",
+      "language": "markdown",
+      "sizeLines": 310,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/parallel-agents.md",
+      "language": "markdown",
+      "sizeLines": 159,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M1-tasks.md",
+      "language": "markdown",
+      "sizeLines": 109,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M10-tasks.md",
+      "language": "markdown",
+      "sizeLines": 98,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M11-tasks.md",
+      "language": "markdown",
+      "sizeLines": 53,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M12-tasks.md",
+      "language": "markdown",
+      "sizeLines": 89,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M13-tasks.md",
+      "language": "markdown",
+      "sizeLines": 52,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M14-tasks.md",
+      "language": "markdown",
+      "sizeLines": 15,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M15-tasks.md",
+      "language": "markdown",
+      "sizeLines": 16,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M16-tasks.md",
+      "language": "markdown",
+      "sizeLines": 12,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M17-tasks.md",
+      "language": "markdown",
+      "sizeLines": 13,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M18-tasks.md",
+      "language": "markdown",
+      "sizeLines": 12,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M19-tasks.md",
+      "language": "markdown",
+      "sizeLines": 13,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M2-tasks.md",
+      "language": "markdown",
+      "sizeLines": 128,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M20-tasks.md",
+      "language": "markdown",
+      "sizeLines": 13,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M21-tasks.md",
+      "language": "markdown",
+      "sizeLines": 12,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M22-tasks.md",
+      "language": "markdown",
+      "sizeLines": 12,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M23-tasks.md",
+      "language": "markdown",
+      "sizeLines": 12,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M24-tasks.md",
+      "language": "markdown",
+      "sizeLines": 12,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M25-tasks.md",
+      "language": "markdown",
+      "sizeLines": 13,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M26-tasks.md",
+      "language": "markdown",
+      "sizeLines": 12,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M27-tasks.md",
+      "language": "markdown",
+      "sizeLines": 12,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M28-tasks.md",
+      "language": "markdown",
+      "sizeLines": 11,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M29-tasks.md",
+      "language": "markdown",
+      "sizeLines": 11,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M3-tasks.md",
+      "language": "markdown",
+      "sizeLines": 94,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M30-tasks.md",
+      "language": "markdown",
+      "sizeLines": 12,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M31-tasks.md",
+      "language": "markdown",
+      "sizeLines": 12,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M32-tasks.md",
+      "language": "markdown",
+      "sizeLines": 11,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M33-tasks.md",
+      "language": "markdown",
+      "sizeLines": 12,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M34-tasks.md",
+      "language": "markdown",
+      "sizeLines": 11,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M35-tasks.md",
+      "language": "markdown",
+      "sizeLines": 272,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M4-tasks.md",
+      "language": "markdown",
+      "sizeLines": 151,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M5-tasks.md",
+      "language": "markdown",
+      "sizeLines": 39,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M6-tasks.md",
+      "language": "markdown",
+      "sizeLines": 129,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M7-tasks.md",
+      "language": "markdown",
+      "sizeLines": 70,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M8-tasks.md",
+      "language": "markdown",
+      "sizeLines": 75,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tasks/M9-tasks.md",
+      "language": "markdown",
+      "sizeLines": 69,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "e2e/README.md",
+      "language": "markdown",
+      "sizeLines": 30,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "e2e/helpers/qa-auth.js",
+      "language": "javascript",
+      "sizeLines": 79,
+      "fileCategory": "code"
+    },
+    {
+      "path": "e2e/playwright.config.js",
+      "language": "javascript",
+      "sizeLines": 53,
+      "fileCategory": "code"
+    },
+    {
+      "path": "e2e/reporters/bug-reporter.mjs",
+      "language": "javascript",
+      "sizeLines": 70,
+      "fileCategory": "code"
+    },
+    {
+      "path": "e2e/tests/m1-health.spec.js",
+      "language": "javascript",
+      "sizeLines": 28,
+      "fileCategory": "code"
+    },
+    {
+      "path": "e2e/tests/m10-premium-ui.spec.js",
+      "language": "javascript",
+      "sizeLines": 92,
+      "fileCategory": "code"
+    },
+    {
+      "path": "e2e/tests/m11-admin-panel.spec.js",
+      "language": "javascript",
+      "sizeLines": 389,
+      "fileCategory": "code"
+    },
+    {
+      "path": "e2e/tests/m13-theme.spec.js",
+      "language": "javascript",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "e2e/tests/m2-auth.spec.js",
+      "language": "javascript",
+      "sizeLines": 97,
+      "fileCategory": "code"
+    },
+    {
+      "path": "e2e/tests/m23-pos.spec.js",
+      "language": "javascript",
+      "sizeLines": 247,
+      "fileCategory": "code"
+    },
+    {
+      "path": "e2e/tests/m3-cashflow.spec.js",
+      "language": "javascript",
+      "sizeLines": 99,
+      "fileCategory": "code"
+    },
+    {
+      "path": "e2e/tests/m35-grocery.spec.js",
+      "language": "javascript",
+      "sizeLines": 485,
+      "fileCategory": "code"
+    },
+    {
+      "path": "e2e/tests/m4-reports.spec.js",
+      "language": "javascript",
+      "sizeLines": 92,
+      "fileCategory": "code"
+    },
+    {
+      "path": "e2e/tests/m6-billing.spec.js",
+      "language": "javascript",
+      "sizeLines": 157,
+      "fileCategory": "code"
+    },
+    {
+      "path": "e2e/tests/m7-subscription-gate.spec.js",
+      "language": "javascript",
+      "sizeLines": 78,
+      "fileCategory": "code"
+    },
+    {
+      "path": "e2e/tests/m8-receipt-addon.spec.js",
+      "language": "javascript",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
+      "path": "e2e/tests/m9-free-trial.spec.js",
+      "language": "javascript",
+      "sizeLines": 76,
+      "fileCategory": "code"
+    },
+    {
+      "path": "index.html",
+      "language": "html",
+      "sizeLines": 506,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "ios/App/App.xcodeproj/project.pbxproj",
+      "language": "pbxproj",
+      "sizeLines": 380,
+      "fileCategory": "code"
+    },
+    {
+      "path": "ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist",
+      "language": "xml",
+      "sizeLines": 8,
+      "fileCategory": "config"
+    },
+    {
+      "path": "ios/App/App/AppDelegate.swift",
+      "language": "swift",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json",
+      "language": "json",
+      "sizeLines": 14,
+      "fileCategory": "config"
+    },
+    {
+      "path": "ios/App/App/Assets.xcassets/Contents.json",
+      "language": "json",
+      "sizeLines": 5,
+      "fileCategory": "config"
+    },
+    {
+      "path": "ios/App/App/Assets.xcassets/Splash.imageset/Contents.json",
+      "language": "json",
+      "sizeLines": 22,
+      "fileCategory": "config"
+    },
+    {
+      "path": "ios/App/App/Base.lproj/LaunchScreen.storyboard",
+      "language": "storyboard",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "ios/App/App/Base.lproj/Main.storyboard",
+      "language": "storyboard",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    },
+    {
+      "path": "ios/App/App/Info.plist",
+      "language": "xml",
+      "sizeLines": 70,
+      "fileCategory": "config"
+    },
+    {
+      "path": "ios/App/App/SceneDelegate.swift",
+      "language": "swift",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "ios/App/CapApp-SPM/Package.swift",
+      "language": "swift",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "ios/App/CapApp-SPM/README.md",
+      "language": "markdown",
+      "sizeLines": 5,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "ios/App/CapApp-SPM/Sources/CapApp-SPM/CapApp-SPM.swift",
+      "language": "swift",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "ios/debug.xcconfig",
+      "language": "xcconfig",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/activity.js",
+      "language": "javascript",
+      "sizeLines": 280,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/admin-categories.js",
+      "language": "javascript",
+      "sizeLines": 147,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/admin-entries.js",
+      "language": "javascript",
+      "sizeLines": 140,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/admin-payments.js",
+      "language": "javascript",
+      "sizeLines": 83,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/admin-shops.js",
+      "language": "javascript",
+      "sizeLines": 212,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/admin-subscriptions.js",
+      "language": "javascript",
+      "sizeLines": 107,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/admin-users.js",
+      "language": "javascript",
+      "sizeLines": 248,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/admin.js",
+      "language": "javascript",
+      "sizeLines": 132,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/api.js",
+      "language": "javascript",
+      "sizeLines": 245,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/auth.js",
+      "language": "javascript",
+      "sizeLines": 161,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/billing.js",
+      "language": "javascript",
+      "sizeLines": 313,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/cart.js",
+      "language": "javascript",
+      "sizeLines": 194,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/cashflow.js",
+      "language": "javascript",
+      "sizeLines": 333,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/customers.js",
+      "language": "javascript",
+      "sizeLines": 773,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/dashboard.js",
+      "language": "javascript",
+      "sizeLines": 317,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/home.js",
+      "language": "javascript",
+      "sizeLines": 84,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/legal.js",
+      "language": "javascript",
+      "sizeLines": 5,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/motion.js",
+      "language": "javascript",
+      "sizeLines": 134,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/nav.js",
+      "language": "javascript",
+      "sizeLines": 147,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/offline-db.js",
+      "language": "javascript",
+      "sizeLines": 160,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/pos.js",
+      "language": "javascript",
+      "sizeLines": 1790,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/products.js",
+      "language": "javascript",
+      "sizeLines": 898,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/profile.js",
+      "language": "javascript",
+      "sizeLines": 133,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/purchases.js",
+      "language": "javascript",
+      "sizeLines": 835,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/receipt.js",
+      "language": "javascript",
+      "sizeLines": 268,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/reports.js",
+      "language": "javascript",
+      "sizeLines": 659,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/sales.js",
+      "language": "javascript",
+      "sizeLines": 610,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/shell.js",
+      "language": "javascript",
+      "sizeLines": 283,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/shop.js",
+      "language": "javascript",
+      "sizeLines": 311,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/sync.js",
+      "language": "javascript",
+      "sizeLines": 124,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/theme.js",
+      "language": "javascript",
+      "sizeLines": 48,
+      "fileCategory": "code"
+    },
+    {
+      "path": "js/units.js",
+      "language": "javascript",
+      "sizeLines": 171,
+      "fileCategory": "code"
+    },
+    {
+      "path": "login.html",
+      "language": "html",
+      "sizeLines": 61,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "mobile/css/mobile.css",
+      "language": "css",
+      "sizeLines": 1292,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "mobile/index.html",
+      "language": "html",
+      "sizeLines": 24,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "mobile/js/boot.js",
+      "language": "javascript",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
+      "path": "mobile/js/config.js",
+      "language": "javascript",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "mobile/js/login.js",
+      "language": "javascript",
+      "sizeLines": 136,
+      "fileCategory": "code"
+    },
+    {
+      "path": "mobile/js/more.js",
+      "language": "javascript",
+      "sizeLines": 224,
+      "fileCategory": "code"
+    },
+    {
+      "path": "mobile/js/native.js",
+      "language": "javascript",
+      "sizeLines": 63,
+      "fileCategory": "code"
+    },
+    {
+      "path": "mobile/js/sell.js",
+      "language": "javascript",
+      "sizeLines": 584,
+      "fileCategory": "code"
+    },
+    {
+      "path": "mobile/js/shell.js",
+      "language": "javascript",
+      "sizeLines": 103,
+      "fileCategory": "code"
+    },
+    {
+      "path": "mobile/js/theme-boot.js",
+      "language": "javascript",
+      "sizeLines": 28,
+      "fileCategory": "code"
+    },
+    {
+      "path": "mobile/js/theme.js",
+      "language": "javascript",
+      "sizeLines": 58,
+      "fileCategory": "code"
+    },
+    {
+      "path": "mobile/login.html",
+      "language": "html",
+      "sizeLines": 105,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "mobile/more.html",
+      "language": "html",
+      "sizeLines": 48,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "mobile/nul",
+      "language": "unknown",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "mobile/sell.html",
+      "language": "html",
+      "sizeLines": 184,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "nul",
+      "language": "unknown",
+      "sizeLines": 2,
+      "fileCategory": "code"
+    },
+    {
+      "path": "package.json",
+      "language": "json",
+      "sizeLines": 60,
+      "fileCategory": "config"
+    },
+    {
+      "path": "pos.html",
+      "language": "html",
+      "sizeLines": 378,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "privacy.html",
+      "language": "html",
+      "sizeLines": 105,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "products.html",
+      "language": "html",
+      "sizeLines": 228,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "profile.html",
+      "language": "html",
+      "sizeLines": 83,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "purchases.html",
+      "language": "html",
+      "sizeLines": 283,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "reports.html",
+      "language": "html",
+      "sizeLines": 201,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "sales.html",
+      "language": "html",
+      "sizeLines": 186,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "scripts/agent-env.mjs",
+      "language": "javascript",
+      "sizeLines": 69,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/build-mobile.mjs",
+      "language": "javascript",
+      "sizeLines": 82,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/dev-serve.mjs",
+      "language": "javascript",
+      "sizeLines": 58,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/lint-js.mjs",
+      "language": "javascript",
+      "sizeLines": 55,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/qa-milestone.mjs",
+      "language": "javascript",
+      "sizeLines": 226,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/test-admin-setup.mjs",
+      "language": "javascript",
+      "sizeLines": 179,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/worktree.mjs",
+      "language": "javascript",
+      "sizeLines": 266,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/write-bug.mjs",
+      "language": "javascript",
+      "sizeLines": 134,
+      "fileCategory": "code"
+    },
+    {
+      "path": "shop.html",
+      "language": "html",
+      "sizeLines": 155,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "signup.html",
+      "language": "html",
+      "sizeLines": 67,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "terms.html",
+      "language": "html",
+      "sizeLines": 116,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "tests/cart.test.js",
+      "language": "javascript",
+      "sizeLines": 371,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/units.test.js",
+      "language": "javascript",
+      "sizeLines": 212,
+      "fileCategory": "code"
+    }
+  ],
+  "totalFiles": 437,
+  "filteredByIgnore": 0,
+  "estimatedComplexity": "large",
+  "importMap": {
+    ".cursor/rules/milestone-qa.mdc": [],
+    ".cursor/rules/task-completion.mdc": [],
+    ".ua/.understandignore": [],
+    "ADMIN_SETUP.md": [],
+    "AGENTS.md": [],
+    "README.md": [],
+    "activity.html": [],
+    "admin-categories.html": [],
+    "admin-entries.html": [],
+    "admin-payments.html": [],
+    "admin-shops.html": [],
+    "admin-subscriptions.html": [],
+    "admin-users.html": [],
+    "admin.html": [],
+    "android/app/build.gradle": [],
+    "android/app/capacitor.build.gradle": [],
+    "android/app/proguard-rules.pro": [],
+    "android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java": [],
+    "android/app/src/debug/AndroidManifest.xml": [],
+    "android/app/src/debug/res/xml/network_security_config.xml": [],
+    "android/app/src/main/AndroidManifest.xml": [],
+    "android/app/src/main/java/com/pkgalla/app/MainActivity.java": [],
+    "android/app/src/main/res/drawable-v24/ic_launcher_foreground.xml": [],
+    "android/app/src/main/res/drawable/ic_launcher_background.xml": [],
+    "android/app/src/main/res/layout/activity_main.xml": [],
+    "android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml": [],
+    "android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml": [],
+    "android/app/src/main/res/values/ic_launcher_background.xml": [],
+    "android/app/src/main/res/values/strings.xml": [],
+    "android/app/src/main/res/values/styles.xml": [],
+    "android/app/src/main/res/xml/file_paths.xml": [],
+    "android/app/src/test/java/com/getcapacitor/myapp/ExampleUnitTest.java": [],
+    "android/build.gradle": [],
+    "android/capacitor.settings.gradle": [],
+    "android/gradle.properties": [],
+    "android/gradle/wrapper/gradle-wrapper.jar": [],
+    "android/gradle/wrapper/gradle-wrapper.properties": [],
+    "android/gradlew": [],
+    "android/gradlew.bat": [],
+    "android/settings.gradle": [],
+    "android/variables.gradle": [],
+    "backend/.env.example": [],
+    "backend/.gitattributes": [],
+    "backend/README.md": [],
+    "backend/app/Contracts/BillingProvider.php": [
+      "backend/app/Models/Payment.php",
+      "backend/app/Models/User.php"
+    ],
+    "backend/app/Exceptions/BillingProviderException.php": [],
+    "backend/app/Http/Controllers/Api/ActivityLogController.php": [
+      "backend/app/Http/Controllers/Controller.php",
+      "backend/app/Models/ActivityLog.php",
+      "backend/app/Models/User.php",
+      "backend/app/Services/ActivityLogger.php"
+    ],
+    "backend/app/Http/Controllers/Api/AdminController.php": [
+      "backend/app/Http/Controllers/Controller.php",
+      "backend/app/Models/CashEntry.php",
+      "backend/app/Models/ExpenseCategory.php",
+      "backend/app/Models/Payment.php",
+      "backend/app/Models/Shop.php",
+      "backend/app/Models/Subscription.php",
+      "backend/app/Models/User.php",
+      "backend/app/Services/Billing/SubscriptionService.php"
+    ],
+    "backend/app/Http/Controllers/Api/AuthController.php": [
+      "backend/app/Http/Controllers/Controller.php",
+      "backend/app/Models/User.php"
+    ],
+    "backend/app/Http/Controllers/Api/BillingController.php": [
+      "backend/app/Http/Controllers/Controller.php",
+      "backend/app/Http/Middleware/EnsureSubscribed.php",
+      "backend/app/Models/Payment.php",
+      "backend/app/Models/Subscription.php",
+      "backend/app/Models/User.php",
+      "backend/app/Services/Billing/PaddleGateway.php",
+      "backend/app/Services/Billing/SubscriptionService.php"
+    ],
+    "backend/app/Http/Controllers/Api/CashEntryController.php": [
+      "backend/app/Http/Controllers/Controller.php",
+      "backend/app/Models/CashEntry.php",
+      "backend/app/Models/ExpenseCategory.php"
+    ],
+    "backend/app/Http/Controllers/Api/CategoryController.php": [
+      "backend/app/Http/Controllers/Controller.php",
+      "backend/app/Models/ExpenseCategory.php"
+    ],
+    "backend/app/Http/Controllers/Api/CustomerController.php": [
+      "backend/app/Http/Controllers/Controller.php",
+      "backend/app/Models/Customer.php",
+      "backend/app/Models/Sale.php",
+      "backend/app/Models/SalePayment.php",
+      "backend/app/Services/Pos/SalePaymentService.php"
+    ],
+    "backend/app/Http/Controllers/Api/DayBalanceController.php": [
+      "backend/app/Http/Controllers/Controller.php",
+      "backend/app/Models/DayBalance.php",
+      "backend/app/Models/User.php",
+      "backend/app/Services/Pos/DayBookService.php"
+    ],
+    "backend/app/Http/Controllers/Api/GoogleAuthController.php": [
+      "backend/app/Http/Controllers/Controller.php",
+      "backend/app/Models/User.php"
+    ],
+    "backend/app/Http/Controllers/Api/PaddleWebhookController.php": [
+      "backend/app/Http/Controllers/Controller.php",
+      "backend/app/Models/Payment.php",
+      "backend/app/Models/User.php",
+      "backend/app/Models/WebhookEvent.php",
+      "backend/app/Services/Billing/PaddleGateway.php",
+      "backend/app/Services/Billing/SubscriptionService.php"
+    ],
+    "backend/app/Http/Controllers/Api/ProductCategoryController.php": [
+      "backend/app/Http/Controllers/Controller.php",
+      "backend/app/Models/ProductCategory.php",
+      "backend/app/Services/ActivityLogger.php",
+      "backend/app/Services/CatalogImageStore.php"
+    ],
+    "backend/app/Http/Controllers/Api/ProductController.php": [
+      "backend/app/Http/Controllers/Controller.php",
+      "backend/app/Models/Product.php",
+      "backend/app/Models/ProductCategory.php",
+      "backend/app/Models/StockMovement.php",
+      "backend/app/Services/ActivityLogger.php",
+      "backend/app/Services/CatalogImageStore.php",
+      "backend/app/Services/Pos/SaleService.php",
+      "backend/app/Support/Unit.php"
+    ],
+    "backend/app/Http/Controllers/Api/PurchaseController.php": [
+      "backend/app/Http/Controllers/Controller.php",
+      "backend/app/Models/Purchase.php",
+      "backend/app/Models/PurchaseItem.php",
+      "backend/app/Models/PurchasePayment.php",
+      "backend/app/Models/Sale.php",
+      "backend/app/Models/Supplier.php",
+      "backend/app/Services/Pos/PurchaseService.php",
+      "backend/app/Support/Unit.php"
+    ],
+    "backend/app/Http/Controllers/Api/QaController.php": [
+      "backend/app/Http/Controllers/Controller.php"
+    ],
+    "backend/app/Http/Controllers/Api/ReceiptController.php": [
+      "backend/app/Http/Controllers/Controller.php"
+    ],
+    "backend/app/Http/Controllers/Api/ReportController.php": [
+      "backend/app/Http/Controllers/Controller.php",
+      "backend/app/Models/CashEntry.php",
+      "backend/app/Models/Sale.php",
+      "backend/app/Services/ReportAggregator.php"
+    ],
+    "backend/app/Http/Controllers/Api/SaleController.php": [
+      "backend/app/Http/Controllers/Controller.php",
+      "backend/app/Models/Sale.php",
+      "backend/app/Models/SaleItem.php",
+      "backend/app/Models/SalePayment.php",
+      "backend/app/Services/Pos/SalePaymentService.php",
+      "backend/app/Services/Pos/SaleService.php",
+      "backend/app/Support/SaleProfit.php"
+    ],
+    "backend/app/Http/Controllers/Api/ShopController.php": [
+      "backend/app/Http/Controllers/Controller.php",
+      "backend/app/Models/Shop.php",
+      "backend/app/Models/User.php"
+    ],
+    "backend/app/Http/Controllers/Api/StaffController.php": [
+      "backend/app/Http/Controllers/Controller.php",
+      "backend/app/Models/Shop.php",
+      "backend/app/Models/User.php"
+    ],
+    "backend/app/Http/Controllers/Controller.php": [],
+    "backend/app/Http/Middleware/AdminOnly.php": [],
+    "backend/app/Http/Middleware/EnsureSubscribed.php": [
+      "backend/app/Models/User.php",
+      "backend/app/Services/Billing/SubscriptionService.php"
+    ],
+    "backend/app/Http/Middleware/ShopAdminOnly.php": [
+      "backend/app/Models/User.php"
+    ],
+    "backend/app/Models/ActivityLog.php": [],
+    "backend/app/Models/CashEntry.php": [],
+    "backend/app/Models/Customer.php": [],
+    "backend/app/Models/DayBalance.php": [],
+    "backend/app/Models/ExpenseCategory.php": [],
+    "backend/app/Models/Payment.php": [],
+    "backend/app/Models/Product.php": [
+      "backend/app/Support/Unit.php"
+    ],
+    "backend/app/Models/ProductCategory.php": [],
+    "backend/app/Models/Purchase.php": [],
+    "backend/app/Models/PurchaseItem.php": [
+      "backend/app/Support/Unit.php"
+    ],
+    "backend/app/Models/PurchasePayment.php": [],
+    "backend/app/Models/Sale.php": [],
+    "backend/app/Models/SaleItem.php": [
+      "backend/app/Support/Unit.php"
+    ],
+    "backend/app/Models/SalePayment.php": [],
+    "backend/app/Models/Shop.php": [],
+    "backend/app/Models/StockMovement.php": [
+      "backend/app/Support/Unit.php"
+    ],
+    "backend/app/Models/Subscription.php": [],
+    "backend/app/Models/SubscriptionAddon.php": [],
+    "backend/app/Models/Supplier.php": [],
+    "backend/app/Models/User.php": [
+      "backend/app/Models/CashEntry.php",
+      "backend/app/Models/Payment.php",
+      "backend/app/Models/Subscription.php",
+      "backend/app/Models/SubscriptionAddon.php",
+      "backend/database/factories/UserFactory.php"
+    ],
+    "backend/app/Models/WebhookEvent.php": [],
+    "backend/app/Policies/CashEntryPolicy.php": [
+      "backend/app/Models/CashEntry.php",
+      "backend/app/Models/User.php"
+    ],
+    "backend/app/Policies/CustomerPolicy.php": [
+      "backend/app/Models/Customer.php",
+      "backend/app/Models/User.php"
+    ],
+    "backend/app/Policies/DayBalancePolicy.php": [
+      "backend/app/Models/DayBalance.php",
+      "backend/app/Models/User.php"
+    ],
+    "backend/app/Policies/ProductCategoryPolicy.php": [
+      "backend/app/Models/ProductCategory.php",
+      "backend/app/Models/User.php"
+    ],
+    "backend/app/Policies/ProductPolicy.php": [
+      "backend/app/Models/Product.php",
+      "backend/app/Models/User.php"
+    ],
+    "backend/app/Policies/PurchasePolicy.php": [
+      "backend/app/Models/Purchase.php",
+      "backend/app/Models/User.php"
+    ],
+    "backend/app/Policies/SalePolicy.php": [
+      "backend/app/Models/Sale.php",
+      "backend/app/Models/User.php"
+    ],
+    "backend/app/Providers/AppServiceProvider.php": [],
+    "backend/app/Services/ActivityLogger.php": [
+      "backend/app/Models/ActivityLog.php",
+      "backend/app/Models/Product.php",
+      "backend/app/Models/User.php"
+    ],
+    "backend/app/Services/Billing/PaddleClient.php": [
+      "backend/app/Exceptions/BillingProviderException.php"
+    ],
+    "backend/app/Services/Billing/PaddleGateway.php": [
+      "backend/app/Contracts/BillingProvider.php",
+      "backend/app/Exceptions/BillingProviderException.php",
+      "backend/app/Models/Payment.php",
+      "backend/app/Models/Subscription.php",
+      "backend/app/Models/User.php"
+    ],
+    "backend/app/Services/Billing/SubscriptionService.php": [
+      "backend/app/Models/Payment.php",
+      "backend/app/Models/Subscription.php",
+      "backend/app/Models/SubscriptionAddon.php",
+      "backend/app/Models/User.php"
+    ],
+    "backend/app/Services/CatalogImageStore.php": [],
+    "backend/app/Services/Pos/DayBookService.php": [
+      "backend/app/Models/CashEntry.php",
+      "backend/app/Models/DayBalance.php",
+      "backend/app/Models/ExpenseCategory.php",
+      "backend/app/Models/Sale.php",
+      "backend/app/Models/SalePayment.php",
+      "backend/app/Models/User.php"
+    ],
+    "backend/app/Services/Pos/PurchaseService.php": [
+      "backend/app/Models/Product.php",
+      "backend/app/Models/Purchase.php",
+      "backend/app/Models/StockMovement.php",
+      "backend/app/Models/User.php",
+      "backend/app/Support/Unit.php"
+    ],
+    "backend/app/Services/Pos/SalePaymentService.php": [
+      "backend/app/Models/Customer.php",
+      "backend/app/Models/Sale.php",
+      "backend/app/Models/User.php"
+    ],
+    "backend/app/Services/Pos/SaleService.php": [
+      "backend/app/Models/Customer.php",
+      "backend/app/Models/Product.php",
+      "backend/app/Models/Sale.php",
+      "backend/app/Models/SaleItem.php",
+      "backend/app/Models/StockMovement.php",
+      "backend/app/Models/User.php",
+      "backend/app/Support/Unit.php"
+    ],
+    "backend/app/Services/ReportAggregator.php": [
+      "backend/app/Models/CashEntry.php",
+      "backend/app/Models/ExpenseCategory.php",
+      "backend/app/Models/Sale.php",
+      "backend/app/Models/StockMovement.php",
+      "backend/app/Models/User.php",
+      "backend/app/Services/Pos/DayBookService.php",
+      "backend/app/Support/SaleProfit.php"
+    ],
+    "backend/app/Support/SaleProfit.php": [],
+    "backend/app/Support/Unit.php": [],
+    "backend/artisan": [],
+    "backend/bootstrap/app.php": [],
+    "backend/bootstrap/providers.php": [
+      "backend/app/Providers/AppServiceProvider.php"
+    ],
+    "backend/composer.json": [],
+    "backend/config/app.php": [],
+    "backend/config/auth.php": [
+      "backend/app/Models/User.php"
+    ],
+    "backend/config/billing.php": [],
+    "backend/config/cache.php": [],
+    "backend/config/cors.php": [],
+    "backend/config/database.php": [],
+    "backend/config/filesystems.php": [],
+    "backend/config/logging.php": [],
+    "backend/config/mail.php": [],
+    "backend/config/queue.php": [],
+    "backend/config/sanctum.php": [],
+    "backend/config/services.php": [],
+    "backend/config/session.php": [],
+    "backend/database/data/grocery-catalog.json": [],
+    "backend/database/factories/UserFactory.php": [
+      "backend/app/Models/User.php"
+    ],
+    "backend/database/migrations/0001_01_01_000000_create_users_table.php": [],
+    "backend/database/migrations/0001_01_01_000001_create_cache_table.php": [],
+    "backend/database/migrations/0001_01_01_000002_create_jobs_table.php": [],
+    "backend/database/migrations/2026_07_25_111555_create_personal_access_tokens_table.php": [],
+    "backend/database/migrations/2026_07_30_124107_add_google_fields_to_users_table.php": [],
+    "backend/database/migrations/2026_07_30_130323_create_expense_categories_table.php": [],
+    "backend/database/migrations/2026_07_30_130324_create_cash_entries_table.php": [],
+    "backend/database/migrations/2026_07_30_180000_add_kind_to_expense_categories_table.php": [],
+    "backend/database/migrations/2026_07_30_190000_create_subscriptions_table.php": [],
+    "backend/database/migrations/2026_07_30_190001_create_payments_table.php": [],
+    "backend/database/migrations/2026_07_30_200000_create_subscription_addons_table.php": [],
+    "backend/database/migrations/2026_07_30_230000_add_is_admin_to_users_table.php": [],
+    "backend/database/migrations/2026_08_06_100000_add_paddle_customer_to_users_table.php": [],
+    "backend/database/migrations/2026_08_06_100001_add_provider_fields_to_subscriptions_table.php": [],
+    "backend/database/migrations/2026_08_06_100002_add_provider_fields_to_payments_table.php": [],
+    "backend/database/migrations/2026_08_06_100003_create_webhook_events_table.php": [],
+    "backend/database/migrations/2026_08_06_110000_create_product_categories_table.php": [],
+    "backend/database/migrations/2026_08_06_110001_create_products_table.php": [],
+    "backend/database/migrations/2026_08_06_110002_create_sales_table.php": [],
+    "backend/database/migrations/2026_08_06_110003_create_sale_items_table.php": [],
+    "backend/database/migrations/2026_08_06_110004_create_stock_movements_table.php": [],
+    "backend/database/migrations/2026_08_06_120000_add_offline_and_refund_fields_to_sales_table.php": [],
+    "backend/database/migrations/2026_08_07_100000_create_shops_table.php": [],
+    "backend/database/migrations/2026_08_07_100001_add_roles_to_users_table.php": [],
+    "backend/database/migrations/2026_08_07_100002_add_image_path_to_products_and_categories.php": [],
+    "backend/database/migrations/2026_08_07_100003_add_credit_fields_to_sales_table.php": [],
+    "backend/database/migrations/2026_08_07_100004_create_sale_payments_table.php": [],
+    "backend/database/migrations/2026_08_07_100005_create_day_balances_table.php": [],
+    "backend/database/migrations/2026_08_07_100006_create_activity_logs_table.php": [],
+    "backend/database/migrations/2026_08_07_110000_add_units_of_sale_to_catalogue.php": [
+      "backend/app/Support/Unit.php"
+    ],
+    "backend/database/migrations/2026_08_08_100000_create_purchases_tables.php": [
+      "backend/app/Support/Unit.php"
+    ],
+    "backend/database/migrations/2026_08_08_100001_add_is_active_to_expense_categories_table.php": [],
+    "backend/database/migrations/2026_08_08_100002_create_customers_table.php": [],
+    "backend/database/migrations/2026_08_08_100003_add_wastage_expiry_and_pack_size_to_catalogue.php": [
+      "backend/app/Support/Unit.php"
+    ],
+    "backend/database/migrations/2026_08_08_100004_add_rounding_adjustment_to_sales.php": [],
+    "backend/database/migrations/2026_08_08_100005_add_received_by_name_to_sale_payments_table.php": [],
+    "backend/database/migrations/2026_08_08_100006_create_purchase_payments_table.php": [],
+    "backend/database/seeders/AdminUserSeeder.php": [
+      "backend/app/Models/User.php"
+    ],
+    "backend/database/seeders/DatabaseSeeder.php": [],
+    "backend/database/seeders/ExpenseCategorySeeder.php": [
+      "backend/app/Models/ExpenseCategory.php"
+    ],
+    "backend/database/seeders/GroceryCatalogSeeder.php": [
+      "backend/app/Models/Product.php",
+      "backend/app/Models/ProductCategory.php",
+      "backend/app/Models/User.php"
+    ],
+    "backend/package.json": [],
+    "backend/phpunit.xml": [],
+    "backend/public/.htaccess": [],
+    "backend/public/index.php": [],
+    "backend/public/robots.txt": [],
+    "backend/resources/css/app.css": [],
+    "backend/resources/js/app.js": [
+      "backend/resources/js/bootstrap.js"
+    ],
+    "backend/resources/js/bootstrap.js": [],
+    "backend/resources/views/welcome.blade.php": [],
+    "backend/routes/api.php": [
+      "backend/app/Http/Controllers/Api/ActivityLogController.php",
+      "backend/app/Http/Controllers/Api/AdminController.php",
+      "backend/app/Http/Controllers/Api/AuthController.php",
+      "backend/app/Http/Controllers/Api/BillingController.php",
+      "backend/app/Http/Controllers/Api/CashEntryController.php",
+      "backend/app/Http/Controllers/Api/CategoryController.php",
+      "backend/app/Http/Controllers/Api/CustomerController.php",
+      "backend/app/Http/Controllers/Api/DayBalanceController.php",
+      "backend/app/Http/Controllers/Api/GoogleAuthController.php",
+      "backend/app/Http/Controllers/Api/PaddleWebhookController.php",
+      "backend/app/Http/Controllers/Api/ProductCategoryController.php",
+      "backend/app/Http/Controllers/Api/ProductController.php",
+      "backend/app/Http/Controllers/Api/PurchaseController.php",
+      "backend/app/Http/Controllers/Api/QaController.php",
+      "backend/app/Http/Controllers/Api/ReceiptController.php",
+      "backend/app/Http/Controllers/Api/ReportController.php",
+      "backend/app/Http/Controllers/Api/SaleController.php",
+      "backend/app/Http/Controllers/Api/ShopController.php",
+      "backend/app/Http/Controllers/Api/StaffController.php",
+      "backend/app/Http/Middleware/ShopAdminOnly.php"
+    ],
+    "backend/routes/console.php": [],
+    "backend/routes/web.php": [],
+    "backend/server.php": [],
+    "backend/tests/Concerns/CreatesSubscribedUser.php": [
+      "backend/app/Models/Subscription.php",
+      "backend/app/Models/SubscriptionAddon.php",
+      "backend/app/Models/User.php"
+    ],
+    "backend/tests/Feature/ActivityLogTest.php": [
+      "backend/app/Models/ActivityLog.php",
+      "backend/app/Models/Product.php",
+      "backend/app/Models/ProductCategory.php",
+      "backend/app/Models/Shop.php",
+      "backend/app/Models/User.php",
+      "backend/app/Services/ActivityLogger.php"
+    ],
+    "backend/tests/Feature/AdminPanelTest.php": [
+      "backend/app/Models/CashEntry.php",
+      "backend/app/Models/ExpenseCategory.php",
+      "backend/app/Models/Payment.php",
+      "backend/app/Models/User.php",
+      "backend/database/seeders/ExpenseCategorySeeder.php"
+    ],
+    "backend/tests/Feature/AuthTest.php": [
+      "backend/app/Models/User.php"
+    ],
+    "backend/tests/Feature/BillingTest.php": [
+      "backend/app/Models/Payment.php",
+      "backend/app/Models/Subscription.php",
+      "backend/app/Models/User.php",
+      "backend/app/Models/WebhookEvent.php"
+    ],
+    "backend/tests/Feature/CashEntryTest.php": [
+      "backend/app/Models/CashEntry.php",
+      "backend/app/Models/ExpenseCategory.php",
+      "backend/app/Models/User.php",
+      "backend/database/seeders/ExpenseCategorySeeder.php"
+    ],
+    "backend/tests/Feature/CatalogImageTest.php": [
+      "backend/app/Models/Product.php",
+      "backend/app/Models/ProductCategory.php",
+      "backend/app/Models/User.php",
+      "backend/app/Services/CatalogImageStore.php"
+    ],
+    "backend/tests/Feature/CustomerKhataTest.php": [
+      "backend/app/Models/Customer.php",
+      "backend/app/Models/DayBalance.php",
+      "backend/app/Models/Product.php",
+      "backend/app/Models/Sale.php",
+      "backend/app/Models/Shop.php",
+      "backend/app/Models/User.php",
+      "backend/app/Services/Pos/DayBookService.php",
+      "backend/database/seeders/ExpenseCategorySeeder.php"
+    ],
+    "backend/tests/Feature/DayBookTest.php": [
+      "backend/app/Models/CashEntry.php",
+      "backend/app/Models/DayBalance.php",
+      "backend/app/Models/ExpenseCategory.php",
+      "backend/app/Models/Sale.php",
+      "backend/app/Models/SalePayment.php",
+      "backend/app/Models/Shop.php",
+      "backend/app/Models/User.php",
+      "backend/app/Services/Pos/DayBookService.php",
+      "backend/database/seeders/ExpenseCategorySeeder.php"
+    ],
+    "backend/tests/Feature/ExampleTest.php": [],
+    "backend/tests/Feature/FreeTrialTest.php": [
+      "backend/app/Models/User.php",
+      "backend/database/seeders/ExpenseCategorySeeder.php"
+    ],
+    "backend/tests/Feature/GoogleAuthTest.php": [
+      "backend/app/Models/User.php"
+    ],
+    "backend/tests/Feature/PosTest.php": [
+      "backend/app/Models/Product.php",
+      "backend/app/Models/ProductCategory.php",
+      "backend/app/Models/Sale.php",
+      "backend/app/Models/StockMovement.php",
+      "backend/app/Models/User.php",
+      "backend/database/seeders/ExpenseCategorySeeder.php"
+    ],
+    "backend/tests/Feature/ProfileTest.php": [
+      "backend/app/Models/User.php"
+    ],
+    "backend/tests/Feature/ProfitReportTest.php": [
+      "backend/app/Models/CashEntry.php",
+      "backend/app/Models/ExpenseCategory.php",
+      "backend/app/Models/Product.php",
+      "backend/app/Models/ProductCategory.php",
+      "backend/app/Models/Sale.php",
+      "backend/app/Models/Shop.php",
+      "backend/app/Models/User.php",
+      "backend/database/seeders/ExpenseCategorySeeder.php"
+    ],
+    "backend/tests/Feature/PurchasePaymentTest.php": [
+      "backend/app/Models/Product.php",
+      "backend/app/Models/Purchase.php",
+      "backend/app/Models/PurchasePayment.php",
+      "backend/app/Models/Shop.php",
+      "backend/app/Models/Supplier.php",
+      "backend/app/Models/User.php",
+      "backend/app/Support/Unit.php"
+    ],
+    "backend/tests/Feature/PurchaseTest.php": [
+      "backend/app/Models/Product.php",
+      "backend/app/Models/Purchase.php",
+      "backend/app/Models/Shop.php",
+      "backend/app/Models/StockMovement.php",
+      "backend/app/Models/Supplier.php",
+      "backend/app/Models/User.php",
+      "backend/app/Support/Unit.php"
+    ],
+    "backend/tests/Feature/ReceiptAddonTest.php": [
+      "backend/app/Models/CashEntry.php",
+      "backend/app/Models/ExpenseCategory.php",
+      "backend/app/Models/SubscriptionAddon.php",
+      "backend/app/Models/User.php",
+      "backend/database/seeders/ExpenseCategorySeeder.php"
+    ],
+    "backend/tests/Feature/ReportTest.php": [
+      "backend/app/Models/CashEntry.php",
+      "backend/app/Models/ExpenseCategory.php",
+      "backend/app/Models/User.php",
+      "backend/database/seeders/ExpenseCategorySeeder.php"
+    ],
+    "backend/tests/Feature/SaleReportingTest.php": [
+      "backend/app/Models/Product.php",
+      "backend/app/Models/ProductCategory.php",
+      "backend/app/Models/Sale.php",
+      "backend/app/Models/Shop.php",
+      "backend/app/Models/User.php"
+    ],
+    "backend/tests/Feature/ShopStaffTest.php": [
+      "backend/app/Models/Product.php",
+      "backend/app/Models/ProductCategory.php",
+      "backend/app/Models/Sale.php",
+      "backend/app/Models/Shop.php",
+      "backend/app/Models/User.php"
+    ],
+    "backend/tests/Feature/SubscriptionGateTest.php": [
+      "backend/app/Models/Shop.php",
+      "backend/app/Models/Subscription.php",
+      "backend/app/Models/User.php",
+      "backend/database/seeders/ExpenseCategorySeeder.php"
+    ],
+    "backend/tests/Feature/WastageTest.php": [
+      "backend/app/Models/ActivityLog.php",
+      "backend/app/Models/Product.php",
+      "backend/app/Models/StockMovement.php",
+      "backend/app/Models/User.php",
+      "backend/app/Services/ActivityLogger.php",
+      "backend/app/Support/Unit.php",
+      "backend/database/seeders/ExpenseCategorySeeder.php"
+    ],
+    "backend/tests/Feature/WeighedGoodsTest.php": [
+      "backend/app/Models/Product.php",
+      "backend/app/Models/Sale.php",
+      "backend/app/Models/User.php",
+      "backend/app/Support/Unit.php",
+      "backend/database/seeders/ExpenseCategorySeeder.php"
+    ],
+    "backend/tests/TestCase.php": [],
+    "backend/tests/Unit/ExampleTest.php": [],
+    "backend/vite.config.js": [],
+    "billing.html": [],
+    "brand/README.md": [],
+    "capacitor.config.json": [],
+    "cashflow.html": [],
+    "css/styles.css": [],
+    "customers.html": [],
+    "dashboard.html": [],
+    "docs/CONTEXT.md": [],
+    "docs/README.md": [],
+    "docs/audits/2026-08-11-pos-khata-audit.md": [],
+    "docs/features/README.md": [],
+    "docs/features/activity-log.md": [],
+    "docs/features/admin-panel.md": [],
+    "docs/features/app-shell-and-theme.md": [],
+    "docs/features/billing-subscriptions.md": [],
+    "docs/features/cash-flow.md": [],
+    "docs/features/catalogue-images.md": [],
+    "docs/features/dashboard.md": [],
+    "docs/features/day-book.md": [],
+    "docs/features/khata-udhaar.md": [],
+    "docs/features/landing-and-legal.md": [],
+    "docs/features/offline-sync.md": [],
+    "docs/features/pos-till.md": [],
+    "docs/features/product-categories.md": [],
+    "docs/features/products-catalogue.md": [],
+    "docs/features/purchases-stock-in.md": [],
+    "docs/features/receipt-addon.md": [],
+    "docs/features/receipts-printing.md": [],
+    "docs/features/reports.md": [],
+    "docs/features/sales-history.md": [],
+    "docs/features/shop-and-staff.md": [],
+    "docs/features/stock-and-wastage.md": [],
+    "docs/features/units-and-money.md": [],
+    "docs/features/users-and-auth.md": [],
+    "docs/frontend-design-guide.md": [],
+    "docs/issues/M11/BUG-001-is-admin-not-mass-assignable.md": [],
+    "docs/issues/M11/BUG-002-admin-panel-link-disappears.md": [],
+    "docs/issues/M11/BUG-003-cash-entries-admin-page-broken.md": [],
+    "docs/issues/M11/BUG-004-payment-gateway-column-mismatch.md": [],
+    "docs/issues/M11/BUG-005-m11-tests-never-ran.md": [],
+    "docs/issues/M11/BUG-006-admin-tables-xss-and-broken-onclick.md": [],
+    "docs/issues/M11/BUG-007-admin-modals-always-visible-and-uncloseable.md": [],
+    "docs/issues/M2/BUG-001-unauthenticated-api-user-returns-401.md": [],
+    "docs/issues/M2/BUG-002-no-dashboard-after-login.md": [],
+    "docs/issues/M3/BUG-001-guest-is-redirected-from-cashflow-page-to-login.md": [],
+    "docs/issues/M3/BUG-002-logged-in-user-can-add-an-expense-in-the-ui.md": [],
+    "docs/issues/M3/BUG-003-guest-is-redirected-from-cashflow-page-to-login.md": [],
+    "docs/issues/M4/BUG-001-income-entries-and-category-reports.md": [],
+    "docs/issues/M6/BUG-001-sandbox-checkout-activates-subscription-via-api.md": [],
+    "docs/issues/M6/BUG-002-logged-in-user-can-complete-sandbox-checkout-in-ui.md": [],
+    "docs/issues/M7/BUG-001-login-form-works-for-existing-user.md": [],
+    "docs/issues/README.md": [],
+    "docs/milestones/M1-foundation.md": [],
+    "docs/milestones/M10-premium-ui.md": [],
+    "docs/milestones/M11-admin-panel.md": [],
+    "docs/milestones/M12-security-hardening.md": [],
+    "docs/milestones/M13-theme-default-fix.md": [],
+    "docs/milestones/M14-performance-code-quality.md": [],
+    "docs/milestones/M15-ux-accessibility-polish.md": [],
+    "docs/milestones/M16-cashflow-search-filters.md": [],
+    "docs/milestones/M17-budgets.md": [],
+    "docs/milestones/M18-csv-export-import.md": [],
+    "docs/milestones/M19-recurring-transactions.md": [],
+    "docs/milestones/M2-authentication.md": [],
+    "docs/milestones/M20-accounts-wallets.md": [],
+    "docs/milestones/M21-user-categories.md": [],
+    "docs/milestones/M22-soft-delete-trash.md": [],
+    "docs/milestones/M23-pos-and-paddle.md": [],
+    "docs/milestones/M23-receipt-upload.md": [],
+    "docs/milestones/M24-report-comparisons.md": [],
+    "docs/milestones/M25-notifications-reminders.md": [],
+    "docs/milestones/M26-savings-goals.md": [],
+    "docs/milestones/M27-tags-labels.md": [],
+    "docs/milestones/M28-bulk-operations.md": [],
+    "docs/milestones/M29-full-backup-export.md": [],
+    "docs/milestones/M3-cashflow.md": [],
+    "docs/milestones/M30-multi-currency.md": [],
+    "docs/milestones/M31-audit-trail.md": [],
+    "docs/milestones/M32-dashboard-customization.md": [],
+    "docs/milestones/M33-offline-pwa.md": [],
+    "docs/milestones/M34-keyboard-shortcuts.md": [],
+    "docs/milestones/M35-kiryana-pack.md": [],
+    "docs/milestones/M4-reports.md": [],
+    "docs/milestones/M5-tax-calculator.md": [],
+    "docs/milestones/M6-billing.md": [],
+    "docs/milestones/M7-subscription-gate.md": [],
+    "docs/milestones/M8-receipt-addon.md": [],
+    "docs/milestones/M9-free-trial.md": [],
+    "docs/mobile-pos-design.md": [],
+    "docs/parallel-agents.md": [],
+    "docs/tasks/M1-tasks.md": [],
+    "docs/tasks/M10-tasks.md": [],
+    "docs/tasks/M11-tasks.md": [],
+    "docs/tasks/M12-tasks.md": [],
+    "docs/tasks/M13-tasks.md": [],
+    "docs/tasks/M14-tasks.md": [],
+    "docs/tasks/M15-tasks.md": [],
+    "docs/tasks/M16-tasks.md": [],
+    "docs/tasks/M17-tasks.md": [],
+    "docs/tasks/M18-tasks.md": [],
+    "docs/tasks/M19-tasks.md": [],
+    "docs/tasks/M2-tasks.md": [],
+    "docs/tasks/M20-tasks.md": [],
+    "docs/tasks/M21-tasks.md": [],
+    "docs/tasks/M22-tasks.md": [],
+    "docs/tasks/M23-tasks.md": [],
+    "docs/tasks/M24-tasks.md": [],
+    "docs/tasks/M25-tasks.md": [],
+    "docs/tasks/M26-tasks.md": [],
+    "docs/tasks/M27-tasks.md": [],
+    "docs/tasks/M28-tasks.md": [],
+    "docs/tasks/M29-tasks.md": [],
+    "docs/tasks/M3-tasks.md": [],
+    "docs/tasks/M30-tasks.md": [],
+    "docs/tasks/M31-tasks.md": [],
+    "docs/tasks/M32-tasks.md": [],
+    "docs/tasks/M33-tasks.md": [],
+    "docs/tasks/M34-tasks.md": [],
+    "docs/tasks/M35-tasks.md": [],
+    "docs/tasks/M4-tasks.md": [],
+    "docs/tasks/M5-tasks.md": [],
+    "docs/tasks/M6-tasks.md": [],
+    "docs/tasks/M7-tasks.md": [],
+    "docs/tasks/M8-tasks.md": [],
+    "docs/tasks/M9-tasks.md": [],
+    "e2e/README.md": [],
+    "e2e/helpers/qa-auth.js": [],
+    "e2e/playwright.config.js": [],
+    "e2e/reporters/bug-reporter.mjs": [
+      "scripts/write-bug.mjs"
+    ],
+    "e2e/tests/m1-health.spec.js": [],
+    "e2e/tests/m10-premium-ui.spec.js": [
+      "e2e/helpers/qa-auth.js"
+    ],
+    "e2e/tests/m11-admin-panel.spec.js": [
+      "e2e/helpers/qa-auth.js"
+    ],
+    "e2e/tests/m13-theme.spec.js": [],
+    "e2e/tests/m2-auth.spec.js": [],
+    "e2e/tests/m23-pos.spec.js": [
+      "e2e/helpers/qa-auth.js"
+    ],
+    "e2e/tests/m3-cashflow.spec.js": [
+      "e2e/helpers/qa-auth.js"
+    ],
+    "e2e/tests/m35-grocery.spec.js": [
+      "e2e/helpers/qa-auth.js"
+    ],
+    "e2e/tests/m4-reports.spec.js": [
+      "e2e/helpers/qa-auth.js"
+    ],
+    "e2e/tests/m6-billing.spec.js": [
+      "e2e/helpers/qa-auth.js"
+    ],
+    "e2e/tests/m7-subscription-gate.spec.js": [
+      "e2e/helpers/qa-auth.js"
+    ],
+    "e2e/tests/m8-receipt-addon.spec.js": [
+      "e2e/helpers/qa-auth.js"
+    ],
+    "e2e/tests/m9-free-trial.spec.js": [
+      "e2e/helpers/qa-auth.js"
+    ],
+    "index.html": [],
+    "ios/App/App.xcodeproj/project.pbxproj": [],
+    "ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist": [],
+    "ios/App/App/AppDelegate.swift": [],
+    "ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json": [],
+    "ios/App/App/Assets.xcassets/Contents.json": [],
+    "ios/App/App/Assets.xcassets/Splash.imageset/Contents.json": [],
+    "ios/App/App/Base.lproj/LaunchScreen.storyboard": [],
+    "ios/App/App/Base.lproj/Main.storyboard": [],
+    "ios/App/App/Info.plist": [],
+    "ios/App/App/SceneDelegate.swift": [],
+    "ios/App/CapApp-SPM/Package.swift": [],
+    "ios/App/CapApp-SPM/README.md": [],
+    "ios/App/CapApp-SPM/Sources/CapApp-SPM/CapApp-SPM.swift": [],
+    "ios/debug.xcconfig": [],
+    "js/activity.js": [
+      "js/api.js",
+      "js/shell.js",
+      "js/theme.js"
+    ],
+    "js/admin-categories.js": [
+      "js/api.js",
+      "js/shell.js",
+      "js/theme.js"
+    ],
+    "js/admin-entries.js": [
+      "js/api.js",
+      "js/shell.js",
+      "js/theme.js"
+    ],
+    "js/admin-payments.js": [
+      "js/api.js",
+      "js/shell.js",
+      "js/theme.js"
+    ],
+    "js/admin-shops.js": [
+      "js/api.js",
+      "js/shell.js",
+      "js/theme.js"
+    ],
+    "js/admin-subscriptions.js": [
+      "js/api.js",
+      "js/shell.js",
+      "js/theme.js"
+    ],
+    "js/admin-users.js": [
+      "js/api.js",
+      "js/shell.js",
+      "js/theme.js"
+    ],
+    "js/admin.js": [
+      "js/api.js",
+      "js/shell.js",
+      "js/theme.js"
+    ],
+    "js/api.js": [],
+    "js/auth.js": [
+      "js/api.js",
+      "js/nav.js",
+      "js/theme.js"
+    ],
+    "js/billing.js": [
+      "js/api.js",
+      "js/shell.js",
+      "js/theme.js"
+    ],
+    "js/cart.js": [
+      "js/units.js"
+    ],
+    "js/cashflow.js": [
+      "js/api.js",
+      "js/shell.js",
+      "js/theme.js"
+    ],
+    "js/customers.js": [
+      "js/api.js",
+      "js/receipt.js",
+      "js/shell.js",
+      "js/theme.js"
+    ],
+    "js/dashboard.js": [
+      "js/api.js",
+      "js/shell.js",
+      "js/theme.js"
+    ],
+    "js/home.js": [
+      "js/motion.js",
+      "js/nav.js",
+      "js/theme.js"
+    ],
+    "js/legal.js": [
+      "js/nav.js",
+      "js/theme.js"
+    ],
+    "js/motion.js": [],
+    "js/nav.js": [
+      "js/api.js"
+    ],
+    "js/offline-db.js": [],
+    "js/pos.js": [
+      "js/api.js",
+      "js/cart.js",
+      "js/receipt.js",
+      "js/theme.js",
+      "js/units.js"
+    ],
+    "js/products.js": [
+      "js/api.js",
+      "js/shell.js",
+      "js/theme.js",
+      "js/units.js"
+    ],
+    "js/profile.js": [
+      "js/api.js",
+      "js/shell.js",
+      "js/theme.js"
+    ],
+    "js/purchases.js": [
+      "js/api.js",
+      "js/receipt.js",
+      "js/shell.js",
+      "js/theme.js",
+      "js/units.js"
+    ],
+    "js/receipt.js": [
+      "js/units.js"
+    ],
+    "js/reports.js": [
+      "js/api.js",
+      "js/shell.js",
+      "js/theme.js"
+    ],
+    "js/sales.js": [
+      "js/api.js",
+      "js/receipt.js",
+      "js/shell.js",
+      "js/theme.js"
+    ],
+    "js/shell.js": [
+      "js/api.js"
+    ],
+    "js/shop.js": [
+      "js/api.js",
+      "js/shell.js",
+      "js/theme.js"
+    ],
+    "js/sync.js": [
+      "js/offline-db.js"
+    ],
+    "js/theme.js": [],
+    "js/units.js": [],
+    "login.html": [],
+    "mobile/css/mobile.css": [],
+    "mobile/index.html": [],
+    "mobile/js/boot.js": [
+      "mobile/js/native.js"
+    ],
+    "mobile/js/config.js": [],
+    "mobile/js/login.js": [
+      "mobile/js/native.js",
+      "mobile/js/theme.js"
+    ],
+    "mobile/js/more.js": [
+      "mobile/js/shell.js"
+    ],
+    "mobile/js/native.js": [],
+    "mobile/js/sell.js": [
+      "mobile/js/shell.js"
+    ],
+    "mobile/js/shell.js": [
+      "mobile/js/native.js",
+      "mobile/js/theme.js"
+    ],
+    "mobile/js/theme-boot.js": [],
+    "mobile/js/theme.js": [
+      "mobile/js/native.js"
+    ],
+    "mobile/login.html": [],
+    "mobile/more.html": [],
+    "mobile/nul": [],
+    "mobile/sell.html": [],
+    "nul": [],
+    "package.json": [],
+    "pos.html": [],
+    "privacy.html": [],
+    "products.html": [],
+    "profile.html": [],
+    "purchases.html": [],
+    "reports.html": [],
+    "sales.html": [],
+    "scripts/agent-env.mjs": [],
+    "scripts/build-mobile.mjs": [],
+    "scripts/dev-serve.mjs": [
+      "scripts/agent-env.mjs"
+    ],
+    "scripts/lint-js.mjs": [],
+    "scripts/qa-milestone.mjs": [
+      "scripts/agent-env.mjs"
+    ],
+    "scripts/test-admin-setup.mjs": [],
+    "scripts/worktree.mjs": [
+      "scripts/agent-env.mjs"
+    ],
+    "scripts/write-bug.mjs": [],
+    "shop.html": [],
+    "signup.html": [],
+    "terms.html": [],
+    "tests/cart.test.js": [
+      "js/cart.js"
+    ],
+    "tests/units.test.js": [
+      "js/units.js"
+    ]
+  }
+}
