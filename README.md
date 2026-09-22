@@ -1,4 +1,4 @@
-# Pakistan Income Tax Calculator & Cashflow
+# PK Galla Online
 
 Daily **cash-flow tracker** plus a **free** Pakistan FBR income tax calculator — no account required for tax features.
 
