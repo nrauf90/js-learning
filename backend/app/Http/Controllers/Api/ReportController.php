@@ -135,7 +135,7 @@ class ReportController extends Controller
     private function jsonReport(Request $request, Carbon $start, Carbon $end): JsonResponse
     {
         $report = $this->aggregator->aggregate(
-            $request->user()->id,
+            $request->user(),
             $start->toDateString(),
             $end->toDateString()
         );

@@ -79,11 +79,6 @@ function weekRangeISO() {
   return { start: toISO(start), end: toISO(end), startDate: start };
 }
 
-/** `YYYY-MM-DD` sorts lexicographically, so the bounds need no date parsing. */
-function inWeek(iso, start, end) {
-  return typeof iso === 'string' && iso >= start && iso <= end;
-}
-
 function cssVar(name, fallback) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
 }
@@ -206,24 +201,26 @@ function renderCharts(days, byDay) {
   });
 }
 
-function renderWeek(entries, range) {
-  let income = 0;
-  let expense = 0;
-  let count = 0;
+/**
+ * The week's money, already totalled server-side by the weekly report.
+ *
+ * Sales stopped writing cash entries when the day book took over the drawer,
+ * so summing entries client-side would report the float and the closing
+ * count as the day's "income". The report reads the sales book itself and
+ * hands back per-day income/expense plus the totals, which is what renders
+ * here.
+ */
+function renderWeek(report, range) {
+  const income = Number(report.total_income) || 0;
+  const expense = Number(report.total_expense) || 0;
   const byDay = new Map();
 
-  for (const e of entries) {
-    if (!inWeek(e.entry_date, range.start, range.end)) continue;
-    const amount = Number(e.amount) || 0;
-    if (e.type === 'income') income += amount;
-    else expense += amount;
-    count += 1;
-
-    const day = byDay.get(e.entry_date) || { income: 0, expense: 0, count: 0 };
-    if (e.type === 'income') day.income += amount;
-    else day.expense += amount;
-    day.count += 1;
-    byDay.set(e.entry_date, day);
+  for (const d of report.by_day || []) {
+    byDay.set(d.date, {
+      income: Number(d.income) || 0,
+      expense: Number(d.expense) || 0,
+      count: 1,
+    });
   }
 
   document.getElementById('week-range').textContent =
@@ -232,7 +229,7 @@ function renderWeek(entries, range) {
   document.getElementById('week-expense').textContent = formatRs(expense);
   document.getElementById('week-net').textContent = formatRs(income - expense);
   const countEl = document.getElementById('week-count');
-  if (countEl) countEl.textContent = String(count);
+  if (countEl) countEl.textContent = String(byDay.size);
 
   const list = document.getElementById('week-days');
   const empty = document.getElementById('week-empty');
@@ -306,9 +303,9 @@ async function boot() {
       );
     }
 
-    const data = await apiGet('/api/cash-entries');
     const range = weekRangeISO();
-    renderWeek(data.entries || [], range);
+    const data = await apiGet(`/api/reports/weekly?start=${encodeURIComponent(range.start)}`);
+    renderWeek(data, range);
   } catch (err) {
     showAlert(err.message || 'Failed to load dashboard');
   }

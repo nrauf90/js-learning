@@ -9,6 +9,7 @@ use App\Models\StockMovement;
 use App\Models\User;
 use App\Services\Pos\DayBookService;
 use App\Support\SaleProfit;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Facades\DB;
 
@@ -16,6 +17,14 @@ class ReportAggregator
 {
     /** A shop reads the top of its list, not the tail of it. */
     private const TOP_PRODUCTS = 10;
+
+    /**
+     * The till's takings have no ledger category of their own — they live in
+     * the sales book, not in hand-entered entries — so reports list them
+     * under a name of their own instead of letting them vanish into the
+     * total.
+     */
+    private const TILL_SALES_LABEL = 'Till Sales';
 
     /**
      * The cash-ledger side of wastage, for a shop that writes off "Rs 500 of
@@ -47,24 +56,36 @@ class ReportAggregator
      *     by_day: list<array{date: string, income: float, expense: float}>
      * }
      */
-    public function aggregate(int $userId, string $from, string $to): array
+    public function aggregate(User $user, string $from, string $to): array
     {
-        $totalsByType = CashEntry::query()
-            ->where('user_id', $userId)
-            ->whereDate('entry_date', '>=', $from)
-            ->whereDate('entry_date', '<=', $to)
+        // The hand-written ledger belongs to whoever is signed in; the till's
+        // takings belong to the shop, so a cashier's report reads the owner's
+        // sales book — the same split profit() and cashPosition() already use.
+        $ownerId = $user->dataOwnerId();
+        $userId = $user->id;
+
+        $totalsByType = $this->ledgerEntries($userId, $from, $to)
             ->groupBy('type')
             ->selectRaw('type, SUM(amount) as total')
             ->pluck('total', 'type');
 
-        $totalIncome = (float) ($totalsByType['income'] ?? 0);
+        // Sales stopped posting into cash_entries when the day book took over
+        // the drawer, so the takings are read from the sales book itself, net
+        // of refunds — the same figure the P&L reports as sales_net.
+        $salesByDay = DB::table('sales')
+            ->where('user_id', $ownerId)
+            ->whereBetween('sold_at', $this->soldAtBounds($from, $to))
+            ->groupBy(DB::raw('DATE(sold_at)'))
+            ->selectRaw('DATE(sold_at) as sale_date, SUM(total - refunded_amount) as amount')
+            ->pluck('amount', 'sale_date');
+
+        $tillSales = round((float) $salesByDay->sum(), 2);
+
+        $totalIncome = (float) ($totalsByType['income'] ?? 0) + $tillSales;
         $totalExpense = (float) ($totalsByType['expense'] ?? 0);
 
-        $categoryRows = CashEntry::query()
+        $categoryRows = $this->ledgerEntries($userId, $from, $to)
             ->join('expense_categories', 'expense_categories.id', '=', 'cash_entries.category_id')
-            ->where('cash_entries.user_id', $userId)
-            ->whereDate('cash_entries.entry_date', '>=', $from)
-            ->whereDate('cash_entries.entry_date', '<=', $to)
             ->groupBy('cash_entries.type', 'expense_categories.id', 'expense_categories.name')
             ->orderByDesc(DB::raw('SUM(cash_entries.amount)'))
             ->get([
@@ -84,10 +105,12 @@ class ReportAggregator
             }
         }
 
-        $dayRows = CashEntry::query()
-            ->where('user_id', $userId)
-            ->whereDate('entry_date', '>=', $from)
-            ->whereDate('entry_date', '<=', $to)
+        if ($tillSales > 0) {
+            $incomeRows[] = ['category' => self::TILL_SALES_LABEL, 'amount' => $tillSales];
+            usort($incomeRows, fn (array $a, array $b) => $b['amount'] <=> $a['amount']);
+        }
+
+        $dayRows = $this->ledgerEntries($userId, $from, $to)
             ->groupBy('entry_date', 'type')
             ->orderBy('entry_date')
             ->get(['entry_date', 'type', DB::raw('SUM(amount) as amount')]);
@@ -98,6 +121,10 @@ class ReportAggregator
             $date = $row->entry_date?->format('Y-m-d') ?? (string) $row->entry_date;
             $byDay[$date] ??= ['date' => $date, 'income' => 0.0, 'expense' => 0.0];
             $byDay[$date][$row->type] += (float) $row->amount;
+        }
+        foreach ($salesByDay as $date => $amount) {
+            $byDay[$date] ??= ['date' => (string) $date, 'income' => 0.0, 'expense' => 0.0];
+            $byDay[$date]['income'] += (float) $amount;
         }
         ksort($byDay);
         $byDay = array_values(array_map(
@@ -280,6 +307,31 @@ class ReportAggregator
             'takings_total' => round(array_sum($byMethod), 2),
             'by_payment_method' => $byMethod,
         ];
+    }
+
+    /**
+     * The hand-written cash ledger for the period, minus the day book's own
+     * float and closing count.
+     *
+     * Those two are the same rupees leaving the owner's hand in the morning
+     * and coming back at night — drawer bookkeeping, not income or spending —
+     * so they are excluded from every total, category list and daily row the
+     * report produces. Same reasoning as shopExpenses() below, extended to
+     * the income side because the closing count is no more "income" than the
+     * float is "expense".
+     */
+    private function ledgerEntries(int $userId, string $from, string $to): EloquentBuilder
+    {
+        return CashEntry::query()
+            ->where('user_id', $userId)
+            ->whereDate('entry_date', '>=', $from)
+            ->whereDate('entry_date', '<=', $to)
+            ->whereNotIn('category_id', ExpenseCategory::query()
+                ->whereIn('slug', [
+                    DayBookService::FLOAT_CATEGORY_SLUG,
+                    DayBookService::CLOSE_CATEGORY_SLUG,
+                ])
+                ->select('id'));
     }
 
     /**
