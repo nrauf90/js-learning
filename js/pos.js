@@ -1,7 +1,7 @@
 import { apiGet, apiPost, getAuthToken } from './api.js';
 import { initTheme } from './theme.js';
 import { changeDue, computeTotals, createCart } from './cart.js';
-import { initPaperSelect, paymentLabel, receiptSlipHTML } from './receipt.js';
+import { initPaperSelect, paymentLabel, receiptSlipHTML, rememberShop, storedShop } from './receipt.js';
 import {
   QUICK_AMOUNTS,
   QUICK_VOLUMES,
@@ -16,8 +16,6 @@ import {
   quantityForAmount,
   toBase,
 } from './units.js';
-
-const USER_KEY = 'cashflow_auth_user';
 
 const cart = createCart();
 
@@ -1659,7 +1657,7 @@ function renderReceipt(sale) {
   // No payment history at the counter: the sale has at most the one payment
   // that just happened, and printing a one-row history of it reads as a
   // second charge. Reprints from the sales page pass showPayments.
-  body.innerHTML = receiptSlipHTML(sale, { shopName: shopName() });
+  body.innerHTML = receiptSlipHTML(sale, { shop: storedShop() });
 
   openReceipt();
 }
@@ -1722,28 +1720,15 @@ function wireDayBook() {
   });
 }
 
-function storedUser() {
-  try {
-    return JSON.parse(localStorage.getItem(USER_KEY) || 'null');
-  } catch {
-    return null;
-  }
-}
-
-function shopName() {
-  return storedUser()?.name || 'PK Galla';
-}
-
 /**
- * The receipt heading is the shop's own name. Without the app shell nothing
- * else on this page fetches the user, so top the cache up once when it's cold.
+ * The receipt heading is the shop's own name and footer. Without the app
+ * shell nothing else on this page fetches the shop, so top the cache up once
+ * when it's cold; shop.js rewrites the same key whenever details are saved.
  */
-function ensureShopName() {
-  if (storedUser()) return;
-  apiGet('/api/user')
-    .then((data) => {
-      if (data?.user) localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-    })
+function ensureShop() {
+  if (storedShop()) return;
+  apiGet('/api/shop')
+    .then((data) => rememberShop(data?.shop))
     .catch(() => {});
 }
 
@@ -1769,7 +1754,7 @@ async function boot() {
   });
 
   renderTicket();
-  ensureShopName();
+  ensureShop();
 
   try {
     await Promise.all([

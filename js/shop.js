@@ -8,6 +8,7 @@
 import { apiGet, apiPost, apiPut, apiDelete, getAuthToken } from './api.js';
 import { initShell } from './shell.js';
 import { initTheme } from './theme.js';
+import { rememberShop } from './receipt.js';
 
 /** Set once the current user is known; gates what the page even renders. */
 let isShopOwner = false;
@@ -81,6 +82,7 @@ async function loadShop() {
   try {
     const { shop } = await apiGet('/api/shop');
     if (!shop) return;
+    rememberShop(shop);
     setValue('shop-name', shop.name);
     setValue('shop-phone', shop.phone);
     setValue('shop-address', shop.address);
@@ -104,12 +106,15 @@ async function saveShop(event) {
   button.disabled = true;
 
   try {
-    await apiPut('/api/shop', {
+    const data = await apiPut('/api/shop', {
       name,
       phone: fieldValue('shop-phone') || null,
       address: fieldValue('shop-address') || null,
       receipt_footer: fieldValue('shop-footer') || null,
     });
+    // The receipt letterhead reads this cache — a rename has to reach the next
+    // slip printed, not just this form.
+    rememberShop(data?.shop || { name, phone: fieldValue('shop-phone'), address: fieldValue('shop-address'), receipt_footer: fieldValue('shop-footer') });
     showAlert('Shop details saved.', 'success');
     // The first save is also what creates the shop, so the staff list stops
     // being a 409 at that point.

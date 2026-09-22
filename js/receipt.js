@@ -12,7 +12,7 @@
 import { formatQuantity, formatUnitPrice, isMeasured } from './units.js';
 
 const PAPER_KEY = 'cashflow_receipt_paper';
-const USER_KEY = 'cashflow_auth_user';
+const SHOP_KEY = 'cashflow_shop';
 
 const PAYMENT_LABELS = {
   cash: 'Cash',
@@ -64,11 +64,23 @@ export function receiptDateTime(iso) {
   });
 }
 
-function storedShopName() {
+/**
+ * The slip's letterhead is the shop, not the login — a receipt that says
+ * "Bilal" when the signboard says "Al-Madina Kiryana" is wrong on every sale.
+ * Pages that can print warm this cache from GET /api/shop on boot; shop.js
+ * rewrites it on save so a rename reaches the next receipt.
+ */
+export function storedShop() {
   try {
-    return JSON.parse(localStorage.getItem(USER_KEY) || 'null')?.name || 'PK Galla';
+    return JSON.parse(localStorage.getItem(SHOP_KEY) || 'null');
   } catch {
-    return 'PK Galla';
+    return null;
+  }
+}
+
+export function rememberShop(shop) {
+  if (shop && typeof shop === 'object') {
+    localStorage.setItem(SHOP_KEY, JSON.stringify(shop));
   }
 }
 
@@ -201,7 +213,9 @@ function moneyLineHTML(isCredit, collected, method) {
  * @param {{ shopName?: string, showPayments?: boolean, copyLabel?: string }} [options]
  */
 export function receiptSlipHTML(sale, options = {}) {
-  const shopName = options.shopName || storedShopName();
+  const shop = options.shop || storedShop();
+  const shopName = options.shopName || shop?.name || 'PK Galla';
+  const shopLine = [shop?.address, shop?.phone].filter(Boolean).join(' · ');
   const items = sale.items || [];
   // A measured line has no piece count to add up — its quantity is 250 grams,
   // not 250 things — so weighed and poured goods count as the one line they
@@ -228,6 +242,7 @@ export function receiptSlipHTML(sale, options = {}) {
   return `
     <div class="receipt-slip">
       <p class="slip-shop">${escapeHtml(shopName)}</p>
+      ${shopLine ? `<p class="slip-foot slip-foot-small">${escapeHtml(shopLine)}</p>` : ''}
       <p class="slip-sub">${escapeHtml(options.copyLabel || 'Sales Receipt')}</p>
 
       <div class="slip-rule"></div>
@@ -262,7 +277,7 @@ export function receiptSlipHTML(sale, options = {}) {
       ${status ? `<div class="slip-rule"></div><p class="slip-status">${escapeHtml(status)}</p>` : ''}
 
       <div class="slip-rule"></div>
-      <p class="slip-foot">Thank you for shopping!</p>
+      <p class="slip-foot">${escapeHtml(shop?.receipt_footer || 'Thank you for shopping!')}</p>
       <p class="slip-foot slip-foot-small">No exchange without this receipt</p>
     </div>`;
 }

@@ -18,7 +18,7 @@
 import { apiGet, apiPost, getAuthToken } from './api.js';
 import { initShell } from './shell.js';
 import { initTheme } from './theme.js';
-import { initPaperSelect, paymentLabel, receiptDateTime, receiptNum, receiptSlipHTML } from './receipt.js';
+import { initPaperSelect, paymentLabel, receiptDateTime, receiptNum, receiptSlipHTML, rememberShop } from './receipt.js';
 
 /** Matches the windows GET /api/sales/stats returns, in the order shown. */
 const STAT_WINDOWS = [
@@ -601,6 +601,12 @@ async function boot() {
 
   wireFilters();
   wireModal();
+
+  // A reprint must carry the same letterhead the counter copy did — keep the
+  // shop cache warm so receipt.js never falls back to a bare "PK Galla".
+  apiGet('/api/shop')
+    .then((data) => rememberShop(data?.shop))
+    .catch(() => {});
 
   // Independent requests: a failing summary should not cost the list, and each
   // loader reports its own problem.
