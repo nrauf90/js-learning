@@ -1089,6 +1089,34 @@ function renderChange(total) {
 /* ---------------------------------------------------------------- checkout */
 
 /**
+ * `crypto.randomUUID` is secure-context-only — a till served as plain
+ * `http://<lan-ip>` does not get it. `getRandomValues` works in insecure
+ * contexts too, so the uuid is assembled by hand when the helper is missing,
+ * with Math.random as the last resort on a browser too old for either. This
+ * function must not throw: it is called inside submitSale's try so a failure
+ * could never wedge `submitting`, but a throw here would still leave the sale
+ * with no idempotency key to queue under.
+ */
+function newClientUuid() {
+  const c = globalThis.crypto;
+  if (typeof c?.randomUUID === 'function') return c.randomUUID();
+
+  const bytes = new Uint8Array(16);
+  if (typeof c?.getRandomValues === 'function') {
+    c.getRandomValues(bytes);
+  } else {
+    for (let i = 0; i < bytes.length; i += 1) bytes[i] = Math.floor(Math.random() * 256);
+  }
+
+  // RFC 4122 version/variant bits, so the shape still reads as a uuid v4.
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+  const hex = [...bytes].map((b) => b.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+/**
  * The one door to the register. Both buttons come through here so a sale taken
  * on credit and a sale taken in cash cannot drift apart in what they post or in
  * what happens afterwards.
@@ -1108,12 +1136,14 @@ async function submitSale(payload) {
   renderTotals();
   clearAlert();
 
-  // Minted before the first POST, not after a failure: any retry — ours or
-  // the sync loop's — must replay the same uuid or a sale that did land gets
-  // rung twice. The server treats it as the idempotency key.
-  payload.client_uuid = crypto.randomUUID();
-
   try {
+    // Minted before the first POST, not after a failure: any retry — ours or
+    // the sync loop's — must replay the same uuid or a sale that did land gets
+    // rung twice. The server treats it as the idempotency key. Inside the try
+    // because a mint that somehow threw must still release `submitting` — a
+    // throw above it would wedge the Complete Sale button until a reload.
+    payload.client_uuid = newClientUuid();
+
     const data = await apiPost('/api/sales', payload);
     adjustMirrorStock(payload);
     return data.sale;
@@ -1262,8 +1292,12 @@ async function flushQueuedSales() {
     if (result.halted) {
       showAlert('Queued sales could not sync — sign in again, then reopen the till.');
     } else if (result.dropped > 0) {
+      // Parked, not deleted: the money was taken but the server refused to
+      // record it, and the alert has to say both halves of that — "check the
+      // sales page" would send the cashier looking for a sale that is not
+      // there.
       showAlert(
-        `${result.dropped} queued sale${result.dropped === 1 ? '' : 's'} rejected by the server — check the sales page.`
+        `${result.dropped} queued sale${result.dropped === 1 ? '' : 's'} could not be sent — NOT recorded on the server; kept on this till for review.`
       );
     }
   } catch {

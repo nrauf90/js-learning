@@ -57,6 +57,11 @@ export async function flushOutbox(send, outbox = indexedDbOutbox) {
   let halted = false;
 
   for (const sale of pending) {
+    // Parked sales are kept for review, not retried — re-sending one the
+    // server already refused (or that exhausted its attempts) would re-park
+    // it and re-raise the dropped-sale alert on every flush.
+    if (sale.parked) continue;
+
     let result;
     try {
       result = await send(sale.payload);
@@ -78,7 +83,11 @@ export async function flushOutbox(send, outbox = indexedDbOutbox) {
     }
 
     if (outcome === 'drop') {
-      await outbox.removeQueued(sale.client_uuid);
+      // Park rather than delete: a 4xx means the server refused the sale, but
+      // the money still left the counter — removing the record would erase
+      // the only trace of it. It stays counted in the queue until a review
+      // surface exists (the parked skip above keeps it from being retried).
+      await outbox.updateQueued(sale.client_uuid, { parked: true, last_error: result.status });
       dropped += 1;
       continue;
     }

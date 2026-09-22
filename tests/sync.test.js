@@ -130,7 +130,7 @@ describe('flushOutbox', () => {
     assert.equal(outbox.box.get('a').last_error, 500);
   });
 
-  it('drops a sale the server rejects and moves on to the next', async () => {
+  it('parks a sale the server rejects and moves on to the next', async () => {
     const outbox = fakeOutbox([record('a'), record('b')]);
     const statuses = { a: 422, b: 200 };
 
@@ -141,8 +141,34 @@ describe('flushOutbox', () => {
 
     assert.equal(result.synced, 1);
     assert.equal(result.dropped, 1);
-    assert.equal(result.remaining, 0);
-    assert.equal(outbox.box.size, 0);
+    // The refused sale is money the shop took — it stays in the outbox marked
+    // for review, so `remaining` still counts it and the strip keeps showing
+    // the backlog.
+    assert.equal(result.remaining, 1);
+    const parked = outbox.box.get('a');
+    assert.equal(parked.parked, true);
+    assert.equal(parked.last_error, 422);
+    assert.equal(outbox.box.has('b'), false);
+  });
+
+  it('skips parked sales — never re-sent, never counted as dropped again', async () => {
+    const outbox = fakeOutbox([
+      record('a', { queued_at: '2026-01-01T10:00:00.000Z', parked: true, last_error: 422 }),
+      record('b', { queued_at: '2026-01-01T10:01:00.000Z' }),
+    ]);
+    const sent = [];
+
+    const result = await flushOutbox(async (payload) => {
+      sent.push(payload.client_uuid);
+      return { status: 201 };
+    }, outbox);
+
+    // Only the live sale goes out; the parked one would otherwise re-park and
+    // re-raise the dropped-sale alert on every online/visibilitychange flush.
+    assert.deepEqual(sent, ['b']);
+    assert.equal(result.dropped, 0);
+    assert.equal(result.remaining, 1);
+    assert.equal(outbox.box.get('a').parked, true);
   });
 
   it('halts on an auth failure and leaves the queue untouched', async () => {
