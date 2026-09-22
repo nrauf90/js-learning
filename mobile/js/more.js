@@ -28,7 +28,7 @@ const SECTIONS = [
     title: 'Counter',
     items: [
       { href: 'sell.html', label: 'Sell', note: 'Ring up a sale', ready: true },
-      { href: 'khata.html', label: 'Khata', note: 'Who owes the shop', ready: false },
+      { href: 'khata.html', label: 'Khata', note: 'Who owes the shop', ready: true },
       { href: 'sales.html', label: 'Sales', note: 'Every ticket, and refunds', ready: false },
     ],
   },

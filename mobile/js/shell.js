@@ -32,7 +32,7 @@ const TABS = [
     id: 'khata',
     href: 'khata.html',
     label: 'Khata',
-    ready: false,
+    ready: true,
     icon: '<path d="M5 4h11a2 2 0 012 2v14H7a2 2 0 01-2-2z"/><path d="M9 4v16M12 9h5M12 13h5"/>',
   },
   {

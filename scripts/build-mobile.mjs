@@ -33,6 +33,7 @@ const FILES = [
   ['mobile/login.html', 'login.html'],
   ['mobile/more.html', 'more.html'],
   ['mobile/sell.html', 'sell.html'],
+  ['mobile/khata.html', 'khata.html'],
 
   ['mobile/css/mobile.css', 'css/mobile.css'],
 
@@ -45,6 +46,8 @@ const FILES = [
   ['mobile/js/login.js', 'js/login.js'],
   ['mobile/js/more.js', 'js/more.js'],
   ['mobile/js/sell.js', 'js/sell.js'],
+  ['mobile/js/khata.js', 'js/khata.js'],
+  ['mobile/js/credit.js', 'js/credit.js'],
 
   ['js/api.js', 'js/api.js'],
   ['js/units.js', 'js/units.js'],

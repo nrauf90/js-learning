@@ -13,6 +13,7 @@
 import { apiGet, apiPost } from './api.js';
 import { initShell } from './shell.js';
 import { changeDue, computeTotals, createCart, lineUnitLabel, money } from './cart.js';
+import { buildCreditPayload, creditBookAmount } from './credit.js';
 import {
   QUICK_AMOUNTS,
   QUICK_VOLUMES,
@@ -82,6 +83,7 @@ const el = {
   qClear: $('till-q-clear'),
   results: $('till-results'),
   pay: $('till-pay'),
+  credit: $('till-credit'),
   clear: $('till-clear'),
   gate: $('day-gate'),
   gateNote: $('day-gate-note'),
@@ -112,6 +114,25 @@ const el = {
   payAlert: $('pay-alert'),
   payConfirm: $('pay-confirm'),
   payClose: $('pay-close'),
+  udhaar: $('udhaar'),
+  udhaarClose: $('udhaar-close'),
+  udhaarPick: $('udhaar-pick'),
+  udhaarSearch: $('udhaar-search'),
+  udhaarResults: $('udhaar-results'),
+  udhaarPicked: $('udhaar-picked'),
+  udhaarPickedName: $('udhaar-picked-name'),
+  udhaarPickedPhone: $('udhaar-picked-phone'),
+  udhaarCustomer: $('udhaar-customer'),
+  udhaarUnpick: $('udhaar-unpick'),
+  udhaarNew: $('udhaar-new'),
+  udhaarNote: $('udhaar-note'),
+  udhaarPhone: $('udhaar-phone'),
+  udhaarDeposit: $('udhaar-deposit'),
+  udhaarMethod: $('udhaar-method'),
+  udhaarTotal: $('udhaar-total'),
+  udhaarBook: $('udhaar-book'),
+  udhaarAlert: $('udhaar-alert'),
+  udhaarConfirm: $('udhaar-confirm'),
 };
 
 /* ─────────────────────────────────────────────────────────────── helpers ── */
@@ -202,6 +223,7 @@ function renderTicket() {
 
   const empty = cart.isEmpty();
   el.pay.disabled = empty || !dayOpen;
+  el.credit.disabled = empty || !dayOpen;
   el.clear.disabled = empty;
 }
 
@@ -528,6 +550,243 @@ async function confirmPay() {
   }
 }
 
+/* ────────────────────────────────────────────────────────────── udhaar ── */
+
+/* The khata page picked out of the results, or null while the cashier is
+   writing a name by hand. It is only ever used to show what the customer
+   already owes and to supply the name and number the sale posts — the API
+   resolves the page from those. Same contract as the desktop till. */
+let creditCustomer = null;
+let creditResults = [];
+let creditTerm = null;
+let creditFailed = false;
+let creditSearchTimer = null;
+
+/* Replies can land out of order once the cashier types faster than the network
+   answers; only the newest request may render. */
+let creditSearchSeq = 0;
+
+function udhaarError(message) {
+  el.udhaarAlert.hidden = !message;
+  el.udhaarAlert.textContent = message || '';
+}
+
+function renderCreditResults() {
+  const show = !creditCustomer && creditResults.length > 0;
+  el.udhaarResults.hidden = !show;
+
+  el.udhaarResults.innerHTML = '';
+  if (!show) return;
+
+  creditResults.forEach((customer, index) => {
+    const owed = Number(customer.balance) || 0;
+    const li = document.createElement('li');
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'udhaar-option';
+    b.innerHTML = `
+      <span class="udhaar-option-who">
+        <strong>${escapeHtml(customer.name)}</strong>
+        <span>${escapeHtml(customer.phone || 'No number')}</span>
+      </span>
+      <span class="udhaar-option-owed${owed > 0 ? ' is-due' : ''}">${
+        owed > 0 ? escapeHtml(rs(owed)) : 'No dues'
+      }</span>`;
+    b.addEventListener('click', () => pickCreditCustomer(index));
+    li.appendChild(b);
+    el.udhaarResults.appendChild(li);
+  });
+}
+
+async function searchCredit(term) {
+  const seq = ++creditSearchSeq;
+  const params = new URLSearchParams({ per_page: '20' });
+  if (term) params.set('search', term);
+
+  try {
+    const data = await apiGet(`/api/customers?${params.toString()}`);
+    if (seq !== creditSearchSeq) return;
+    creditResults = data.customers || [];
+    creditTerm = term;
+    creditFailed = false;
+  } catch {
+    if (seq !== creditSearchSeq) return;
+    /* A khata that cannot be reached must not stop the sale: the name in the
+       box still opens or finds the page server-side. */
+    creditResults = [];
+    creditTerm = null;
+    creditFailed = true;
+  }
+
+  renderCreditResults();
+  renderCreditNote();
+}
+
+/* What happens to the name in the box if nobody is picked — said in plain
+   words because this is the path most udhaar customers arrive by. */
+function renderCreditNote() {
+  const term = el.udhaarSearch.value.trim();
+
+  if (creditFailed) {
+    el.udhaarNote.textContent =
+      'Could not reach the khata — the name typed above still finds or opens the page.';
+  } else if (!term || creditTerm !== term) {
+    el.udhaarNote.textContent =
+      "Type the customer's name. Matching khata pages appear as you type.";
+  } else if (creditResults.length) {
+    el.udhaarNote.textContent = `Pick a page above, or leave it and a new one opens for "${term}".`;
+  } else {
+    el.udhaarNote.textContent = `No khata page for "${term}" — this sale opens a new one.`;
+  }
+}
+
+function figureRow(label, value) {
+  return `<div class="figure-row"><span>${escapeHtml(label)}</span><strong class="mono">${escapeHtml(value)}</strong></div>`;
+}
+
+function renderCreditPicked() {
+  const picked = Boolean(creditCustomer);
+  el.udhaarPick.hidden = picked;
+  el.udhaarNew.hidden = picked;
+  el.udhaarPicked.hidden = !picked;
+
+  if (!picked) {
+    el.udhaarCustomer.innerHTML = '';
+    renderCreditNote();
+    return;
+  }
+
+  const limit = creditCustomer.credit_limit;
+  const available = creditCustomer.credit_available;
+
+  el.udhaarPickedName.textContent = creditCustomer.name || '';
+  el.udhaarPickedPhone.textContent = creditCustomer.phone || 'No number on this page';
+  el.udhaarCustomer.innerHTML = [
+    figureRow('Already owes', rs(creditCustomer.balance)),
+    figureRow('Khata limit', limit === null || limit === undefined ? 'No limit' : rs(limit)),
+    available === null || available === undefined ? '' : figureRow('Limit left', rs(available)),
+  ].join('');
+}
+
+function pickCreditCustomer(index) {
+  const customer = creditResults[index];
+  if (!customer) return;
+
+  creditCustomer = customer;
+  /* Kept in the box so "Change" hands the name back to be edited rather than
+     an empty field the cashier has to retype. */
+  el.udhaarSearch.value = customer.name || '';
+  udhaarError('');
+  renderUdhaar();
+}
+
+function unpickCreditCustomer() {
+  creditCustomer = null;
+  creditResults = [];
+  creditTerm = null;
+  renderUdhaar();
+  /* Selected rather than cleared, so the button does both of the things it is
+     asked for: type over it for somebody new, or take one of the pages the
+     list comes back with. */
+  el.udhaarSearch.focus();
+  el.udhaarSearch.select();
+  const term = el.udhaarSearch.value.trim();
+  if (term) searchCredit(term);
+}
+
+/* The name the sale posts: the picked page's, or whatever is in the box. */
+function creditName() {
+  return creditCustomer
+    ? String(creditCustomer.name || '').trim()
+    : el.udhaarSearch.value.trim();
+}
+
+/* A picked page supplies its own number rather than the phone box, which only
+   ever describes a new page — the server matches on the number first, so a
+   stale one left in the box would re-point the debt. */
+function creditPhone() {
+  return creditCustomer
+    ? String(creditCustomer.phone || '').trim()
+    : el.udhaarPhone.value.trim();
+}
+
+function renderUdhaar() {
+  const total = computeTotals(cart.toArray()).total;
+  el.udhaarTotal.textContent = rs(total);
+  el.udhaarBook.textContent = rs(creditBookAmount(total, el.udhaarDeposit.value));
+  renderCreditPicked();
+  renderCreditResults();
+}
+
+function resetCreditSearch() {
+  clearTimeout(creditSearchTimer);
+  creditSearchSeq += 1;
+  creditCustomer = null;
+  creditResults = [];
+  creditTerm = null;
+  creditFailed = false;
+}
+
+function openUdhaar() {
+  if (cart.isEmpty()) return;
+
+  /* Belt and braces behind the disabled button: a day closed on another
+     terminal only surfaces here on the next refresh. */
+  if (!dayOpen) {
+    showAlert('The day book is not open — record the opening float before taking payment.');
+    return;
+  }
+
+  resetCreditSearch();
+  el.udhaarSearch.value = '';
+  el.udhaarPhone.value = '';
+  el.udhaarDeposit.value = '';
+  el.udhaarMethod.value = 'cash';
+  udhaarError('');
+  renderUdhaar();
+  openSheet(el.udhaar);
+}
+
+async function confirmUdhaar() {
+  udhaarError('');
+  if (cart.isEmpty()) return;
+
+  const total = computeTotals(cart.toArray()).total;
+  const res = buildCreditPayload({
+    items: cart.toPayloadItems(),
+    name: creditName(),
+    phone: creditPhone(),
+    depositRaw: el.udhaarDeposit.value.trim(),
+    depositMethod: el.udhaarMethod.value,
+    total,
+  });
+
+  if (!res.ok) {
+    udhaarError(res.error);
+    return;
+  }
+
+  el.udhaarConfirm.disabled = true;
+  el.udhaarConfirm.setAttribute('aria-busy', 'true');
+
+  try {
+    await apiPost('/api/sales', res.payload);
+    cart.clear();
+    closeSheet(el.udhaar);
+    renderTicket();
+    clearAlert();
+    tick();
+    await loadDay();
+  } catch (err) {
+    /* A refusal stays in the sheet, where the name and deposit that caused it
+       are still editable — a credit-limit 422 names the exact figures. */
+    udhaarError(errorText(err));
+  } finally {
+    el.udhaarConfirm.disabled = false;
+    el.udhaarConfirm.setAttribute('aria-busy', 'false');
+  }
+}
+
 /* ──────────────────────────────────────────────────────────────── boot ── */
 
 async function boot() {
@@ -565,6 +824,27 @@ async function boot() {
   el.payMethod.addEventListener('change', syncPayFields);
   el.payTendered.addEventListener('input', renderChange);
   el.payConfirm.addEventListener('click', confirmPay);
+
+  el.credit.addEventListener('click', openUdhaar);
+  el.udhaarClose.addEventListener('click', () => closeSheet(el.udhaar));
+  el.udhaarUnpick.addEventListener('click', unpickCreditCustomer);
+  el.udhaarDeposit.addEventListener('input', renderUdhaar);
+  el.udhaarConfirm.addEventListener('click', confirmUdhaar);
+
+  el.udhaarSearch.addEventListener('input', () => {
+    clearTimeout(creditSearchTimer);
+    /* An empty box asks nothing of the khata and shows nothing. */
+    if (!el.udhaarSearch.value.trim()) {
+      creditResults = [];
+      creditTerm = null;
+      creditFailed = false;
+      renderCreditResults();
+      renderCreditNote();
+      return;
+    }
+    renderCreditNote();
+    creditSearchTimer = setTimeout(() => searchCredit(el.udhaarSearch.value.trim()), 250);
+  });
 
   renderTicket();
 

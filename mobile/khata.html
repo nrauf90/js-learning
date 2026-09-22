@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Khata | PK Galla</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <meta name="theme-color" content="#f4f7fb" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#060a14" media="(prefers-color-scheme: dark)" />
+  <link rel="stylesheet" href="css/mobile.css" />
+  <script src="js/config.js"></script>
+  <script src="js/theme-boot.js"></script>
+</head>
+<body class="m-app">
+  <!--
+    The credit notebook. "Who owes me" comes first and is totalled, age sits
+    next to the amount, and a payment is a lump sum the API spreads across the
+    oldest sales — the same three rules as the desktop customers.html.
+  -->
+  <main class="m-page">
+    <header class="m-page-head">
+      <h1 class="m-page-title">Khata</h1>
+      <button type="button" class="till-status-theme" id="theme-toggle" aria-label="Change theme" aria-pressed="false">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </header>
+
+    <div class="m-alert" id="khata-alert" hidden role="alert"></div>
+
+    <!-- The one number the page exists for. The age bands under it are what
+         tell Rs 5,000 owed since last week from Rs 5,000 owed since March. -->
+    <section class="khata-total" aria-label="Total outstanding">
+      <span class="khata-total-label">Owed to the shop</span>
+      <strong class="mono" id="khata-total">—</strong>
+      <span class="khata-total-count" id="khata-count"></span>
+    </section>
+    <ul class="khata-aging" id="khata-aging" hidden></ul>
+
+    <!-- "Owes money" is the default because it is the question the page exists
+         to answer; "Everyone" is the address book behind it. -->
+    <div class="khata-views" role="group" aria-label="Which customers">
+      <button type="button" class="khata-view is-active" data-view="owing" aria-pressed="true">Owes money</button>
+      <button type="button" class="khata-view" data-view="all" aria-pressed="false">Everyone</button>
+    </div>
+
+    <div class="till-search">
+      <svg class="till-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <label class="sr-only" for="khata-q">Search the khata</label>
+      <input class="till-search-input" id="khata-q" type="search" placeholder="Name or phone" autocomplete="off" enterkeyhint="search" />
+      <button type="button" class="till-search-clear" id="khata-q-clear" aria-label="Clear search" hidden>&times;</button>
+    </div>
+
+    <ul class="khata-list" id="khata-list"></ul>
+    <p class="khata-empty" id="khata-empty" hidden></p>
+    <button type="button" class="m-btn m-btn-secondary" id="khata-more" hidden>Load more</button>
+  </main>
+
+  <!-- ──────────────────────────────────────────── one page of the khata ── -->
+  <div class="m-sheet" id="khata-sheet" hidden role="dialog" aria-modal="true" aria-labelledby="khata-name">
+    <div class="m-sheet-card">
+      <div class="pad-head">
+        <h2 class="m-sheet-title" id="khata-name">—</h2>
+        <button type="button" class="pad-close" id="khata-close" aria-label="Close">&times;</button>
+      </div>
+      <p class="m-sheet-note" id="khata-sub"></p>
+
+      <div class="pay-total">
+        <span>Still owed</span>
+        <strong class="mono" id="khata-owed">Rs 0</strong>
+      </div>
+      <div class="figure-rows" id="khata-facts"></div>
+
+      <!-- The customer puts money on the counter; the API spreads it across
+           their oldest sales and answers with what it cleared. Part payments
+           are the normal case, so what is left is shown while it is typed. -->
+      <form id="khata-pay" hidden>
+        <p class="m-sheet-note" id="khata-pay-due"></p>
+        <div class="m-field">
+          <label class="m-label" for="kp-amount">Amount received (Rs)</label>
+          <input class="m-input" id="kp-amount" type="number" inputmode="decimal" min="0" step="1" enterkeyhint="done" />
+        </div>
+        <div class="m-field">
+          <label class="m-label" for="kp-method">Received by</label>
+          <select class="m-input" id="kp-method">
+            <option value="cash">Cash</option>
+            <option value="card">Card</option>
+            <option value="easypaisa">EasyPaisa</option>
+            <option value="jazzcash">JazzCash</option>
+            <option value="bank_transfer">Bank transfer</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="m-field" id="kp-ref-field" hidden>
+          <label class="m-label" for="kp-ref">Reference</label>
+          <input class="m-input" id="kp-ref" type="text" autocomplete="off" maxlength="64" placeholder="Transaction id" />
+        </div>
+        <div class="m-field">
+          <label class="m-label" for="kp-received">Taken by (optional)</label>
+          <input class="m-input" id="kp-received" type="text" autocomplete="off" maxlength="120" placeholder="Who took the money" />
+        </div>
+        <p class="pay-change" id="kp-left"></p>
+        <button type="submit" class="m-btn m-btn-primary" id="kp-submit">
+          <span class="m-btn-label">Record payment</span>
+        </button>
+      </form>
+      <!-- Outside the form: a payment that clears the khata hides the form
+           itself, and the confirmation must not be hidden with it. -->
+      <div class="m-alert" id="kp-alert" hidden role="alert"></div>
+
+      <h3 class="khata-sub" id="khata-entries-title">Statement</h3>
+      <ul class="khata-entries" id="khata-entries"></ul>
+
+      <h3 class="khata-sub" id="khata-payments-title">Payments</h3>
+      <ul class="khata-entries" id="khata-payments"></ul>
+    </div>
+  </div>
+
+  <script type="module" src="js/khata.js"></script>
+</body>
+</html>

@@ -60,9 +60,17 @@
         <button type="button" class="m-btn m-btn-primary till-pay" id="till-pay" disabled>
           <span class="m-btn-label">Take payment</span>
         </button>
-        <button type="button" class="m-btn m-btn-secondary till-clear" id="till-clear" disabled>
-          Clear ticket
-        </button>
+        <!-- Udhaar is a different act, not a payment method — same split as the
+             desktop till, where it lives on #pos-credit rather than in the
+             method dropdown. It opens its own sheet because it needs a name. -->
+        <div class="till-actions-row">
+          <button type="button" class="m-btn m-btn-secondary" id="till-credit" disabled>
+            Udhaar
+          </button>
+          <button type="button" class="m-btn m-btn-secondary till-clear" id="till-clear" disabled>
+            Clear ticket
+          </button>
+        </div>
       </div>
     </div>
   </main>
@@ -175,6 +183,87 @@
 
       <button type="button" class="m-btn m-btn-primary" id="pay-confirm">
         <span class="m-btn-label">Complete sale</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ──────────────────────────────────────────────────────── udhaar ── -->
+  <!-- The goods go out now and the money goes on the khata. One box does both
+       jobs: it searches the khata as the cashier types (the common case is a
+       regular who already has a page), and whatever is left in it opens a new
+       page when nobody is picked — the API resolves the customer, this sheet
+       never POSTs /api/customers. Mirrors the desktop #pos-udhaar dialog. -->
+  <div class="m-sheet" id="udhaar" hidden role="dialog" aria-modal="true" aria-labelledby="udhaar-title">
+    <div class="m-sheet-card">
+      <div class="pad-head">
+        <h2 class="m-sheet-title" id="udhaar-title">Save as udhaar</h2>
+        <button type="button" class="pad-close" id="udhaar-close" aria-label="Close">&times;</button>
+      </div>
+      <p class="m-sheet-note">
+        Pick a khata page, or write a new name — the matching is done by the
+        server, so a typed name can only open a page or start one.
+      </p>
+
+      <div class="m-field" id="udhaar-pick">
+        <label class="m-label" for="udhaar-search">Customer</label>
+        <input class="m-input" id="udhaar-search" type="text"
+               autocomplete="off" maxlength="120" placeholder="Name or phone" enterkeyhint="search" />
+      </div>
+
+      <!-- Inline in the sheet rather than floating: a bottom sheet has no room
+           for a dropdown that would cover the deposit fields underneath. Tap,
+           not arrow keys — so a plain results list, not a combobox. -->
+      <ul class="udhaar-results" id="udhaar-results" aria-label="Matching khata pages" hidden></ul>
+
+      <!-- Stands in for the search box once a page is picked: who the debt
+           lands on, what they already owe, and how much of their limit is
+           left — the figures that decide whether these goods leave the shop. -->
+      <div class="udhaar-picked" id="udhaar-picked" hidden>
+        <div class="udhaar-picked-head">
+          <strong id="udhaar-picked-name"></strong>
+          <button type="button" class="udhaar-unpick" id="udhaar-unpick">Change</button>
+        </div>
+        <span class="udhaar-picked-phone" id="udhaar-picked-phone"></span>
+        <div class="figure-rows" id="udhaar-customer"></div>
+      </div>
+
+      <!-- The new-page path, hidden only while an existing page is picked: a
+           phone box beside someone else's khata page invites a number that
+           would silently re-point the debt. -->
+      <div id="udhaar-new">
+        <p class="m-sheet-note" id="udhaar-note"></p>
+        <div class="m-field">
+          <label class="m-label" for="udhaar-phone">Phone (optional)</label>
+          <input class="m-input" id="udhaar-phone" type="tel" autocomplete="off" maxlength="32" placeholder="03001234567" />
+        </div>
+      </div>
+
+      <div class="m-field">
+        <label class="m-label" for="udhaar-deposit">Deposit taken now (Rs)</label>
+        <input class="m-input" id="udhaar-deposit" type="number" inputmode="decimal" min="0" step="1" placeholder="Leave blank for nothing paid" enterkeyhint="done" />
+      </div>
+
+      <div class="m-field">
+        <label class="m-label" for="udhaar-method">Deposit paid by</label>
+        <select class="m-input" id="udhaar-method">
+          <option value="cash">Cash</option>
+          <option value="card">Card</option>
+          <option value="easypaisa">EasyPaisa</option>
+          <option value="jazzcash">JazzCash</option>
+          <option value="bank_transfer">Bank transfer</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="pay-total">
+        <span>Ticket total <span id="udhaar-total" class="mono">Rs 0</span></span>
+        <strong class="mono" id="udhaar-book">Rs 0</strong>
+      </div>
+
+      <div class="m-alert" id="udhaar-alert" hidden role="alert"></div>
+
+      <button type="button" class="m-btn m-btn-primary" id="udhaar-confirm">
+        <span class="m-btn-label">Save as udhaar</span>
       </button>
     </div>
   </div>

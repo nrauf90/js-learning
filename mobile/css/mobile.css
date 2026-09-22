@@ -1290,3 +1290,400 @@ body.sheet-open {
 .m-logout {
   margin-top: 0.5rem;
 }
+
+/* A success report reuses the alert strip, recoloured to the accent rather
+   than the danger red — the danger styling is what makes a refusal visible. */
+.m-alert[data-type='success'] {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Udhaar — credit sale sheet on the till, and the khata screen
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Take payment keeps the full width; the two secondary acts share a row. */
+.till-actions-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+/* The customer matches, inline in the sheet rather than floating over it — a
+   bottom sheet has no room for a dropdown that would cover the fields below. */
+.udhaar-results {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+  max-height: 30vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.udhaar-results[hidden] {
+  display: none;
+}
+
+.udhaar-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 52px;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.udhaar-option:active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.udhaar-option-who {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.udhaar-option-who strong {
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.udhaar-option-who span {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.udhaar-option-owed {
+  flex-shrink: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* Money still owed is the warm colour, not the danger one — a khata debt is a
+   normal part of the trade, not an error state. */
+.is-due {
+  color: var(--warm) !important;
+}
+
+/* The picked page standing in for the search box. */
+.udhaar-picked {
+  margin-bottom: 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+
+.udhaar-picked[hidden] {
+  display: none;
+}
+
+.udhaar-picked-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.udhaar-picked-head strong {
+  font-size: 0.98rem;
+  font-weight: 700;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.udhaar-picked-phone {
+  display: block;
+  margin: 0.1rem 0 0.4rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.udhaar-unpick {
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 0.3rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--accent);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Small label / value rows — the picked customer's figures and the khata
+   detail's limits. */
+.figure-rows {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.figure-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.84rem;
+  color: var(--text-muted);
+}
+
+.figure-row strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ──────────────────────────────────────────────────────────── khata list ── */
+
+.khata-total {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-bottom: 0.75rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.khata-total-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.khata-total strong {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--warm);
+}
+
+.khata-total-count {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* The age bands, as chips: Rs 5,000 owed since last week and since March are
+   different problems, so the spread sits next to the total. */
+.khata-aging {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.khata-aging[hidden] {
+  display: none;
+}
+
+.khata-aging li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.khata-aging strong {
+  color: var(--warm);
+  font-weight: 600;
+}
+
+/* Owes money / Everyone — a two-way switch, not a dropdown of two. */
+.khata-views {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.khata-view {
+  min-height: 44px;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.khata-view.is-active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.khata-list {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+/* One row per khata page — the whole row is the tap target. */
+.khata-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 56px;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.khata-row:active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.khata-row-who {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.khata-row-who strong {
+  font-size: 0.92rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.khata-row-who span {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.khata-row-owed {
+  flex-shrink: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.khata-empty {
+  margin: 1rem 0;
+  text-align: center;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.khata-empty[hidden] {
+  display: none;
+}
+
+/* ────────────────────────────────────────────────────────── khata detail ── */
+
+.khata-sub {
+  margin: 1.1rem 0 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.khata-entries {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.khata-entry {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.khata-entry:last-child {
+  border-bottom: none;
+}
+
+.khata-entry-what {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.khata-entry-what strong {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.khata-entry-what span {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.khata-entry-amt {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.05rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* The running balance sits under each amount, quieter — it is the answer to
+   "so what is left" rather than the event itself. */
+.khata-entry-amt small {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.khata-entry-empty {
+  padding: 0.75rem 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
